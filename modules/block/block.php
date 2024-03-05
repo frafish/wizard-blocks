@@ -390,9 +390,6 @@ class Block extends Module_Base {
         $code = wp_json_encode($json, JSON_PRETTY_PRINT);
         $code = str_replace('\/', '/', $code);
         file_put_contents($path, $code);
-        /* echo '<pre>';
-          var_dump($json);
-          die(); */
     }
 
     public function get_json_data($post_slug) {
