@@ -13,14 +13,17 @@ add_action('init', function () {
         foreach ($blocks as $block) {
             $block_json = $block . DIRECTORY_SEPARATOR . 'block.json';
             if (file_exists($block_json)) {
-                /**
-                * Registers the block using the metadata loaded from the `block.json` file.
-                * Behind the scenes, it registers also all assets so they can be enqueued
-                * through the block editor in the corresponding context.
-                *
-                * @see https://developer.wordpress.org/reference/functions/register_block_type/
-                */
-                register_block_type($block_json);
+                $metadata = wp_json_file_decode( $block_json, array( 'associative' => true ) );
+                if (empty($metadata['name']) || !\WP_Block_Type_Registry::get_instance()->is_registered($metadata['name'])) {
+                    /**
+                    * Registers the block using the metadata loaded from the `block.json` file.
+                    * Behind the scenes, it registers also all assets so they can be enqueued
+                    * through the block editor in the corresponding context.
+                    *
+                    * @see https://developer.wordpress.org/reference/functions/register_block_type/
+                    */
+                    register_block_type($block_json);
+                }
             }
         }
     }

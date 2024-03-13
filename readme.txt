@@ -13,32 +13,55 @@ Easy create, edit and manage Gutenberg blocks
 == Description ==
 
 A full CRUD for your personal Custom Blocks
+Not Theme related and it works out of the box with any Gutenberg ready theme.
+No bloat included!
 
-= Block manager =
+= Effortlessly Build & Manage Gutenberg Blocks =
 
-Create new Block
-Edit Custom Blocks
-Import zip (plugin or backup)
-Export backup zip
+This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks. 
+Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
+
+= Features =
+
+- **Build** and Edit Custom blocks
+- Pre-built block **library** (your personal and collective)
+- **Wizard editing** for all block options
+- Quick **Import** from zip (plugin or backup)
+- **Export** backup zip of all custom blocks
+
+Perfect for:
+
+- Content creators
+- Web designers
+- Web agencies
+
+**Take control of your blocks.**
+Don't reinvent the wheel, reuse your custom blocks across your sites!
 
 = Compatibility =
 
-Fully compatible with WP Gutenberg Block standard
+Fully compatible with WP Gutenberg Block standard!
+Once your blocks are generated you can **use them standalone in your theme or plugin**,
+there is no need to use and maintain this plugin active. 
+
+
+== Coming SOON: ==
+
+- Block custom SVG Icon
+- Attributes Visual Editor
+- Block Versioning (with Revision)
+- Add Block Examples
+- Add Block Variations
 
 = PRO = 
-Coming SOON:
-* Attributes Visual Editor
-* API Controls
-* Add Block Examples
-* Add Block Variations
-* Move/Install Block into current Theme
-* Import Core and 3rd part plugin blocks
-* Add Block Translations
-* Cloud sync
-* Block Versioning
 
-Twig/Timber support
-Drupal?
+- Attributes Conditional rules
+- API Controls (like Roles, Custom Fields, Posts, Users, Terms)
+- Move/Install automatically a Block into current Theme Child
+- Import Core and 3rd part plugin blocks to create you variation
+- Add/Generate Block Translations
+- Cloud sync (on Personal or Public hub)
+- Twig/Timber support
 
 == Installation ==
 
@@ -59,9 +82,14 @@ Drupal?
 
 = Is compatible with Classic Editor? =
 
-Yes, the Twig code will be rendered when used in any WYSIWYG editor.
+No, this is a Block Manager for the new Gutenberg Blocks editor.
+
+= Is compatible with Elementor? =
+
+Not really, because actually you can't insert a Gutenberg Block inside an Elementor Template,.
+but you can built a Page Content using the native Gutenberg Blocks editor.
 
 == Changelog ==
 
-= 1.0.1 - 23-05-2024 =
+= 1.0.1 - 13-03-2024 =
 * First release

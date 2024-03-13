@@ -13,6 +13,14 @@ trait Pages {
                 'wtools',
                 [$this, 'wizard_tools'] //callback function
         );
+        add_submenu_page(
+                'edit.php?post_type=block',
+                __('All Blocks'),
+                __('All Blocks'),
+                'manage_options',
+                'wblocks',
+                [$this, 'wizard_blocks'] //callback function
+        );
     }
 
     public function _notice($message, $type = 'success') {
@@ -22,29 +30,48 @@ trait Pages {
     public function wizard_tools() {
 
         $this->execute_actions();
-
         ?>
 
-        <h1><?php _e('ACTIONS', 'wizard-blocks'); ?></h1>
+    <div class="wrap">
+        <h1><?php _e('Wizard Tools', 'wizard-blocks'); ?></h1>
 
         <div class="card-row" style="display: flex;">
-        <div class="card" style="width: 100%;">
-            <h2><?php _e('IMPORT', 'wizard-blocks'); ?></h2>
-            <p><?php _e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php _e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
-            <form action="?post_type=block&page=ttsettings&action=import" method="POST" enctype="multipart/form-data">
-                <input type="file" name="zip">
-                <button class="btn button" type="submit"><?php _e('Import', 'wizard-blocks'); ?></button>
-            </form>
-        </div>
+            <div class="card" style="width: 100%;">
+                <h2><?php _e('IMPORT', 'wizard-blocks'); ?></h2>
+                <p><?php _e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php _e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
+                <form action="?post_type=block&page=ttsettings&action=import" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="zip">
+                    <button class="btn button" type="submit"><?php _e('Import', 'wizard-blocks'); ?></button>
+                </form>
+            </div>
 
-        <div class="card" style="width: 100%;">
-            <h2><?php _e('EXPORT', 'wizard-blocks'); ?></h2>
-            <p><?php _e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php _e('You can then  install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
-            <a class="btn button" href="?post_type=block&page=ttsettings&action=export"><?php _e('Export', 'wizard-blocks'); ?></a>
+            <div class="card" style="width: 100%;">
+                <h2><?php _e('EXPORT', 'wizard-blocks'); ?></h2>
+                <p><?php _e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php _e('You can then  install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
+                <a class="btn button" href="?post_type=block&page=ttsettings&action=export"><?php _e('Export', 'wizard-blocks'); ?></a>
+            </div>
         </div>
-        </div>
-            
+        
         <?php
+        $code = '/* Wizard Blocks */'.PHP_EOL;
+        $wizard_blocks = $this->get_blocks();
+        foreach ($wizard_blocks as $ablock) {
+            $json = $ablock.DIRECTORY_SEPARATOR.'block.json';
+            $code .= 'register_block_type("'.$json.'");'.PHP_EOL;
+        }
+        
+        ?>
+        <hr>
+        <h2><?php _e('Get code', 'wizard-blocks'); ?></h2>
+        <p><?php _e('Copy these lines of PHP code into your Theme (or Child theme) at the end of the functions.php file. After that you could switch off this plugin.', 'wizard-blocks'); ?></p>
+        <textarea style="width:100%;" rows="<?php echo count($wizard_blocks)+2; ?>"><?php echo $code; ?></textarea>
+        
+        </div>
+        <?php
+    }
+
+    public function wizard_blocks() {
+
         $blocks_dir = apply_filters('wizard/dirs', []);
         $blocks = $this->get_registered_blocks();
         $blocks_count = [];
@@ -53,8 +80,12 @@ trait Pages {
             $blocks_count[$textdomain] = empty($blocks_count[$textdomain]) ? 1 : ++$blocks_count[$textdomain];
         }
         ?>
-        <div class="card" style="max-width: 98%">
-            <h2><?php _e('Blocks', 'wizard-blocks'); ?></h2>
+        <div class="wrap">
+            <h1 class="wp-heading-inline"><?php _e('All Registered Blocks', 'wizard-blocks'); ?></h1>           
+            <a href="<?php echo admin_url('/post-new.php?post_type=block'); ?>" class="page-title-action dashicons-before dashicons-plus"><?php _e('Add new Block', 'wizard-blocks'); ?></a>
+            <hr class="wp-header-end">
+            <div class="displaying-num" style="margin-top: 12px; float: right;"><?php echo count($blocks); ?> <?php _e('blocks', 'wizard-blocks'); ?></div>
+
             <ul class="subsubsub blocks-filter">
                 <li class="all"><a class="current" href="#"><?php _e('All', 'wizard-blocks'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
@@ -62,18 +93,18 @@ trait Pages {
                 <?php } ?>
             </ul>
             <script>
-            jQuery('.blocks-filter a').on('click', function() {
-                jQuery('.blocks .hentry').show();
-                let filter = jQuery(this).attr('href').replace('#', '');
-                if (filter) {
-                    console.log(filter);
-                    jQuery('.blocks .hentry').hide();
-                    jQuery('.blocks .hentry.block-'+filter).show();
-                }
-                return false;
-            });  
+                jQuery('.blocks-filter a').on('click', function () {
+                    jQuery('.blocks .hentry').show();
+                    let filter = jQuery(this).attr('href').replace('#', '');
+                    if (filter) {
+                        console.log(filter);
+                        jQuery('.blocks .hentry').hide();
+                        jQuery('.blocks .hentry.block-' + filter).show();
+                    }
+                    return false;
+                });
             </script>
-            
+            <hr style="clear: both; padding-top: 10px;">
             <table class="wp-list-table widefat fixed striped table-view-list blocks">
                 <thead>
                     <tr>
@@ -86,22 +117,24 @@ trait Pages {
                 </thead>
 
                 <tbody id="the-list">
-        <?php
-        foreach ($blocks as $name => $block) {
-            $block_post = false;
-            $block_slug = $name;
-            if (!empty($block['folder'])) {
-                $block_slug = basename($block['folder']);
-                $block['post'] = $block_post = $this->get_block_post($block_slug);
-            }
-            $block['slug'] = $block_slug;
-            $textdomain = $this->get_block_textdomain($block);
-            ?>
-                        <tr id="post-<?php echo $block_post ? $block_post->ID : 'xxx'; ?>" class="iedit author-self type-block status-publish hentry block-<?php echo $textdomain; ?><?php echo in_array($textdomain, ['core','wizard','wizard-blocks']) ? '' : ' block-extra'; ?>">
+                    <?php
+                    foreach ($blocks as $name => $block) {
+                        $block_post = false;
+                        $block_slug = $name;
+                        if (!empty($block['folder'])) {
+                            $block_slug = basename($block['folder']);
+                            $block['post'] = $block_post = $this->get_block_post($block_slug);
+                        }
+                        $block['slug'] = $block_slug;
+                        $block['textdomain'] = $this->get_block_textdomain($block);
+                        ?>
+                        <tr id="post-<?php echo $block_post ? $block_post->ID : 'xxx'; ?>" class="iedit author-self type-block status-publish hentry block-<?php echo $textdomain; ?><?php echo in_array($textdomain, ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
                             <td class="icon column-icon" data-colname="Icon">
-            <?php if (!empty($block['icon'])) {
-                echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . $block['icon'] . '"></span> ';
-            } ?>
+                                <?php
+                                if (!empty($block['icon'])) {
+                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . $block['icon'] . '"></span> ';
+                                }
+                                ?>
                             </td>
                             <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php _e('Title', 'wizard-blocks'); ?>">
                                 <strong>
@@ -115,8 +148,8 @@ trait Pages {
                             </td>
                             <td class="folder column-folder" data-colname="<?php _e('Folder', 'wizard-blocks'); ?>">
                                 <?php
-                                echo $textdomain;
-                                
+                                echo $block['textdomain'];
+
                                 if (!empty($block['render_callback'])) {
                                     if (is_string($block['render_callback'])) {
                                         if (str_starts_with($block['render_callback'], 'render_block_core_')) {
@@ -127,15 +160,24 @@ trait Pages {
                                 ?>
                             </td>	
                             <td class="actions column-actions" data-colname="Actions">
-                                <?php if (!empty($block['folder'])) { ?>
-                                    <a class="btn button" href="?post_type=block&page=ttsettings&action=download&block=<?php echo $block_slug; ?>"><?php _e('Download', 'wizard-blocks'); ?></a>
+                                <?php if ($block['textdomain'] == 'core') { ?>
+                                    <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank"><?php _e('Docs', 'wizard-blocks'); ?></a>
                                 <?php } ?>
-                                <?php if (empty($block['post'])) { 
+
+                                <?php if (!empty($block['folder'])) { ?>
+                                    <a class="btn button dashicons-before dashicons-download" href="?post_type=block&page=ttsettings&action=download&block=<?php echo $block_slug; ?>"><?php _e('Download', 'wizard-blocks'); ?></a>
+                                <?php } ?>
+                                <?php
+                                if (empty($block['post'])) {
                                     if (!empty($block['folder'])) { ?>
-                                        <a class="btn button button-primary" href="?post_type=block&page=ttsettings&action=import&block=<?php echo $block_slug; ?>"><?php _e('Import', 'wizard-blocks'); ?></a>
-                                    <?php } 
-                                } ?>
-                                <?php do_action('wizard/blocks/action/btn', $block); ?>
+                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="?post_type=block&page=ttsettings&action=import&block=<?php echo $block_slug; ?>"><?php _e('Import', 'wizard-blocks'); ?></a>
+                                    <?php
+                                    }
+                                } else { ?>
+                                    <a class="btn button button-primary dashicons-before dashicons-edit" href=" <?php echo get_edit_post_link($block_post->ID); ?>"><?php _e('Edit', 'wizard-blocks'); ?></a>
+                                <?php }
+                                ?>
+                        <?php do_action('wizard/blocks/action/btn', $block); ?>
                             </td>		
                         </tr>
                         <?php
@@ -144,6 +186,14 @@ trait Pages {
                 </tbody>
             </table>
         </div>
+<style>
+    .page-title-action.dashicons-before:before,
+    .button.dashicons-before:before {
+        margin-right: 4px;
+        vertical-align: middle;
+        margin-top: -4px;
+    }
+</style>
         <?php
     }
 
@@ -181,10 +231,12 @@ trait Pages {
                     $svg_wrap = json_decode($svg_wrap_json, true);
                     if ($svg_wrap) {
                         $svg = '<svg';
-                        if (empty($svg_wrap['width'])) $svg_wrap['width'] = 24;
-                        if (empty($svg_wrap['height'])) $svg_wrap['height'] = 24;
+                        if (empty($svg_wrap['width']))
+                            $svg_wrap['width'] = 24;
+                        if (empty($svg_wrap['height']))
+                            $svg_wrap['height'] = 24;
                         foreach ($svg_wrap as $key => $value) {
-                            $svg .= ' '.$key.'="'.$value.'"';
+                            $svg .= ' ' . $key . '="' . $value . '"';
                         }
                         $svg .= ' aria-hidden="true" focusable="false">';
                         foreach ($svg_objs as $svg_obj) {
@@ -192,11 +244,11 @@ trait Pages {
                             $svg_inner_json = str_replace(')', '', $svg_inner_json);
                             $svg_inner = json_decode($svg_inner_json, true);
                             if ($svg_inner) {
-                                $svg .= '<'. strtolower($type);
+                                $svg .= '<' . strtolower($type);
                                 foreach ($svg_inner as $key => $value) {
-                                    $svg .= ' '.$key.'="'.$value.'"';
+                                    $svg .= ' ' . $key . '="' . $value . '"';
                                 }
-                                $svg .= '></'. strtolower($type) .'>';
+                                $svg .= '></' . strtolower($type) . '>';
                             }
                         }
                         $svg .= '</svg>';
@@ -211,11 +263,11 @@ trait Pages {
         //<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 5V18.5911L12 13.8473L18 18.5911V5H6Z"></path></svg>
         return $icons_core;
     }
-    
+
     function get_registered_blocks() {
-        
+
         $blocks = [];
-        
+
         $blocks_dir = apply_filters('wizard/blocks/dirs', []);
         unset($blocks_dir['plugin']);
 
@@ -230,11 +282,9 @@ trait Pages {
             'core/archives' => 'library_archive',
             'core/avatar' => 'comment_author_avatar',
             'core/categories' => 'post_categories',
-            
             'core/post-author' => 'post_author',
             'core/post-author-biography' => 'post_author',
             'core/post-author-name' => 'post_author',
-            
             'core/comments' => 'post_comments',
             'core/comments-title' => 'library_title',
             'core/comment-author-name' => 'comment_author_name',
@@ -247,14 +297,12 @@ trait Pages {
             'core/comments-pagination-next' => 'query_pagination_next',
             'core/comments-pagination-numbers' => 'query_pagination_numbers',
             'core/comments-pagination-previous' => 'query_pagination_previous',
-            
-            //'core/comment-edit-link' => 'comment_edit_link',
-            
+                //'core/comment-edit-link' => 'comment_edit_link',
         ];
         $icons_core = $this->get_icons_core();
         //var_dump($icons_core);
 
-        
+
 
         $registered_blocks = \WP_Block_Type_Registry::get_instance()->get_all_registered();
         //echo '<pre>';var_dump($registered_blocks);die();
@@ -286,7 +334,7 @@ trait Pages {
             $block['folder'] = $ablock;
             $blocks[$block['name']] = $block;
         }
-        
+
         return $blocks;
     }
 }
