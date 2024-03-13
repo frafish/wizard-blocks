@@ -46,10 +46,7 @@ abstract class Module_Base {
      */
     protected static $_instances = [];
 
-    public function __construct() {
-        $this->init_extensions();
-        add_action('elementor/dynamic_tags/register', [$this, 'init_tags']);
-    }
+    public function __construct() {}
 
     /**
      * Instance.
@@ -141,57 +138,38 @@ abstract class Module_Base {
         $wp_plugin_dir = Utils::get_wp_plugin_dir();
         return $wp_plugin_dir . DIRECTORY_SEPARATOR . $this->get_plugin_textdomain() . DIRECTORY_SEPARATOR;
     }
-
-    public function has_elements($folder = 'widgets') {
-        $module = $this->get_name();
-        $class_name = $this->get_reflection()->getNamespaceName();
-        $plugin_path = Utils::get_plugin_path($class_name);
-        $path = $plugin_path . 'modules' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
-        if (is_dir($path)) {
-            $files = glob($path . '*.php');
-            return !empty($files);
-        }
-        return false;
+    
+    public function register_style($handle, $path, $deps = [], $version = '', $media = 'all') {
+        $assets_name = $this->get_reflection()->getNamespaceName();
+        $tmp = explode('\\', $assets_name);
+        $module = implode('/', $tmp);
+        $module = Utils::camel_to_slug($module);
+		$url = WP_PLUGIN_URL . '/' . $module . '/' . $path;
+		$url = str_replace('/-', '/', $url);
+        wp_register_style($handle, $url, $deps, $version, $media);
     }
-
-    public function get_elements($folder = 'widgets', $enabled = true) {
-        $elements = array();
-        $module = $this->get_name();
-        $class_name = $this->get_reflection()->getNamespaceName();
-        $plugin_path = Utils::get_plugin_path($class_name);
-        $path = $plugin_path . 'modules' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
-        //if ($folder == 'triggers' && $module == 'display') { return $elements; }
-        if (is_dir($path)) {
-
-            $files = glob($path . '*.php');
-            //$files = array_filter(glob(DIRECTORY_SEPARATOR."*"), 'is_file');
-
-            foreach ($files as $ele) {
-                $file = basename($ele);
-                $name = pathinfo($file, PATHINFO_FILENAME);
-                $elements[] = Utils::slug_to_camel($name, '_');
-            }
-        }
-        return $elements;
-    }
-
-    public function init_extensions() {        
-        foreach ($this->get_elements('extensions') as $ext) {
-            $class_name = $this->get_reflection()->getNamespaceName() . '\Extensions\\' . $ext;
-                $ext_obj = new $class_name();
-            
+    
+    public function register_script($handle, $path, $deps = [], $version = '', $footer = true, $attrs = []) {
+        $assets_name = $this->get_reflection()->getNamespaceName();
+        $tmp = explode('\\', $assets_name);
+        $module = implode('/', $tmp);
+        $module = Utils::camel_to_slug($module);
+		$url = WP_PLUGIN_URL . '/' . $module . '/' . $path;
+		$url = str_replace('/-', '/', $url);
+        wp_register_script($handle, $url, $deps, $version, $footer);
+        if (!empty($attrs)) {
+            self::$script_attrs[$handle] = $attrs;
         }
     }
     
-    public function init_tags($dynamic_tags) {
-        /** @var \Elementor\Core\DynamicTags\Manager $module */
-        $module = \Elementor\Plugin::$instance->dynamic_tags;  
-        foreach ($this->get_elements('tags') as $tag) {
-            $class_name = $this->get_reflection()->getNamespaceName() . '\Tags\\' . $tag;
-                $tag_obj = new $class_name();
-                $module->register($tag_obj);
-            
-        }
+    public function enqueue_style($handle, $path, $deps = [], $version = '', $media = 'all') {
+        $this->register_style($handle, $path, $deps, $version, $media);
+        wp_enqueue_style($handle);
     }
+    public function enqueue_script($handle, $path, $deps = [], $version = '', $footer = true, $attrs = []) {
+        $this->register_script($handle, $path, $deps, $version, $footer, $attrs);
+        wp_enqueue_script($handle);
+    }
+            
 
 }

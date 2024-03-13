@@ -85,7 +85,7 @@ trait Metabox {
     public function meta_fields_add_meta_box() {
         add_meta_box(
                 'render_meta_box',
-                esc_html__('Block Content'),
+                esc_html__('Block Content', 'wizard-blocks'),
                 [$this, 'meta_fields_build_render_callback'],
                 'block',
                 //'side',
@@ -94,7 +94,7 @@ trait Metabox {
 
         add_meta_box(
                 'meta_fields_meta_box',
-                esc_html__('Block Assets'),
+                esc_html__('Block Assets', 'wizard-blocks'),
                 [$this, 'meta_fields_build_meta_box_callback'],
                 'block',
                 //'side',
@@ -102,18 +102,29 @@ trait Metabox {
         );
         add_meta_box(
                 'attributes_meta_box',
-                esc_html__('Block Attributes'),
+                esc_html__('Block Attributes', 'wizard-blocks'),
                 [$this, 'meta_fields_build_attributes_callback'],
                 'block'
         );
         add_meta_box(
                 'meta_fields_side_meta_box',
-                esc_html__('Block Info'),
+                esc_html__('Block Info', 'wizard-blocks'),
                 [$this, 'meta_fields_build_meta_box_side_callback'],
                 'block',
                 'side',
                 'default'
         );
+
+        if ((!empty($_GET['action']) && $_GET['action'] == 'edit' && get_post_type() == 'block') || (!empty($_GET['post_type']) && $_GET['post_type'] == 'block')) {
+            $this->enqueue_style('block-edit', 'assets/css/block-edit.css');
+            $this->enqueue_script('block-edit', 'assets/js/block-edit.js');
+            $php = wp_enqueue_code_editor(array('type' => 'text/html'));
+            $css = wp_enqueue_code_editor(array('type' => 'text/css'));
+            $js = wp_enqueue_code_editor(array('type' => 'application/javascript'));
+            $json = wp_enqueue_code_editor(array('type' => 'application/json'));
+            wp_enqueue_script('wp-theme-plugin-editor');
+            wp_enqueue_style('wp-codemirror');
+        }
     }
 
     public function meta_fields_build_render_callback($post, $metabox) {
@@ -138,37 +149,15 @@ trait Metabox {
             <h3><label fot="_block_render"><?php _e('Render', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#render"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><textarea id="_block_render" name="_block_render" placeholder="Hello world!"><?php echo $render; ?></textarea></p>	           
             <div class="notice inline notice-primary notice-alt" style="display: block; padding: 20px;">
-                <span class="dashicons dashicons-info"></span> The following variables are exposed to the file:
+                <span class="dashicons dashicons-info"></span> <?php _e('The following variables are exposed to the file:', 'wizard-blocks'); ?>
                 <ul>
-                    <li><b>$attributes</b> (array): The array of attributes for this block.</li>
-                    <li><b>$content</b> (string): The rendered block default output. ie. <code>&lt;InnerBlocks.Content /&gt;</code>.</li>
-                    <li><b>$block</b> (WP_Block): The instance of the WP_Block class that represents the block being rendered.</li>
+                    <li><b>$attributes</b> (array): <?php _e('The array of attributes for this block.', 'wizard-blocks'); ?></li>
+                    <li><b>$content</b> (string): <?php _e('The rendered block default output. ie. <code>&lt;InnerBlocks.Content /&gt;</code>.', 'wizard-blocks'); ?></li>
+                    <li><b>$block</b> (WP_Block): <?php _e('The instance of the WP_Block class that represents the block being rendered.', 'wizard-blocks'); ?></li>
                 </ul>
             </div>
         </div>
         <?php
-        $php = wp_enqueue_code_editor(array('type' => 'text/html'));
-        wp_enqueue_script('wp-theme-plugin-editor');
-        wp_enqueue_style('wp-codemirror');
-        add_action('admin_print_footer_scripts', function () {
-            ?>
-            <script>
-                jQuery(document).ready(function ($) {
-                    var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
-                    editorSettings.codemirror = _.extend(
-                            {},
-                            editorSettings.codemirror,
-                            {
-                                indentUnit: 2,
-                                tabSize: 2,
-                                mode: 'text/x-php'
-                            }
-                    );
-                    var _block_render = wp.codeEditor.initialize(jQuery('#_block_render'), editorSettings);
-                });
-            </script>
-            <?php
-        });
     }
 
 // build meta box
@@ -176,7 +165,6 @@ trait Metabox {
         //wp_nonce_field('meta_fields_save_meta_box_data', 'meta_fields_meta_box_nonce');
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
         $plugin_name = basename(plugin_dir_path(dirname(__FILE__, 3)));
-        //var_dump($plugin_name);
         $style = $editorStyle = $script = $editorScript = $viewScript = '';
         if ($post) {
 
@@ -246,7 +234,7 @@ trait Metabox {
         ?>
         <div class="inside">
 
-            <a class="tab-head tab-active" href="#css">CSS</a> <a class="tab-head" href="js">SCRIPT</a>
+            <a class="tab-head tab-active" href="#css"><?php _e('CSS', 'wizard-blocks'); ?></a> <a class="tab-head" href="js"><?php _e('SCRIPT', 'wizard-blocks'); ?></a>
 
             <div class="tab-body tab-css">
                 <h3><label for="_block_style"><?php _e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
@@ -268,88 +256,8 @@ trait Metabox {
 
             </div>
 
-            <style>
-                .inside input[type="text"], .inside textarea, .inside select {
-                    width: 100%;
-                }
-                .CodeMirror {
-                    border: 1px solid #ddd;
-
-                }
-                .tab-head {
-                    text-decoration: none;
-                    padding: 10px 20px;
-                    display: inline-block;
-                    background-color: white;
-                    border: 1px solid #ddd;
-                    border-bottom: none;
-                }
-                .tab-head.tab-active {
-                    text-decoration: none;
-                    background-color: #eee;
-                }
-                .tab-body {
-                    background-color: #eee;
-                    border: 1px solid #ddd;
-                    padding: 15px;
-                }
-                #wpfooter {
-                    position: static;
-                }
-            </style>
-            <script>
-                jQuery('.tab-head').on('click', function () {
-                    jQuery('.tab-head').removeClass('tab-active');
-                    jQuery(this).addClass('tab-active');
-                    jQuery('.tab-body').toggle();
-                    return false;
-                });
-                setTimeout(function () {
-                    jQuery('.tab-js').hide();
-                }, 1000);
-            </script>
         </div>
         <?php
-        $css = wp_enqueue_code_editor(array('type' => 'text/css'));
-        $js = wp_enqueue_code_editor(array('type' => 'application/javascript'));
-        wp_enqueue_script('wp-theme-plugin-editor');
-        wp_enqueue_style('wp-codemirror');
-        add_action('admin_print_footer_scripts', function () use ($is_editor_script_generated) {
-            ?>
-            <script>
-                jQuery(document).ready(function ($) {
-                    var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
-
-                    editorSettings.codemirror = _.extend(
-                            {},
-                            editorSettings.codemirror,
-                            {
-                                indentUnit: 2,
-                                tabSize: 2,
-                                mode: 'css'
-                            }
-                    );
-                    var _block_style = wp.codeEditor.initialize(jQuery('#_block_style'), editorSettings);
-                    var _block_editorStyle = wp.codeEditor.initialize(jQuery('#_block_editorStyle'), editorSettings);
-
-                    editorSettings.codemirror = _.extend(
-                            {},
-                            editorSettings.codemirror,
-                            {
-                                indentUnit: 2,
-                                tabSize: 2,
-                                mode: 'javascript',
-                            }
-                    );
-                    var _block_script = wp.codeEditor.initialize(jQuery('#_block_script'), editorSettings);
-            <?php //if (!$is_editor_script_generated) {  ?>
-                    var _block_editorScript = wp.codeEditor.initialize(jQuery('#_block_editorScript'), editorSettings);
-            <?php //}  ?>
-                    var _block_viewScript = wp.codeEditor.initialize(jQuery('#_block_viewScript'), editorSettings);
-                });
-            </script>
-            <?php
-        });
     }
 
     public function meta_fields_build_attributes_callback($post, $metabox) {
@@ -394,29 +302,6 @@ trait Metabox {
           Color Field
           Checkbox Field
          */
-
-        $js = wp_enqueue_code_editor(array('type' => 'application/json'));
-        wp_enqueue_script('wp-theme-plugin-editor');
-        wp_enqueue_style('wp-codemirror');
-        add_action('admin_print_footer_scripts', function () {
-            ?>
-            <script>
-                jQuery(document).ready(function ($) {
-                    var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
-                    editorSettings.codemirror = _.extend(
-                            {},
-                            editorSettings.codemirror,
-                            {
-                                indentUnit: 2,
-                                tabSize: 2,
-                                mode: 'application/ld+json'
-                            }
-                    );
-                    var _block_render = wp.codeEditor.initialize(jQuery('#_block_attributes'), editorSettings);
-                });
-            </script>
-            <?php
-        });
     }
 
     public function meta_fields_build_meta_box_side_callback($post, $metabox) {
@@ -458,91 +343,87 @@ trait Metabox {
         }
         ?></select></p>	           
 
-                    <?php if (!empty($post->post_name)) { ?>
+            <?php if (!empty($post->post_name)) { ?>
                 <h3><label for="_block_name"><?php _e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
                 <p><?php echo $this->get_block_textdomain($json); ?>/<input style="width: 60%;" type="text" id="_block_name" name="_block_name" value="<?php echo $post->post_name; ?>" /></p>
-        <?php } ?>
+            <?php } ?>
 
             <h3><label for="_block_version"><?php _e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php if (!empty($json['version'])) {
-            echo $json['version'];
-        } ?>" /></p>	           
+            <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php
+            if (!empty($json['version'])) {
+                echo $json['version'];
+            }
+            ?>" /></p>	           
 
             <h3><label for="_block_icon"><?php _e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_icon" name="_block_icon"><?php
-                    if (empty($json['icon']))
-                        $json['icon'] = 'smiley';
-                    foreach ($icons as $icon) {
-                        $selected = (!empty($json['icon']) && $json['icon'] == $icon) ? ' selected' : '';
-                        echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
-                    }
-                    ?></select></p>	
-            <?php
-            wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
-            wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
+        if (empty($json['icon']))
+            $json['icon'] = 'smiley';
+        foreach ($icons as $icon) {
+            $selected = (!empty($json['icon']) && $json['icon'] == $icon) ? ' selected' : '';
+            echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
+        }
+            ?></select></p>	
+                    <?php
+            $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
+            $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));
             ?>
-            <script>
-                jQuery(function ($) {
-
-                    jQuery('#_block_icon').select2({
-                        templateResult: function (state) {
-                            if (!state.id) {
-                                return state.text;
-                            }
-                            var $state = $(
-                                    '<span class="dashicons dashicons-' + state.element.value + '"></span> ' + state.text + '</span>'
-                                    );
-                            return $state;
-                        }
-                    });
-
-                });
-            </script>
-
             <h3><label for="_block_category"><?php _e('Category', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_category" name="_block_category"><?php
-                    foreach (self::$categories as $cat) {
-                        $selected = (!empty($json['category']) && $json['category'] == $cat) ? ' selected' : '';
-                        echo '<option value="' . $cat . '"' . $selected . '>' . $cat . '</option>';
-                    }
-                    ?></select></p>	
+        foreach (self::$categories as $cat) {
+            $selected = (!empty($json['category']) && $json['category'] == $cat) ? ' selected' : '';
+            echo '<option value="' . $cat . '"' . $selected . '>' . $cat . '</option>';
+        }
+            ?></select></p>	
 
             <h3><label for="_block_keywords"><?php _e('Keywords', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#keywords"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input type="text" id="_block_keywords" name="_block_keywords" placeholder="alert, message" value="<?php if (!empty($json['keywords'])) {
-                        echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
-                    } ?>" /></p>	           
+            <p><input type="text" id="_block_keywords" name="_block_keywords" placeholder="alert, message" value="<?php
+            if (!empty($json['keywords'])) {
+                echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
+            }
+            ?>" /></p>	           
 
             <h3><label for="_block_parent"><?php _e('Parent', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#parent"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input type="text" id="_block_parent" name="_block_parent" placeholder="core/group"  value="<?php if (!empty($json['parent'])) {
-                        echo is_array($json['parent']) ? implode(', ', $json['parent']) : $json['parent'];
-                    } ?>" /></p>	           
+            <p><input type="text" id="_block_parent" name="_block_parent" placeholder="core/group"  value="<?php
+        if (!empty($json['parent'])) {
+            echo is_array($json['parent']) ? implode(', ', $json['parent']) : $json['parent'];
+        }
+            ?>" /></p>	           
 
             <h3><label for="_block_ancestor"><?php _e('Ancestor', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#ancestor"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input type="text" id="_block_ancestor" name="_block_ancestor" placeholder="my-block/product"  value="<?php if (!empty($json['ancestor'])) {
-                        echo is_array($json['ancestor']) ? implode(', ', $json['ancestor']) : $json['ancestor'];
-                    } ?>" /></p>	           
+            <p><input type="text" id="_block_ancestor" name="_block_ancestor" placeholder="my-block/product"  value="<?php
+        if (!empty($json['ancestor'])) {
+            echo is_array($json['ancestor']) ? implode(', ', $json['ancestor']) : $json['ancestor'];
+        }
+            ?>" /></p>	           
 
             <h3><label for="_block_providesContext"><?php _e('providesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#provides-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><textarea id="_block_providesContext" name="_block_providesContext" placeholder='"my-plugin/recordId": "recordId"'><?php if (!empty($json['providesContext'])) {
-                        echo $providesContext = wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
-                    } ?></textarea></p>	
+            <p><textarea id="_block_providesContext" name="_block_providesContext" placeholder='"my-plugin/recordId": "recordId"'><?php
+        if (!empty($json['providesContext'])) {
+            echo $providesContext = wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
+        }
+            ?></textarea></p>	
 
             <h3><label for="_block_usesContext"><?php _e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#uses-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php if (!empty($json['usesContext'])) {
-            echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
-        } ?>" /></p>	           
+            <p><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php
+            if (!empty($json['usesContext'])) {
+                echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
+            }
+            ?>" /></p>	           
 
             <h3><label for="_block_supports"><?php _e('Supports', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <div style="height: 180px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
-                    <?php
-                    $custom = [];
-                    foreach (self::$supports as $sup => $default) {
-                        ?>
+                <?php
+                $custom = [];
+                foreach (self::$supports as $sup => $default) {
+                    ?>
                     <p>
                         <label for="_block_supports_<?php echo $sup; ?>"><b><?php echo $sup; ?></b></label><br>
-                        <!-- <input type="checkbox" id="_block_supports_<?php echo $sup; ?>" name="_block_supports[<?php echo $sup; ?>]"<?php if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
+                        <!-- <input type="checkbox" id="_block_supports_<?php echo $sup; ?>" name="_block_supports[<?php echo $sup; ?>]"<?php
+            if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
                 echo ' checked';
-            } ?>> <b><?php echo $sup; ?></b></label> -->
+            }
+                    ?>> <b><?php echo $sup; ?></b></label> -->
                         <?php
                         $value = $default;
                         if (!empty($json['supports'])) {
@@ -566,14 +447,18 @@ trait Metabox {
                             }
                         }
                         ?>
-                        <input type="radio" id="_block_supports_<?php echo $sup; ?>_true" name="_block_supports[<?php echo $sup; ?>]" value="true"<?php if ($value) {
+                        <input type="radio" id="_block_supports_<?php echo $sup; ?>_true" name="_block_supports[<?php echo $sup; ?>]" value="true"<?php
+            if ($value) {
                 echo ' checked';
-            } ?>> <label for="_block_supports_<?php echo $sup; ?>_true"><?php echo 'True'; ?></label>
-                        <input type="radio" id="_block_supports_<?php echo $sup; ?>_false" name="_block_supports[<?php echo $sup; ?>]" value="false"<?php if (!$value == 'false') {
-                echo ' checked';
-            } ?>> <label for="_block_supports_<?php echo $sup; ?>_false"><?php echo 'False'; ?></label>
+            }
+                        ?>> <label for="_block_supports_<?php echo $sup; ?>_true"><?php echo 'True'; ?></label>
+                        <input type="radio" id="_block_supports_<?php echo $sup; ?>_false" name="_block_supports[<?php echo $sup; ?>]" value="false"<?php
+                   if (!$value == 'false') {
+                       echo ' checked';
+                   }
+                        ?>> <label for="_block_supports_<?php echo $sup; ?>_false"><?php echo 'False'; ?></label>
                     </p>
-            <?php } ?>	
+                <?php } ?>	
             </div>
             <?php
             if (!empty($json['supports'])) {
@@ -620,33 +505,6 @@ trait Metabox {
             ?>
             <h3><label id="extra" for="_block_extra"><b><?php _e('Extra', 'wizard-blocks'); ?></b></label></h3>
             <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;"><?php echo $extra; ?></textarea>
-
-        <?php
-        $js = wp_enqueue_code_editor(array('type' => 'application/json'));
-        wp_enqueue_script('wp-theme-plugin-editor');
-        wp_enqueue_style('wp-codemirror');
-        add_action('admin_print_footer_scripts', function () {
-            ?>
-                <script>
-                    jQuery(document).ready(function ($) {
-                        var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
-                        editorSettings.codemirror = _.extend(
-                                {},
-                                editorSettings.codemirror,
-                                {
-                                    indentUnit: 2,
-                                    tabSize: 2,
-                                    autoCloseBrackets: true,
-                                    mode: 'application/ld+json'
-                                }
-                        );
-                        var _block_supports_custom = wp.codeEditor.initialize(jQuery('#_block_supports_custom'), editorSettings);
-                        var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
-                    });
-                </script>
-            <?php
-        });
-        ?>
         </div>
         <?php
     }

@@ -1,9 +1,8 @@
 <?php
-
 /**
  *
  * @wordpress-plugin
- * Plugin Name:       Wizard Blocks Manager
+ * Plugin Name:       Wizard Blocks Manager for Gutenberg 
  * Plugin URI:        https://wiz.farm
  * Description:       Easy create, edit and manage Guternberg Blocks
  * Version:           1.0.1
@@ -40,14 +39,14 @@ define('WIZARD_BLOCKS_PATH', str_replace('/', DIRECTORY_SEPARATOR, plugin_dir_pa
 add_action('plugins_loaded', function () {
     // Load localization file
     load_plugin_textdomain('wizard-blocks');
-    
-    // Require the main plugin file
-    require_once( __DIR__ . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'plugin.php' );
-    $plugin = \WizardBlocks\Plugin::instance();
-    do_action('wizard-blocks/loaded');
-    
     require_once(__DIR__ . DIRECTORY_SEPARATOR . 'autoload.php');
 });
+
+// Require the main plugin file
+require_once( __DIR__ . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'plugin.php' );
+$plugin = \WizardBlocks\Plugin::instance();
+do_action('wizard-blocks/loaded');
+
 
 
 /*

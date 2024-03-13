@@ -79,7 +79,7 @@ class Plugin {
              *
              * @since 1.0.1
              */
-            do_action('wizard-blocks/instance', self::$instance);
+            do_action('wizard-blocks/loaded', self::$instance);
         }
 
         return self::$instance;
@@ -88,7 +88,8 @@ class Plugin {
     public function autoload($class) {
         $self = explode('\\', get_class($this));
         $other = explode('\\', $class);
-        if (reset($other) != reset($self)) {
+        if (reset($self) != reset($other)
+            && substr(reset($other), 0, strlen(reset($self))) != reset($self)) {
             return;
         }
         if (!class_exists($class)) {
@@ -115,11 +116,8 @@ class Plugin {
     }
 
     public function setup_hooks() {
-        // fire actions
-        
-        $this->modules_manager = new Modules();
-        
-        do_action('wizard-blocks/init');
+        $this->modules_manager = new Modules(WIZARD_BLOCKS_PATH);
+        do_action('wizard-blocks/init', $this);
     }
 
     public function get_name() {
@@ -132,9 +130,7 @@ class Plugin {
         if ($this->has_vendors($TextDomain)) {
             $file = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
             if (file_exists($file)) {
-                if (!defined('TIMBER_LOADED')) {
-                    require_once $file;
-                }
+                require_once $file;
             }
         }
     }

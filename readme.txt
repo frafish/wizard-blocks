@@ -1,37 +1,42 @@
-=== Wizard Blocks Manager ===
+=== Wizard Blocks Manager for Gutenberg ===
 Contributors: frapesce
 Tags: block, editor, gutenberg, generate, create, edit, dynamic, easy
 Requires at least: 5.0
 Tested up to: 6.4
 Stable tag: 1.0.1
-Requires PHP: 7.1
+Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Easy create, edit and manage Guternberg blocks
+Easy create, edit and manage Gutenberg blocks
 
 == Description ==
 
+A full CRUD for your personal Custom Blocks
+
 = Block manager =
 
-Create
-Edit
-Import
-Export
-Move
+Create new Block
+Edit Custom Blocks
+Import zip (plugin or backup)
+Export backup zip
 
 = Compatibility =
 
-Fully compatible with standard
-
+Fully compatible with WP Gutenberg Block standard
 
 = PRO = 
+Coming SOON:
+* Attributes Visual Editor
+* API Controls
+* Add Block Examples
+* Add Block Variations
+* Move/Install Block into current Theme
+* Import Core and 3rd part plugin blocks
+* Add Block Translations
+* Cloud sync
+* Block Versioning
 
-Attributes Editor
-Examples
-Translations
-Cloud sync
-Versioning
 Twig/Timber support
 Drupal?
 
@@ -56,27 +61,7 @@ Drupal?
 
 Yes, the Twig code will be rendered when used in any WYSIWYG editor.
 
-= Is compatible with Gutenberg? =
-
-Yes, you can use Twig in ALL native Blocks like "Headings" and "HTML".
-
-= Is compatible with WPBakery Page Builder? =
-
-Yes, you can use Twig in native Elements like "Text Block" and "Custom Heading".
-
-= Is compatible with Divi? =
-
-Yes, you can use Twig in native Modules like "Text" and "Code".
-
-= Is compatible with Elementor? =
-
-Yes, you can use Twig in native Widgets like "Text Editor".
-
-= I write some Twig code which break the page, how can I solve? =
-
-Simply turn off WizardBlocks plugin, resolve or delete the code issue in page and then reactivate plugin.
-
 == Changelog ==
 
-= 1.0.1 - 23-05-2022 =
+= 1.0.1 - 23-05-2024 =
 * First release

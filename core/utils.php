@@ -70,64 +70,6 @@ class Utils {
         return self::json_validate($json) ? json_decode($json, $associative) : $json;
     }
     
-    public static function maybe_media($value = null, $tag = null) {
-        if ($tag && is_object($tag)) {
-            if (!$tag->is_data) return $value;
-        }
-        if (is_string($value)) {
-            $value = trim($value);
-        }
-        // for MEDIA Control
-        $thumbnail_id = false;
-        if (is_numeric($value) || is_int($value)) {
-            $thumbnail_id = intval($value);
-        }
-        //var_dump($value);
-        if (filter_var($value, FILTER_VALIDATE_URL)) {
-            $thumbnail_id = self::url_to_postid($value);
-        }
-        //var_dump($thumbnail_id); die();
-        if ($thumbnail_id) {
-            $media = get_post($thumbnail_id);
-            if (!$media || $media->post_type != 'attachment') {
-                return $value;
-            }
-            $image_data = [
-                'id' => $thumbnail_id,
-                'url' => $media->guid,
-            ];
-            return $image_data;
-        }        
-        
-        // check if is an image
-        if ($value && is_string($value)) {
-            $check = wp_check_filetype( $value );
-            if ( !empty( $check['ext'] ) ) {        
-                if (in_array( $check['ext'], array( 'jpg', 'jpeg', 'jpe', 'gif', 'png', 'webp' ), true )) {
-                    $image_data = [
-                        'url' => $value,
-                        'id' => 0,
-                    ];
-                    return $image_data;
-                }
-            }
-        }
-        
-        // maybe something for GALLERY?
-
-        return $value;
-    }
-    
-    public static function empty($source, $key = false) {
-        if (is_array($source)) {
-            $source = array_filter($source);
-        }
-        if ($key) {
-            return \Elementor\Utils::is_empty($source, $key);
-        }
-        return empty($source);
-    }
-
     /**
      * Test if given object is a JSON string or not.
      *

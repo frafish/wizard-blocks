@@ -1,0 +1,27 @@
+.inside input[type="text"], .inside textarea, .inside select {
+    width: 100%;
+}
+.CodeMirror {
+    border: 1px solid #ddd;
+
+}
+.tab-head {
+    text-decoration: none;
+    padding: 10px 20px;
+    display: inline-block;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-bottom: none;
+}
+.tab-head.tab-active {
+    text-decoration: none;
+    background-color: #eee;
+}
+.tab-body {
+    background-color: #eee;
+    border: 1px solid #ddd;
+    padding: 15px;
+}
+#wpfooter {
+    position: static;
+}

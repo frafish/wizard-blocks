@@ -38,6 +38,7 @@ class Helper {
         $filename = str_replace('_', '', $filename) . '.php';
         $filename = $wp_plugin_dir . DIRECTORY_SEPARATOR . $filename;
         $filename = str_replace('//', '/', $filename);
+        $filename = str_replace('/', DIRECTORY_SEPARATOR, $filename);
         return $filename;
     }
 

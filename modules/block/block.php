@@ -15,6 +15,7 @@ class Block extends Module_Base {
     use Traits\Metabox;
     use Traits\Attributes;
     use Traits\Pages;
+    use Traits\Actions;
 
     /**
      * Twig constructor.
@@ -291,31 +292,6 @@ class Block extends Module_Base {
             /* "selectors": {
               "root": ".wp-block-my-plugin-notice"
               }, */
-            "supports" => $supports,
-                /* "styles": [
-                  { "name": "default", "label": "Default", "isDefault": true },
-                  { "name": "other", "label": "Other" }
-                  ], */
-                /* "example": {
-                  "attributes": {
-                  "message": "This is a notice!"
-                  }
-                  }, */
-                /* "variations": [
-                  {
-                  "name": "example",
-                  "title": "Example",
-                  "attributes": {
-                  "message": "This is an example!"
-                  }
-                  }
-                  ], */
-                //"editorScript" => "file:./index.js",
-                //"script" => "file:./script.js",
-                //"viewScript" => "file:./view.js",
-                //"editorStyle" => "file:./index.css",
-                //"style" => "file:./style.css",
-                //"render" => "file:./render.php"
         ];
 
         

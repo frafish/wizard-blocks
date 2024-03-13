@@ -15,12 +15,15 @@ final class Modules {
      */
     private $modules = [];
 
-    public function __construct() {
+    public function __construct($dir) {
 
-        $modules = $this->find_modules(WIZARD_BLOCKS_PATH);
-        $this->add_modules($modules);
-
+        $this->register($dir);
         do_action('wizard-blocks/modules');
+    }
+    
+    public function register($dir, $domain = '') {
+        $modules = $this->find_modules($dir);
+        $this->add_modules($modules, $domain);
     }
 
     public function find_modules($plugin_path = '') {
@@ -38,8 +41,14 @@ final class Modules {
         }
         return $modules;
     }
-
-    public function add_modules($modules = array(), $domain = 'WizardBlocks') {
+    
+    public function add_modules($modules = array(), $domain = '') {
+        
+        if (empty($domain)) {
+            $class = new \ReflectionClass($this);
+            $namespace = explode('\\', $class->getNamespaceName());
+            $domain = reset($namespace);
+        }
 
         foreach ($modules as $module_name) {
             //include_once(WP_PLUGIN_DIR.'/'.Utils::camel_to_slug($domain).'/modules/'.$module_name.'/'.$module_name.'.php');
