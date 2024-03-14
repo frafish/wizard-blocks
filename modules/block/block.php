@@ -271,6 +271,7 @@ class Block extends Module_Base {
                 $supports = array_merge($supports, $custom);
             }
         }
+        //var_dump($supports); die();
         
         // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
         $json = [
@@ -289,6 +290,7 @@ class Block extends Module_Base {
             "attributes" => $attributes,
             "providesContext" => $providesContext,
             "usesContext" => $usesContext,
+            "supports" => $supports,
             /* "selectors": {
               "root": ".wp-block-my-plugin-notice"
               }, */
@@ -329,19 +331,19 @@ class Block extends Module_Base {
                         file_put_contents($path, $code);
                     }
                 }
+                if ($code) {
+                    $min = '.min.';
+                    $path_min = $this->get_ensure_blocks_dir($post_slug) . $asset . $min . $type;
+                    $minifier = new \MatthiasMullie\Minify\JS($code);
+                    // save minified file to disk
+                    $minifier->minify($path_min);
 
-                $min = '.min.';
-                $path_min = $this->get_ensure_blocks_dir($post_slug) . $asset . $min . $type;
-                $minifier = new \MatthiasMullie\Minify\JS($code);
-                // save minified file to disk
-                $minifier->minify($path_min);
+                    $json[$asset] = "file:./" . $asset . (SCRIPT_DEBUG ? '.' : $min) . $type;
 
-                $json[$asset] = "file:./" . $asset . (SCRIPT_DEBUG ? '.' : $min) . $type;
-
-                $path = $this->get_ensure_blocks_dir($post_slug) . $asset .'.asset.php';
-                $code = "<?php return array('dependencies'=>[], 'version'=>'".date('U')."');";
-                file_put_contents($path, $code);
-
+                    $path = $this->get_ensure_blocks_dir($post_slug) . $asset . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
+                    $code = "<?php return array('dependencies'=>[], 'version'=>'".date('U')."');";
+                    file_put_contents($path, $code);
+                }
             }
         }
 
@@ -355,10 +357,6 @@ class Block extends Module_Base {
                 update_post_meta($post_id, '_transient_block_extra', $extra_json);
             } else {
                 delete_post_meta($post_id, '_transient_block_extra');
-            }
-            
-            if ($extra) {
-                $supports = array_merge($json, $extra);
             }
         }
 

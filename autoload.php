@@ -1,6 +1,6 @@
 <?php
 add_action('init', function () {
-    $blocks_dirs = apply_filters('wizard/blocks/dirs', ['self' => __DIR__]);
+    $blocks_dirs = apply_filters('wizard/blocks/dirs', []); //'self' => __DIR__
     $blocks = [];
     foreach ($blocks_dirs as $dir) {
         if (is_dir($dir)) {
@@ -9,7 +9,6 @@ add_action('init', function () {
     }
     $blocks = apply_filters('wizard/blocks', $blocks);
     if (!empty($blocks)) {
-        //var_dump($blocks); die();
         foreach ($blocks as $block) {
             $block_json = $block . DIRECTORY_SEPARATOR . 'block.json';
             if (file_exists($block_json)) {
