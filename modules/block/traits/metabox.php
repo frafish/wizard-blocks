@@ -26,7 +26,8 @@ trait Metabox {
         "render",
         "provides",
         "usesContext",
-        "supports"
+        "supports",
+        "providesContext"
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
     public static $apiVersions = [
@@ -335,13 +336,13 @@ trait Metabox {
 
             <h3><label for="_block_apiVersion"><?php _e('apiVersion', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_apiVersion" name="_block_apiVersion"><?php
-        if (empty($json['apiVersion']))
-            $json['apiVersion'] = 3;
-        foreach (self::$apiVersions as $apiVersion) {
-            $selected = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
-            echo '<option value="' . $apiVersion . '"' . $selected . '>' . $apiVersion . '</option>';
-        }
-        ?></select></p>	           
+                    if (empty($json['apiVersion']))
+                        $json['apiVersion'] = 3;
+                    foreach (self::$apiVersions as $apiVersion) {
+                        $selected = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
+                        echo '<option value="' . $apiVersion . '"' . $selected . '>' . $apiVersion . '</option>';
+                    }
+                    ?></select></p>	           
 
             <?php if (!empty($post->post_name)) { ?>
                 <h3><label for="_block_name"><?php _e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
@@ -350,66 +351,66 @@ trait Metabox {
 
             <h3><label for="_block_version"><?php _e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php
-            if (!empty($json['version'])) {
-                echo $json['version'];
-            }
-            ?>" /></p>	           
+                if (!empty($json['version'])) {
+                    echo $json['version'];
+                }
+                ?>" /></p>	           
 
             <h3><label for="_block_icon"><?php _e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_icon" name="_block_icon"><?php
-        if (empty($json['icon']))
-            $json['icon'] = 'smiley';
-        foreach ($icons as $icon) {
-            $selected = (!empty($json['icon']) && $json['icon'] == $icon) ? ' selected' : '';
-            echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
-        }
-            ?></select></p>	
-                    <?php
+                    if (empty($json['icon']))
+                        $json['icon'] = 'smiley';
+                    foreach ($icons as $icon) {
+                        $selected = (!empty($json['icon']) && $json['icon'] == $icon) ? ' selected' : '';
+                        echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
+                    }
+                    ?></select></p>	
+            <?php
             $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
             $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));
             ?>
             <h3><label for="_block_category"><?php _e('Category', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_category" name="_block_category"><?php
-        foreach (self::$categories as $cat) {
-            $selected = (!empty($json['category']) && $json['category'] == $cat) ? ' selected' : '';
-            echo '<option value="' . $cat . '"' . $selected . '>' . $cat . '</option>';
-        }
-            ?></select></p>	
+                    foreach (self::$categories as $cat) {
+                        $selected = (!empty($json['category']) && $json['category'] == $cat) ? ' selected' : '';
+                        echo '<option value="' . $cat . '"' . $selected . '>' . $cat . '</option>';
+                    }
+                    ?></select></p>	
 
             <h3><label for="_block_keywords"><?php _e('Keywords', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#keywords"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_keywords" name="_block_keywords" placeholder="alert, message" value="<?php
-            if (!empty($json['keywords'])) {
-                echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
-            }
-            ?>" /></p>	           
+                if (!empty($json['keywords'])) {
+                    echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
+                }
+                ?>" /></p>	           
 
             <h3><label for="_block_parent"><?php _e('Parent', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#parent"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_parent" name="_block_parent" placeholder="core/group"  value="<?php
-        if (!empty($json['parent'])) {
-            echo is_array($json['parent']) ? implode(', ', $json['parent']) : $json['parent'];
-        }
-            ?>" /></p>	           
+                if (!empty($json['parent'])) {
+                    echo is_array($json['parent']) ? implode(', ', $json['parent']) : $json['parent'];
+                }
+                ?>" /></p>	           
 
             <h3><label for="_block_ancestor"><?php _e('Ancestor', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#ancestor"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_ancestor" name="_block_ancestor" placeholder="my-block/product"  value="<?php
-        if (!empty($json['ancestor'])) {
-            echo is_array($json['ancestor']) ? implode(', ', $json['ancestor']) : $json['ancestor'];
-        }
-            ?>" /></p>	           
+                if (!empty($json['ancestor'])) {
+                    echo is_array($json['ancestor']) ? implode(', ', $json['ancestor']) : $json['ancestor'];
+                }
+                ?>" /></p>	           
 
             <h3><label for="_block_providesContext"><?php _e('providesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#provides-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><textarea id="_block_providesContext" name="_block_providesContext" placeholder='"my-plugin/recordId": "recordId"'><?php
-        if (!empty($json['providesContext'])) {
-            echo $providesContext = wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
-        }
-            ?></textarea></p>	
+                    if (!empty($json['providesContext'])) {
+                        echo $providesContext = wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
+                    }
+                    ?></textarea></p>	
 
             <h3><label for="_block_usesContext"><?php _e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#uses-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php
-            if (!empty($json['usesContext'])) {
-                echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
-            }
-            ?>" /></p>	           
+                if (!empty($json['usesContext'])) {
+                    echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
+                }
+                ?>" /></p>	           
 
             <h3><label for="_block_supports"><?php _e('Supports', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <div style="height: 180px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
@@ -420,10 +421,10 @@ trait Metabox {
                     <p>
                         <label for="_block_supports_<?php echo $sup; ?>"><b><?php echo $sup; ?></b></label><br>
                         <!-- <input type="checkbox" id="_block_supports_<?php echo $sup; ?>" name="_block_supports[<?php echo $sup; ?>]"<?php
-            if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
-                echo ' checked';
-            }
-                    ?>> <b><?php echo $sup; ?></b></label> -->
+                        if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
+                            echo ' checked';
+                        }
+                        ?>> <b><?php echo $sup; ?></b></label> -->
                         <?php
                         $value = $default;
                         if (!empty($json['supports'])) {
@@ -448,14 +449,14 @@ trait Metabox {
                         }
                         ?>
                         <input type="radio" id="_block_supports_<?php echo $sup; ?>_true" name="_block_supports[<?php echo $sup; ?>]" value="true"<?php
-            if ($value) {
-                echo ' checked';
-            }
+                        if ($value) {
+                            echo ' checked';
+                        }
                         ?>> <label for="_block_supports_<?php echo $sup; ?>_true"><?php echo 'True'; ?></label>
                         <input type="radio" id="_block_supports_<?php echo $sup; ?>_false" name="_block_supports[<?php echo $sup; ?>]" value="false"<?php
-                   if (!$value == 'false') {
-                       echo ' checked';
-                   }
+                        if (!$value == 'false') {
+                            echo ' checked';
+                        }
                         ?>> <label for="_block_supports_<?php echo $sup; ?>_false"><?php echo 'False'; ?></label>
                     </p>
                 <?php } ?>	

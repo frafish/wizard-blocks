@@ -3,7 +3,9 @@
 }
 .CodeMirror {
     border: 1px solid #ddd;
-
+}
+.CodeMirror-placeholder {
+    opacity: 0.4;
 }
 .tab-head {
     text-decoration: none;

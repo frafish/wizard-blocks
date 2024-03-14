@@ -128,12 +128,13 @@ trait Pages {
                         $block['slug'] = $block_slug;
                         $block['textdomain'] = $this->get_block_textdomain($block);
                         ?>
-                        <tr id="post-<?php echo $block_post ? $block_post->ID : 'xxx'; ?>" class="iedit author-self type-block status-publish hentry block-<?php echo $textdomain; ?><?php echo in_array($textdomain, ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
+                        <tr id="post-<?php echo $block_post ? $block_post->ID : 'xxx'; ?>" class="iedit author-self type-block status-publish hentry block-<?php echo $block['textdomain']; ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
                             <td class="icon column-icon" data-colname="Icon">
                                 <?php
-                                if (!empty($block['icon'])) {
-                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . $block['icon'] . '"></span> ';
+                                if (empty($block['icon'])) {
+                                    $block['icon'] = 'block-default';
                                 }
+                                echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . $block['icon'] . '"></span> ';
                                 ?>
                             </td>
                             <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php _e('Title', 'wizard-blocks'); ?>">
@@ -199,6 +200,7 @@ trait Pages {
 
     function get_icons_core() {
         $icons_core = [];
+        $icons_block = [];
         $block_library_js = file_get_contents(get_home_path() . DIRECTORY_SEPARATOR . 'wp-includes' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'block-library.js');
         //var_dump($block_library_js);
         $tmp = explode('external_wp_primitives_namespaceObject.SVG,', $block_library_js);
@@ -213,6 +215,18 @@ trait Pages {
                     list ($name, $more) = $tmp5;
                     list($name2, $more2) = explode(');', $more, 2);
                     //echo $name.'-'.$name2.'<br>';
+                    
+                    $tmp8 = explode('/**', end($tmp2), 2);
+                    //var_dump(reset($tmp8)); //die();
+                    $tmp6 = explode('/edit.js', reset($tmp8));
+                    if (count($tmp6) == 2) {
+                        $tmp7 = explode('/build-module/', reset($tmp6), 2);
+                        if (count($tmp7) == 2) {
+                            list($more3, $block_name) = $tmp7;                       
+                            $icons_block['core/'.$block_name] = $name;
+                        }
+                    }
+                    
                 }
                 list($jsons, $tmp4) = explode('));', reset($tmp2), 2);
                 $jsons = str_replace('width:', '"width":', $jsons);
@@ -257,7 +271,8 @@ trait Pages {
                 }
             }
         }
-        //var_dump($icons_core);
+        //var_dump($icons_block);
+        $icons_core['blocks'] = $icons_block;
         //die();
         // ICONS: \wp-includes\js\dist\block-library.js
         //<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 5V18.5911L12 13.8473L18 18.5911V5H6Z"></path></svg>
@@ -279,6 +294,12 @@ trait Pages {
          */
 
         $icons_block = [
+            //'core/block' => 'library_symbol',
+            'core/pattern' => 'library_symbol',
+
+            'core/navigation-submenu' => 'remove_submenu',
+            'core/page-list-item' => 'library_page',
+            'core/page-list' => 'library_pages',
             'core/archives' => 'library_archive',
             'core/avatar' => 'comment_author_avatar',
             'core/categories' => 'post_categories',
@@ -297,10 +318,37 @@ trait Pages {
             'core/comments-pagination-next' => 'query_pagination_next',
             'core/comments-pagination-numbers' => 'query_pagination_numbers',
             'core/comments-pagination-previous' => 'query_pagination_previous',
-                //'core/comment-edit-link' => 'comment_edit_link',
+            //'core/comment-edit-link' => 'comment_edit_link',
+            
+            'core/footnotes' => 'format_list_numbered',
+            
+            //'core/footnotes' => 'format_list_bullets',
+            'core/home-link' => 'library_home',
+            'core/latest-comments' => 'library_comment',
+            'core/latest-posts' => 'post_list',
+            'core/loginout' => 'library_login',
+            'core/navigation-link' => 'custom_link',
+            
+            'core/spacer' => 'resize_corner_n_e',
+            'core/media-text' => 'media_and_text',
+            
+            'core/freeform' => 'library_classic',
+            'core/template-part' => 'library_layout',
+            //'core/embed' => 'embedContentIcon',
+            'core/tag-cloud' => 'library_tag',
+            'core/social-link' => 'library_share',
+            'core/site-title' => 'map_marker',
+            'core/site-tagline' => 'site_tagline_icon',
+            'core/read-more' => 'library_link',
+            'core/query-title' => 'library_title',
+            'core/query' => 'library_loop',
+            'core/query-no-results' => 'library_loop',
+            'core/post-title' => 'library_title',
+            'core/post-template' => 'library_layout',
         ];
         $icons_core = $this->get_icons_core();
         //var_dump($icons_core);
+        $icons_block = $icons_block + $icons_core['blocks'];
 
 
 
@@ -326,7 +374,7 @@ trait Pages {
                 }
             }
         }
-
+        
         $wizard_blocks = $this->get_blocks();
         foreach ($wizard_blocks as $ablock) {
             $block_slug = basename($ablock);

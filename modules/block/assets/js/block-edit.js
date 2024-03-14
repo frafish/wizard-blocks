@@ -62,7 +62,9 @@ jQuery(document).ready(function ($) {
             }
     );
     var _block_supports_custom = wp.codeEditor.initialize(jQuery('#_block_supports_custom'), editorSettings);
+    var _block_providesContext = wp.codeEditor.initialize(jQuery('#_block_providesContext'), editorSettings);
     var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
+    
 
     jQuery('#_block_icon').select2({
         templateResult: function (state) {
