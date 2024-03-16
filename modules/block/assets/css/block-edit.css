@@ -27,3 +27,8 @@
 #wpfooter {
     position: static;
 }
+
+#icon_svg svg {
+    max-width: 100%;
+    height: auto;
+}

@@ -96,6 +96,8 @@ trait Pages {
             </ul>
             <script>
                 jQuery('.blocks-filter a').on('click', function () {
+                    jQuery('.blocks-filter a.current').removeClass('current');
+                    jQuery(this).addClass('current');
                     jQuery('.blocks .hentry').show();
                     let filter = jQuery(this).attr('href').replace('#', '');
                     if (filter) {
@@ -128,7 +130,6 @@ trait Pages {
                             $block['post'] = $block_post = $this->get_block_post($block_slug);
                         }
                         $block['slug'] = $block_slug;
-                        $block['textdomain'] = $this->get_block_textdomain($block);
                         ?>
                         <tr id="post-<?php echo $block_post ? $block_post->ID : 'xxx'; ?>" class="iedit author-self type-block status-publish hentry block-<?php echo $block['textdomain']; ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
                             <td class="icon column-icon" data-colname="Icon">
@@ -165,6 +166,7 @@ trait Pages {
                             <td class="actions column-actions" data-colname="<?php _e('Actions', 'wizard-blocks'); ?>">
                                 <?php if ($block['textdomain'] == 'core') { ?>
                                     <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank"><?php _e('Docs', 'wizard-blocks'); ?></a>
+                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=clone&block=<?php echo $block_slug; ?>"><?php _e('Clone', 'wizard-blocks'); ?></a>
                                 <?php } ?>
 
                                 <?php if (!empty($block['folder'])) { ?>
@@ -202,84 +204,14 @@ trait Pages {
         <?php
     }
 
-    function get_icons_core() {
-        $icons_core = [];
-        $icons_block = [];
-        $block_library_js = file_get_contents(get_home_path() . DIRECTORY_SEPARATOR . 'wp-includes' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'block-library.js');
-        //var_dump($block_library_js);
-        $tmp = explode('external_wp_primitives_namespaceObject.SVG,', $block_library_js);
-        foreach ($tmp as $key => $value) {
-            if ($key) {
-                $tmp2 = explode('// ', $value, 2);
-
-                $tmp3 = explode('/* harmony default export */ var ', reset($tmp2), 2);
-
-                $tmp5 = explode(' = (', end($tmp3), 2);
-                if (count($tmp5) == 2) {
-                    list ($name, $more) = $tmp5;
-                    list($name2, $more2) = explode(');', $more, 2);
-                    //echo $name.'-'.$name2.'<br>';
-
-                    $tmp8 = explode('/**', end($tmp2), 2);
-                    //var_dump(reset($tmp8)); //die();
-                    $tmp6 = explode('/edit.js', reset($tmp8));
-                    if (count($tmp6) == 2) {
-                        $tmp7 = explode('/build-module/', reset($tmp6), 2);
-                        if (count($tmp7) == 2) {
-                            list($more3, $block_name) = $tmp7;
-                            $icons_block['core/' . $block_name] = $name;
-                        }
-                    }
-                }
-                list($jsons, $tmp4) = explode('));', reset($tmp2), 2);
-                $jsons = str_replace('width:', '"width":', $jsons);
-                $jsons = str_replace('height:', '"height":', $jsons);
-                $jsons = str_replace('xmlns:', '"xmlns":', $jsons);
-                $jsons = str_replace('viewBox:', '"viewBox":', $jsons);
-                $jsons = str_replace('fillRule:', '"fill-rule":', $jsons);
-                $jsons = str_replace('clipRule:', '"clip-rule":', $jsons);
-                $jsons = str_replace('d:', '"d":', $jsons);
-                $jsons = str_replace('cx:', '"cx":', $jsons);
-                $jsons = str_replace('cy:', '"cy":', $jsons);
-                $jsons = str_replace('r:', '"r":', $jsons);
-                $svg_objs = explode(', (0,external_wp_element_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
-                if (count($svg_objs) > 1) {
-                    $svg_wrap_json = array_shift($svg_objs);
-                    $svg_wrap = json_decode($svg_wrap_json, true);
-                    if ($svg_wrap) {
-                        $svg = '<svg';
-                        if (empty($svg_wrap['width']))
-                            $svg_wrap['width'] = 24;
-                        if (empty($svg_wrap['height']))
-                            $svg_wrap['height'] = 24;
-                        foreach ($svg_wrap as $key => $value) {
-                            $svg .= ' ' . $key . '="' . $value . '"';
-                        }
-                        $svg .= ' aria-hidden="true" focusable="false">';
-                        foreach ($svg_objs as $svg_obj) {
-                            list($type, $svg_inner_json) = explode(',', $svg_obj, 2);
-                            $svg_inner_json = str_replace(')', '', $svg_inner_json);
-                            $svg_inner = json_decode($svg_inner_json, true);
-                            if ($svg_inner) {
-                                $svg .= '<' . strtolower($type);
-                                foreach ($svg_inner as $key => $value) {
-                                    $svg .= ' ' . $key . '="' . $value . '"';
-                                }
-                                $svg .= '></' . strtolower($type) . '>';
-                            }
-                        }
-                        $svg .= '</svg>';
-                        $icons_core[$name] = $svg;
-                    }
-                }
+    function get_registered_block($slug = '') {
+        if ($slug) {
+            $blocks = $this->get_registered_blocks();
+            if (isset($blocks[$slug])) {
+                return $blocks[$slug];
             }
         }
-        //var_dump($icons_block);
-        $icons_core['blocks'] = $icons_block;
-        //die();
-        // ICONS: \wp-includes\js\dist\block-library.js
-        //<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 5V18.5911L12 13.8473L18 18.5911V5H6Z"></path></svg>
-        return $icons_core;
+        return false;
     }
 
     function get_registered_blocks() {
@@ -296,54 +228,7 @@ trait Pages {
           }
          */
 
-        $icons_block = [
-            //'core/block' => 'library_symbol',
-            'core/pattern' => 'library_symbol',
-            'core/navigation-submenu' => 'remove_submenu',
-            'core/page-list-item' => 'library_page',
-            'core/page-list' => 'library_pages',
-            'core/archives' => 'library_archive',
-            'core/avatar' => 'comment_author_avatar',
-            'core/categories' => 'post_categories',
-            'core/post-author' => 'post_author',
-            'core/post-author-biography' => 'post_author',
-            'core/post-author-name' => 'post_author',
-            'core/comments' => 'post_comments',
-            'core/comments-title' => 'library_title',
-            'core/comment-author-name' => 'comment_author_name',
-            'core/comment-content' => 'comment_content',
-            'core/comment-date' => 'post_date',
-            //'core/comment-count' => 'post_comments_count',
-            'core/comment-template' => 'library_layout',
-            'core/comment-date' => 'post_date',
-            'core/comments-pagination' => 'query_pagination',
-            'core/comments-pagination-next' => 'query_pagination_next',
-            'core/comments-pagination-numbers' => 'query_pagination_numbers',
-            'core/comments-pagination-previous' => 'query_pagination_previous',
-            //'core/comment-edit-link' => 'comment_edit_link',
-            'core/footnotes' => 'format_list_numbered',
-            //'core/footnotes' => 'format_list_bullets',
-            'core/home-link' => 'library_home',
-            'core/latest-comments' => 'library_comment',
-            'core/latest-posts' => 'post_list',
-            'core/loginout' => 'library_login',
-            'core/navigation-link' => 'custom_link',
-            'core/spacer' => 'resize_corner_n_e',
-            'core/media-text' => 'media_and_text',
-            'core/freeform' => 'library_classic',
-            'core/template-part' => 'library_layout',
-            //'core/embed' => 'embedContentIcon',
-            'core/tag-cloud' => 'library_tag',
-            'core/social-link' => 'library_share',
-            'core/site-title' => 'map_marker',
-            'core/site-tagline' => 'site_tagline_icon',
-            'core/read-more' => 'library_link',
-            'core/query-title' => 'library_title',
-            'core/query' => 'library_loop',
-            'core/query-no-results' => 'library_loop',
-            'core/post-title' => 'library_title',
-            'core/post-template' => 'library_layout',
-        ];
+        $icons_block = $this->get_icons_block();
         $icons_core = $this->get_icons_core();
         //var_dump($icons_core);
         $icons_block = $icons_block + $icons_core['blocks'];
@@ -353,6 +238,7 @@ trait Pages {
         foreach ($registered_blocks as $name => $block_obj) {
             $block_json = wp_json_encode($block_obj);
             $block = json_decode($block_json, true);
+            $block['textdomain'] = $this->get_block_textdomain($block);
             $blocks[$name] = $block;
             list($textdomain, $slug) = explode('/', $name, 2);
             if (empty($block['icon'])) {
@@ -360,14 +246,16 @@ trait Pages {
                     $blocks[$name]['icon'] = $icons_core['library_' . $slug];
                 }
                 $slug_underscore = str_replace('-', '_', $slug);
-                //var_dump($slug_underscore);
                 if (isset($icons_core[$slug_underscore])) {
                     $blocks[$name]['icon'] = $icons_core[$slug_underscore];
                 }
-                //var_dump($name);
+                if ($block['textdomain'] == 'woocommerce') {
+                    $blocks[$name]['icon'] = $this->get_icons_woo($block);
+                }
                 if (!empty($icons_block[$name]) && !empty($icons_core[$icons_block[$name]])) {
                     $blocks[$name]['icon'] = $icons_core[$icons_block[$name]];
                 }
+                
             }
         }
 

@@ -139,6 +139,10 @@ abstract class Module_Base {
         return $wp_plugin_dir . DIRECTORY_SEPARATOR . $this->get_plugin_textdomain() . DIRECTORY_SEPARATOR;
     }
     
+    public function get_plugin_slug() {
+        return basename(plugin_dir_path(dirname(__FILE__, 1)));
+    }
+    
     public function register_style($handle, $path, $deps = [], $version = '', $media = 'all') {
         $assets_name = $this->get_reflection()->getNamespaceName();
         $tmp = explode('\\', $assets_name);

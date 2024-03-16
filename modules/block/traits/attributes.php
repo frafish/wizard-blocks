@@ -68,6 +68,13 @@ wp.apiFetch( { path: '<?php echo $api['path']; ?>' } ).then( ( data ) => {
 }
 ?>
 wp.blocks.registerBlockType("<?php echo $key; ?>", {
+    <?php
+    if (!empty($args['icon']) && substr($args['icon'], 0, 4) == '<svg') {
+    ?>
+    icon: { 
+        src: <?php echo $this->parse_svg($args['icon']); ?>
+    },
+    <?php } ?>
     edit(props) {
         return wp.element.createElement(
                 'div',
@@ -157,6 +164,11 @@ if ($wrapper) { ?></script><?php }
        
        $label = empty($attr['label']) ? ucfirst($id) : $attr['label'];
        
+       if (!empty($attr['type']) && $attr['type'] == "object") {
+           return;
+           // TODO: find a way to structure value on the onchange event
+       }
+       
        if (empty($attr['type'])) {
            $attr['type'] = 'string';
            if (!empty($attr['control'])) {
@@ -179,6 +191,9 @@ if ($wrapper) { ?></script><?php }
                 default:
                     $control = 'TextControl';
             }
+           }
+           if (!empty($attr['enum'])) {
+               $attr['options'] = $attr['enum'];
            }
            if (!empty($attr['options'])) { 
                $control = 'SelectControl'; 
@@ -351,29 +366,29 @@ if ($wrapper) { ?></script><?php }
                                 echo $attr['options'];
                             }
                             ?>,
-                    <?php } ?>
-                    <?php if (!empty($attr['placeholder'])) { ?>
+                    <?php }
+                    if (!empty($attr['placeholder'])) { ?>
                         placeholder: "<?php echo $attr['placeholder']; ?>",
-                    <?php } ?>
-                    <?php if (isset($attr['multiple'])) { ?>
+                    <?php }
+                    if (isset($attr['multiple'])) { ?>
                         multiple: <?php echo $attr['multiple'] ? 'true' : 'false'; ?>,
-                    <?php } ?>
-                    <?php if (!empty($attr['help'])) { ?>
+                    <?php }
+                    if (!empty($attr['help'])) { ?>
                         help: wp.i18n.__("<?php echo $attr['help']; ?>","<?php echo $args['textdomain']; ?>"),
-                    <?php } ?>
-                    <?php if (!empty($attr['tag'])) { ?>
+                    <?php }
+                    if (!empty($attr['tag'])) { ?>
                         tag: "<?php echo $attr['tag']; ?>",
-                    <?php } ?>
-                    <?php if (!empty($attr['className'])) { ?>
+                    <?php }
+                    if (!empty($attr['className'])) { ?>
                         className: "<?php echo $attr['className']; ?>",
-                    <?php } ?>
-                    <?php if (!empty($attr['enableAlpha'])) { ?>
+                    <?php }
+                    if (!empty($attr['enableAlpha'])) { ?>
                         enableAlpha: true,
-                    <?php } ?>
-                    <?php if (!empty($attr['rows'])) { ?>
+                    <?php }
+                    if (!empty($attr['rows'])) { ?>
                         rows: <?php echo intval($attr['rows']); ?>,
-                    <?php } ?>
-                    <?php if (!empty($attr['indeterminate'])) { ?>
+                    <?php }
+                    if (!empty($attr['indeterminate'])) { ?>
                         indeterminate: true,
                     <?php } ?>
                 }
@@ -381,4 +396,55 @@ if ($wrapper) { ?></script><?php }
        <?php
         }
    }
+   
+    public function parse_svg($svg) {
+        $parsed = "";
+        $tags = explode('<', $svg);
+        $close = 0;
+        foreach ($tags as $key => $tagg) {
+            if ($key) {
+                list($tag, $more) = explode('>', $tagg, 2);
+                $tag_attr = explode(' ', $tag, 2);
+                $tag_name = array_shift($tag_attr);
+                $tag_attr = reset($tag_attr);
+                $tag_attr = str_replace("'", '"', $tag_attr);
+                $tag_attr = explode('" ', $tag_attr);
+                if (substr($tag_name, 0 , 1) == '/') {
+                    // close
+                    $close--;
+                    $parsed .= '),';
+                } else {
+                    // open
+                    $primitive = ($tag_name == 'svg') ? 'SVG' : ucfirst($tag_name);
+                    if (!empty($parsed)) $parsed .= ',';    
+                    $parsed .= 'wp.element.createElement(wp.primitives.'.$primitive.','; //{';
+                    $close ++;
+                    $tag_attrs = [];
+                    foreach ($tag_attr as $attr) {
+                        list($attr_name, $attr_value) = explode('=', $attr, 2);
+                        $attr_value = str_replace('"', '', $attr_value);
+                        $attr_value = str_replace("'", '', $attr_value);
+                        $attr_value = str_replace("\\", '', $attr_value);
+                        $attr_value = str_replace("/", '', $attr_value);
+                        $tag_attrs[$attr_name ] = $attr_value;
+                    }
+
+                    $parsed .= wp_json_encode($tag_attrs);
+                    if (substr(end($tag_attr), -1, 1) == '/') {
+                        $close--;
+                        $parsed .= '),';
+                    }
+                }
+            }
+        }
+        /*for ($i=0; $i<=$close;$i++) {
+            $parsed .= '),';
+        }*/
+        $parsed = str_replace('),)', '))', $parsed);
+        $parsed = str_replace(',,', ',', $parsed);
+        $parsed = $this->fix_jsson_js($parsed);
+        //var_dump($parsed); die();
+
+        return $parsed;
+    }
 }

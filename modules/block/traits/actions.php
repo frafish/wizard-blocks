@@ -10,6 +10,48 @@ Trait Actions {
             $basedir = str_replace('/', DIRECTORY_SEPARATOR, $dirs['basedir']) . DIRECTORY_SEPARATOR;
 
             switch ($_GET['action']) {
+                
+                case 'clone':
+                    if (!empty($_GET['block'])) {
+                        $block_name = $_GET['block'];
+                        
+                        $block = $this->get_registered_block($block_name);
+                        $block_slug = $this->get_block_slug($block);
+                        
+                        if (!empty($block)) {
+                            $dest = $this->get_ensure_blocks_dir($block_slug);
+
+                            if (!empty($block['render_callback'])) {
+                                $tmp = explode(' ', $block['render_callback']);
+                                if (count($tmp) == 1) {
+                                    if (is_callable($block['render_callback'])) {
+                                        $block['render'] = 'file: ./render.php';
+                                        file_put_contents($dest.'render.php', '<?php echo '.$block['render_callback'].'($attributes, $content, $block);');
+                                        unset($block['render_callback']);
+                                    }
+                                }
+                            }
+                            
+                            $block = $this->normalize_block($block);
+                            $block['textdomain'] = $this->get_plugin_slug();
+                            
+                            $block['name'] = $block['textdomain'].'/'.$block_slug;
+                            
+                            $block_json = wp_json_encode($block);
+                            //var_dump($block_json); die();
+                            file_put_contents($dest.'block.json', $block_json);
+
+                            $block_post = $this->get_block_post($block_slug);
+                            if (!$block_post) {
+                                $args = $this->get_json_data($block_slug);
+                                $block_post_id = $this->insert_block_post($block_slug, $args);
+                            }
+
+                            $this->_notice(__('Block cloned!', 'wizard-blocks'));
+                        }
+                    }
+                    break;
+                
                 case 'import':
                     if (!empty($_FILES["zip"]["tmp_name"])) {
                         //var_dump($_FILES); die();
@@ -37,13 +79,13 @@ Trait Actions {
                                     if (!empty($args['name'])) {
                                         //var_dump($args); die();
                                         // is a valid block
-                                        list($domain, $block) = explode('/', $args['name'], 2);
-                                        $dest = $this->get_ensure_blocks_dir($block);
+                                        list($domain, $slug) = explode('/', $args['name'], 2);
+                                        $dest = $this->get_ensure_blocks_dir($slug);
                                         //var_dump($jfolder); var_dump($dest); die();
                                         $this->dir_copy($jfolder, $dest);
-                                        $block_post = $this->get_block_post($block);
+                                        $block_post = $this->get_block_post($slug);
                                         if (!$block_post) {
-                                            $block_post_id = $this->insert_block_post($block, $args);
+                                            $block_post_id = $this->insert_block_post($slug, $args);
                                         }
                                     }
                                     //}
@@ -57,10 +99,11 @@ Trait Actions {
                     }
                     if (!empty($_GET['block'])) {
                         $block = $_GET['block'];
-                        $block_post = $this->get_block_post($block);
+                        list($domain, $slug) = explode('/', $args['name'], 2);
+                        $block_post = $this->get_block_post($slug);
                         if (!$block_post) {
-                            $args = $this->get_json_data($block);
-                            $block_post_id = $this->insert_block_post($block, $args);
+                            $args = $this->get_json_data($slug);
+                            $block_post_id = $this->insert_block_post($slug, $args);
                         }
                         $this->_notice(__('Block imported!', 'wizard-blocks'));
                     }

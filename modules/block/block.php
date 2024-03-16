@@ -16,6 +16,7 @@ class Block extends Module_Base {
     use Traits\Attributes;
     use Traits\Pages;
     use Traits\Actions;
+    use Traits\Icons;
 
     /**
      * Twig constructor.
@@ -112,6 +113,14 @@ class Block extends Module_Base {
         return __('Unknown');
     }
     
+    public function get_block_slug($block) {
+        if (!empty($block['name'])) {
+            list($textdomain, $title) = explode('/', $block['name'], 2);
+            return $title;
+        }
+        return 'block';
+    }
+    
     public function get_block_textdomain($block) {
         if (!empty($block['textdomain'])) return $block['textdomain'];
         if (!empty($block['name'])) {
@@ -132,6 +141,18 @@ class Block extends Module_Base {
         //var_dump($block_post); die();
         $block_post_id = wp_insert_post($block_post);
         return $block_post_id;
+    }
+    
+    public function normalize_block($block = []) {
+        $normalized = [];
+        foreach ($block as $key => $val) {
+            if (!empty($val)) {
+                $tmp = explode('_', $key);
+                $key = array_shift(($tmp)).implode('', array_map('ucfirst',$tmp));
+                $normalized[$key] = $val;
+            }
+        }
+        return $normalized;
     }
 
     function get_blocks_dirs($blocks_dirs) {
@@ -177,7 +198,7 @@ class Block extends Module_Base {
         }
         
         $post_excerpt = get_post_field('post_excerpt', $post_id);
-        $plugin_name = basename(plugin_dir_path(dirname(__FILE__, 2)));
+        $plugin_name = $this->get_plugin_slug();
 
         
         $json_old = $this->get_json_data($post_slug);
@@ -273,16 +294,31 @@ class Block extends Module_Base {
         }
         //var_dump($supports); die();
         
+        $icon = '';
+        if (!empty($_POST['_block_icon'])) {
+            $icon = $_POST['_block_icon'];
+        } else {
+            if (!empty($_POST['_block_icon_svg'])) {
+                $icon = trim($_POST['_block_icon_svg']);
+                $icon = str_replace(PHP_EOL, "", $icon);
+                $icon = str_replace('"', "'", $icon);
+                $icon = str_replace("\'", "'", $icon);
+                
+            }
+        }
+        
+        $category = $_POST['_block_category'];
+        
         // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
         $json = [
             "\$schema" => "https://schemas.wp.org/trunk/block.json",
             "apiVersion" => 3,
             "name" => $textdomain . "/" . $post_slug,
             "title" => get_the_title($post_id),
-            "category" => $_POST['_block_category'],
+            "category" => $category,
             "parent" => $parents,
             "ancestor" => $ancestors,
-            "icon" => $_POST['_block_icon'],
+            "icon" => $icon,
             "description" => $post_excerpt,
             "keywords" => $keywords,
             "version" => $version,
@@ -363,6 +399,7 @@ class Block extends Module_Base {
         $path = $this->get_ensure_blocks_dir($post_slug) . 'block.json';
         $code = wp_json_encode($json, JSON_PRETTY_PRINT);
         $code = str_replace('\/', '/', $code);
+        $code = str_replace("\'", "'", $code);
         file_put_contents($path, $code);
     }
 

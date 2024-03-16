@@ -138,8 +138,12 @@ trait Metabox {
             $file = 'render.php';
             if (!empty($json['render'])) {
                 $file = str_replace('file:', '', $json['render']);
+                $file = str_replace('/\\', DIRECTORY_SEPARATOR, $file);
                 $file = str_replace('/', DIRECTORY_SEPARATOR, $file);
+                $file = str_replace(' ', '', $file);
+                $file = str_replace(DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR, '', $file); // \.\
             }
+            
             $render_file = $this->get_ensure_blocks_dir($post->post_name) . $file;
             if (file_exists($render_file)) {
                 $render = file_get_contents($render_file);
@@ -165,7 +169,7 @@ trait Metabox {
     public function meta_fields_build_meta_box_callback($post, $metabox) {
         //wp_nonce_field('meta_fields_save_meta_box_data', 'meta_fields_meta_box_nonce');
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
-        $plugin_name = basename(plugin_dir_path(dirname(__FILE__, 3)));
+        $plugin_name = $this->get_plugin_slug();
         $style = $editorStyle = $script = $editorScript = $viewScript = '';
         if ($post) {
 
@@ -357,14 +361,27 @@ trait Metabox {
                 ?>" /></p>	           
 
             <h3><label for="_block_icon"><?php _e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><select type="text" id="_block_icon" name="_block_icon"><?php
+            <p><select id="_block_icon" name="_block_icon"><option value=""><?php _e('Custom', 'wizard-blocks'); ?></option><?php
                     if (empty($json['icon']))
                         $json['icon'] = 'smiley';
+                    $is_dash = false;
                     foreach ($icons as $icon) {
-                        $selected = (!empty($json['icon']) && $json['icon'] == $icon) ? ' selected' : '';
+                        $selected = '';
+                        if (!empty($json['icon']) && $json['icon'] == $icon) { 
+                            $selected = ' selected'; 
+                            $is_dash = true; 
+                        }
                         echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
                     }
-                    ?></select></p>	
+                    ?></select>
+                    <span id="icon_svg">
+                        <textarea id="_block_icon_svg" name="_block_icon_svg" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo $json['icon']; ?></textarea>
+                        <?php if (!empty($json['icon'])) { ?> 
+                            <b><?php _e('Current', 'wizard-blocks'); ?>:</b><br>
+                            <?php echo $is_dash ? '<span class="dashicons dashicons-'.$json['icon'].'"></span>' : $json['icon']; ?>
+                        <?php } ?> 
+                    </span>
+            </p>	
             <?php
             $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
             $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));
