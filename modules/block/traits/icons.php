@@ -143,56 +143,66 @@ Trait Icons {
         $svg = '';
         if (defined('WC_PLUGIN_FILE')) {
             $slug = $this->get_block_slug($block);
-            $woo_js = dirname(WC_PLUGIN_FILE) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $name . '.js';
+            $woo_js = dirname(WC_PLUGIN_FILE) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $slug . '.js';
             //var_dump($woo_js);
-            $block_js = file_get_contents($woo_js);
-            $tmp = explode('.SVG,', $block_js, 2);
-            if (count($tmp) == 2) {
-                list($jsons, $tmp) = explode('));var', end($tmp), 2);
-                $jsons = $this->fix_js_json($jsons);
-                $tmp = explode(',(', $jsons);
-                $svg_objs = [];
-                $types = [];
-                foreach ($tmp as $key => $piece) {
-                    if ($key) {
-                        list($more, $json) = explode('",', $piece, 2);
-                        $tmp2 = explode('"', $more);
-                        $types[] = end($tmp2);
-                        $svg_objs[] = str_replace(')', '', $json);
-                    } else {
-                        $svg_objs[] = str_replace(')', '', $piece);
-                    }
-                }
-                //var_dump($svg_objs); die();
-                if (count($svg_objs) > 1) {
-                    $svg_wrap_json = array_shift($svg_objs);
-                    $svg_wrap = json_decode($svg_wrap_json, true);
-                    if ($svg_wrap) {
-                        $svg = '<svg';
-                        if (empty($svg_wrap['width']))
-                            $svg_wrap['width'] = 24;
-                        if (empty($svg_wrap['height']))
-                            $svg_wrap['height'] = 24;
-                        foreach ($svg_wrap as $key => $value) {
-                            $svg .= ' ' . $key . '="' . $value . '"';
-                        }
-                        $svg .= ' aria-hidden="true" focusable="false">';
-                        foreach ($svg_objs as $key => $svg_inner_json) {
-                            $type = $types[$key];
-                            $svg_inner_json = str_replace(')', '', $svg_inner_json);
-                            $svg_inner = json_decode($svg_inner_json, true);
-                            if ($svg_inner) {
-                                $svg .= '<' . strtolower($type);
-                                foreach ($svg_inner as $key => $value) {
-                                    $svg .= ' ' . $key . '="' . $value . '"';
+            if (file_exists($woo_js)) {
+                $block_js = file_get_contents($woo_js);
+                $tmp = explode('.SVG,', $block_js, 2);
+                if (count($tmp) == 2) {
+                    
+                    $tmp = explode('));var', end($tmp), 2);
+                    if (count($tmp) == 2) {
+                        list($jsons, $more) = $tmp;
+
+                        $jsons = $this->fix_js_json($jsons);
+                        $tmp = explode(',(', $jsons);
+                        $svg_objs = [];
+                        $types = [];
+                        foreach ($tmp as $key => $piece) {
+                            if ($key) {
+                                $tmp3 = explode('",', $piece, 2);
+                                if (count($tmp3) == 2) {
+                                    list($more, $json) = $tmp3; 
+                                    $tmp2 = explode('"', $more);
+                                    $types[] = end($tmp2);
+                                    $svg_objs[] = str_replace(')', '', $json);
                                 }
-                                $svg .= '></' . strtolower($type) . '>';
                             } else {
-                                //var_dump($svg_inner_json);
-                                return '';
+                                $svg_objs[] = str_replace(')', '', $piece);
                             }
                         }
-                        $svg .= '</svg>';
+                        //var_dump($svg_objs); die();
+                        if (count($svg_objs) > 1) {
+                            $svg_wrap_json = array_shift($svg_objs);
+                            $svg_wrap = json_decode($svg_wrap_json, true);
+                            if ($svg_wrap) {
+                                $svg = '<svg';
+                                if (empty($svg_wrap['width']))
+                                    $svg_wrap['width'] = 24;
+                                if (empty($svg_wrap['height']))
+                                    $svg_wrap['height'] = 24;
+                                foreach ($svg_wrap as $key => $value) {
+                                    $svg .= ' ' . $key . '="' . $value . '"';
+                                }
+                                $svg .= ' aria-hidden="true" focusable="false">';
+                                foreach ($svg_objs as $key => $svg_inner_json) {
+                                    $type = $types[$key];
+                                    $svg_inner_json = str_replace(')', '', $svg_inner_json);
+                                    $svg_inner = json_decode($svg_inner_json, true);
+                                    if ($svg_inner) {
+                                        $svg .= '<' . strtolower($type);
+                                        foreach ($svg_inner as $key => $value) {
+                                            $svg .= ' ' . $key . '="' . $value . '"';
+                                        }
+                                        $svg .= '></' . strtolower($type) . '>';
+                                    } else {
+                                        //var_dump($svg_inner_json);
+                                        return '';
+                                    }
+                                }
+                                $svg .= '</svg>';
+                            }
+                        }
                     }
                 }
             }
@@ -221,10 +231,13 @@ Trait Icons {
         $jsons = str_replace('"width":', 'width:', $jsons);
         $jsons = str_replace('"height":', 'height:', $jsons);
         $jsons = str_replace('"xmlns":', 'xmlns:', $jsons);
+        $jsons = str_replace('"view-box":', 'viewBox:', $jsons);
         $jsons = str_replace('"viewBox":', 'viewBox:', $jsons);
         $jsons = str_replace('"fill":', 'fill:', $jsons);
         $jsons = str_replace('"fill-rule":', 'fillRule:', $jsons);
+        $jsons = str_replace('"fillRule":', 'fillRule:', $jsons);
         $jsons = str_replace('"clip-rule":', 'clipRule:', $jsons);
+        $jsons = str_replace('"clipRule":', 'clipRule:', $jsons);
         $jsons = str_replace('"d":', 'd:', $jsons);
         $jsons = str_replace('"cx":', 'cx:', $jsons);
         $jsons = str_replace('"cy":', 'cy:', $jsons);
@@ -233,6 +246,9 @@ Trait Icons {
         $jsons = str_replace('"stroke-width":', 'strokeWidth:', $jsons);
         $jsons = str_replace('"stroke-linejoin":', 'strokeLinejoin:', $jsons);
         $jsons = str_replace('"stroke-linecap":', 'strokeLinecap:', $jsons);
+        $jsons = str_replace('"strokeWidth":', 'strokeWidth:', $jsons);
+        $jsons = str_replace('"strokeLinejoin":', 'strokeLinejoin:', $jsons);
+        $jsons = str_replace('"strokeLinecap":', 'strokeLinecap:', $jsons);
         return $jsons;
     }
 }

@@ -69,7 +69,7 @@ wp.apiFetch( { path: '<?php echo $api['path']; ?>' } ).then( ( data ) => {
 ?>
 wp.blocks.registerBlockType("<?php echo $key; ?>", {
     <?php
-    if (!empty($args['icon']) && substr($args['icon'], 0, 4) == '<svg') {
+    if (!empty($args['icon']) && substr($args['icon'], 0, 5) == '<svg ') {
     ?>
     icon: { 
         src: <?php echo $this->parse_svg($args['icon']); ?>
@@ -422,6 +422,8 @@ if ($wrapper) { ?></script><?php }
                     $tag_attrs = [];
                     foreach ($tag_attr as $attr) {
                         list($attr_name, $attr_value) = explode('=', $attr, 2);
+                        $tmp_name = explode('-', $attr_name);
+                        //$attr_name = array_shift($tmp_name).implode('', array_map('ucfirst', $tmp_name));
                         $attr_value = str_replace('"', '', $attr_value);
                         $attr_value = str_replace("'", '', $attr_value);
                         $attr_value = str_replace("\\", '', $attr_value);
