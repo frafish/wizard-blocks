@@ -81,6 +81,28 @@ trait Metabox {
         'typography.fontSize' => false,
         'typography.lineHeight' => false
     ];
+    
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
+    public static $attributes_type = [
+        'string' => 'String',
+        'boolean' => 'Boolean',
+        'number' => 'Number',
+        'integer' => 'Integer',
+        'array' => 'Array',
+        'null' => 'Null',
+        'object' => 'Object',
+    ];
+    
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
+    public static $attributes_control = [
+        'TextControl' => 'Text',
+        'RadioControl' => 'Radio',
+        'SelectControl' => 'Select',
+        'CheckboxControl' => 'Checkbox',
+        'ToggleControl' => 'Toggle',
+        'RichText' => 'RichText',
+        'MediaUpload' => 'Media',
+    ];
 
 // register meta box
     public function meta_fields_add_meta_box() {
@@ -286,6 +308,37 @@ trait Metabox {
             <h3 id="attributes"><label for="_block_attributes"><?php _e('Attributes', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><textarea id="_block_attributes" name="_block_attributes"><?php echo empty($json['attributes']) ? $attributes : wp_json_encode($json['attributes'], JSON_PRETTY_PRINT); ?></textarea></p>	
 
+            <div id="_block_attributes_editor">
+                <div class="repeat_attrs">
+                    <div class="repeat_attr">
+                        <div class="attr_ops">
+                            <span class="attr_toggle"><span class="dashicons dashicons-editor-expand"></span></span>
+                            <span class="attr_name">[attr_key] attr_title</span>
+                            <span class="button button-danger attr_remove pull-right">Remove</span>
+                            <span class="button attr_up pull-right">Up</span>
+                            <span class="button attr_down pull-right">Down</span>
+                            <span class="button attr_clone pull-right">Clone</span>
+                        </div>
+                        <div class="attr_data">
+                            <label for="attr_key">Key: <input type="text" class="attr_key"></label>
+                            <label for="attr_type">Type: <select class="attr_type">
+                                <?php foreach (self::$attributes_type as $type => $label) { ?>
+                                   <option value="<?php echo $type ?>"><?php echo $label ?></option>
+                                <?php } ?>
+                            </select></label>
+                            <label for="attr_title">Title: <input type="text" class="attr_title"></label>
+                            <label for="attr_control">Control: <select class="attr_control">
+                                <?php foreach (self::$attributes_control as $type => $label) { ?>
+                                   <option value="<?php echo $type ?>"><?php echo $label ?></option>
+                                <?php } ?>
+                            </select></label>
+                            <label for="attr_options">Options: <textarea class="attr_options"></textarea></label>
+                            <label for="attr_default">Default: <input type="text" class="attr_default"></label>
+                        </div>
+                    </div>
+                </div>
+                <span class="button button-primary attr_add">Add</span>
+            </div>
         </div>
         <?php
         /*

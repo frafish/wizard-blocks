@@ -200,6 +200,11 @@ trait Pages {
                 vertical-align: middle;
                 margin-top: -4px;
             }
+            .icon svg {
+                max-width: 100%;
+                height: auto;
+                width: 20px;
+            }
         </style>
         <?php
     }
