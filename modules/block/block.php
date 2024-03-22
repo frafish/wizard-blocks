@@ -31,6 +31,13 @@ class Block extends Module_Base {
         add_action('add_meta_boxes', [$this, 'meta_fields_add_meta_box']);
         add_action('save_post', [$this, 'meta_fields_save_meta_box_data'], 10, 3);
         
+        add_filter('block_type_metadata_settings', function($settings, $metadata) {
+            if (isset($metadata['file']) && !isset($settings['file'])) {
+                $settings['file'] = $metadata['file'];
+            }
+            return $settings;
+        }, 10, 2);
+        
         // fix native assets url bug on win server
         add_filter( 'plugins_url', function($url, $path, $plugin) {
             $tmp = explode('/wp-content/', $url);

@@ -116,7 +116,7 @@ trait Pages {
                         <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php _e('Icon'); ?></th>
                         <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php _e('Title'); ?></span></th>
                         <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
-                        <th scope="col" id="folder" class="manage-column column-folder"><?php _e('Folder'); ?></th>
+                        <th scope="col" id="plugin" class="manage-column column-plugin"><?php _e('Plugin'); ?></th>
                         <th scope="col" id="usage" class="manage-column column-usage" style="width: 50px;"><?php _e('Usage'); ?></th>
                         <th scope="col" id="actions" class="manage-column column-actions"><?php _e('Actions'); ?></th>
                     </tr>
@@ -154,8 +154,18 @@ trait Pages {
                             </td>
                             <td class="folder column-folder" data-colname="<?php _e('Folder', 'wizard-blocks'); ?>">
                                 <?php
+                                if (!empty($block['file'])) {
+                                    echo '<abbr title="'.$block['file'].'">';
+                                    /*$tmp = explode('/plugins/', $block['file']);
+                                    if (count($tmp) > 1) {
+                                        list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
+                                        echo $plugin_slug;
+                                    }*/
+                                }
                                 echo $block['textdomain'];
-
+                                if (!empty($block['file'])) {
+                                    echo '</abbr>';
+                                }
                                 if (!empty($block['render_callback'])) {
                                     if (is_string($block['render_callback'])) {
                                         if (str_starts_with($block['render_callback'], 'render_block_core_')) {
