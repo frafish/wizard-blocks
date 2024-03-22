@@ -251,9 +251,14 @@ class Block extends Module_Base {
             $providesContext = json_decode($providesContext);
         }
 
-        $parents = [];
+        $parent = [];
         if (!empty($_POST['_block_parent'])) {
-            $parents = array_filter(array_map('trim', explode(',', $_POST['_block_parent'])));
+            $parent = array_filter(array_map('trim', explode(',', $_POST['_block_parent'])));
+        }
+        
+        $allowedBlocks = [];
+        if (!empty($_POST['_block_allowedBlocks'])) {
+            $allowedBlocks = array_filter(array_map('trim', explode(',', $_POST['_block_allowedBlocks'])));
         }
 
         $ancestors = [];
@@ -316,7 +321,8 @@ class Block extends Module_Base {
             "name" => $textdomain . "/" . $post_slug,
             "title" => get_the_title($post_id),
             "category" => $category,
-            "parent" => $parents,
+            "parent" => $parent,
+            "allowedBlocks" => $allowedBlocks,
             "ancestor" => $ancestors,
             "icon" => $icon,
             "description" => $post_excerpt,
@@ -336,8 +342,10 @@ class Block extends Module_Base {
         $assets = [
             'script' => 'js',
             'viewScript' => 'js',
+            'viewScriptModule' => 'js',
             'editorScript' => 'js',
             'style' => 'css',
+            'viewStyle' => 'css',
             'editorStyle' => 'css',
             'render' => 'php'
         ];

@@ -24,6 +24,7 @@ jQuery(document).ready(function ($) {
     );
     var _block_style = wp.codeEditor.initialize(jQuery('#_block_style'), editorSettings);
     var _block_editorStyle = wp.codeEditor.initialize(jQuery('#_block_editorStyle'), editorSettings);
+    var _block_viewStyle = wp.codeEditor.initialize(jQuery('#_block_viewStyle'), editorSettings);
 
     editorSettings.codemirror = _.extend(
             {},
@@ -36,6 +37,7 @@ jQuery(document).ready(function ($) {
     );
     var _block_script = wp.codeEditor.initialize(jQuery('#_block_script'), editorSettings);
     var _block_editorScript = wp.codeEditor.initialize(jQuery('#_block_editorScript'), editorSettings);
+    var _block_viewScriptModule = wp.codeEditor.initialize(jQuery('#_block_viewScriptModule'), editorSettings);
     var _block_viewScript = wp.codeEditor.initialize(jQuery('#_block_viewScript'), editorSettings);
 
     var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
@@ -188,9 +190,44 @@ jQuery(document).ready(function ($) {
             let title = element.title ? element.title : key;
             row.find('.attr_name').text(row.find('.attr_name').text().replace('attr_key', key).replace('attr_title', title));
             row.find('.attr_key').val(key);
-            row.find('.attr_type').val(element.type);
-            if (element.default) {
+            if (element.type) {
+                row.find('.attr_type').val(element.type);
+                delete(element.type);
+            }
+            if (element.control) {
+                row.find('.attr_control').val(element.control);
+                delete(element.control);
+            }
+            if (element.label) {
+                row.find('.attr_label').val(element.label);
+                delete(element.label);
+            }
+            if (element.hasOwnProperty('default')) {
                 row.find('.attr_default').val(element.default);
+                delete(element.default);
+            }
+            if (element.hasOwnProperty('selected')) {
+                row.find('.attr_default').val(element.selected);
+                delete(element.selected);
+            }
+            if (element.enum) {
+                row.find('.attr_options').val(element.enum.join("\r\n"));
+                delete(element.enum);
+            }
+            if (element.source) {
+                row.find('.attr_source').val(element.source);
+                delete(element.source);
+            }
+            if (element.attribute) {
+                row.find('.attr_attribute').val(element.attribute);
+                delete(element.attribute);
+            }
+            if (element.selector) {
+                row.find('.attr_selector').val(element.selector);
+                delete(element.selector);
+            }
+            if (Object.keys(element).length) {
+                row.find('.attr_extra').val(JSON.stringify(element));
             }
             index++;
         });

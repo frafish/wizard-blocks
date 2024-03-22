@@ -37,7 +37,6 @@
 
 #_block_attributes_editor .repeat_attr {
     border: 1px solid;
-    padding: 15px;
     margin-bottom: 15px;
 }
 
@@ -46,6 +45,7 @@
 }
 #_block_attributes_editor .attr_data {
     display: none;
+    padding: 15px;
 }
 #_block_attributes_editor .attr_name {
     font-weight: bold;
@@ -67,4 +67,9 @@
 }
 #_block_attributes_editor .attr_remove {
     color: red;
+}
+#_block_attributes_editor label {
+    display: inline-block;
+    width: 48%;
+    padding: 5px;
 }

@@ -81,6 +81,7 @@ trait Pages {
             $textdomain = $this->get_block_textdomain($block);
             $blocks_count[$textdomain] = empty($blocks_count[$textdomain]) ? 1 : ++$blocks_count[$textdomain];
         }
+        $blocks_usage = $this->get_blocks_usage()
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('All Registered Blocks', 'wizard-blocks'); ?></h1>           
@@ -114,8 +115,9 @@ trait Pages {
                     <tr>
                         <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php _e('Icon'); ?></th>
                         <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php _e('Title'); ?></span></th>
-                        <th scope="col" id="folder" class="manage-column column-description"><?php _e('Description'); ?></th>
+                        <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
                         <th scope="col" id="folder" class="manage-column column-folder"><?php _e('Folder'); ?></th>
+                        <th scope="col" id="usage" class="manage-column column-usage" style="width: 50px;"><?php _e('Usage'); ?></th>
                         <th scope="col" id="actions" class="manage-column column-actions"><?php _e('Actions'); ?></th>
                     </tr>
                 </thead>
@@ -163,6 +165,9 @@ trait Pages {
                                 }
                                 ?>
                             </td>	
+                            <td class="usage column-usage" data-colname="<?php _e('Usage', 'wizard-blocks'); ?>">
+                                <?php echo empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]; ?>
+                            </td>
                             <td class="actions column-actions" data-colname="<?php _e('Actions', 'wizard-blocks'); ?>">
                                 <?php if ($block['textdomain'] == 'core') { ?>
                                     <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank"><?php _e('Docs', 'wizard-blocks'); ?></a>
@@ -273,5 +278,23 @@ trait Pages {
         }
 
         return $blocks;
+    }
+    
+    function get_blocks_usage() {
+        global $wpdb;
+        $block_init = '<!-- wp:';
+        $block_count = [];
+        $sql = 'SELECT * FROM '.$wpdb->posts.' WHERE post_content LIKE "%'.$block_init.'%" AND post_status = "publish"';
+        $posts = $wpdb->get_results($sql);
+        foreach ($posts as $post) {
+            $tmp = explode($block_init, $post->post_content);
+            foreach ($tmp as $key => $block) {
+                if ($key) {
+                    list($block_name, $more) = explode(' ', $block, 2);
+                    $block_count[$block_name] = empty($block_count[$block_name]) ? 1 : ++$block_count[$block_name];
+                }
+            }
+        }
+        return $block_count;
     }
 }
