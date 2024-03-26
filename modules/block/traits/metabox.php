@@ -105,6 +105,8 @@ trait Metabox {
         'ToggleControl' => 'Toggle',
         'RichText' => 'RichText',
         'MediaUpload' => 'Media',
+        'Heading' => 'Heading',
+        'Separator' => 'Separator',
     ];
 
 // register meta box
@@ -349,30 +351,30 @@ trait Metabox {
                             <abbr title="<?php _e('Clone', 'wizard-blocks'); ?>" class="button attr_clone pull-right"><span class="dashicons dashicons-admin-page"></span></abbr>
                         </div>
                         <div class="attr_data">
-                            <label for="attr_key">Key: <input type="text" class="attr_key"></label>
-                            <label for="attr_label">Label: <input type="text" class="attr_label"></label>
-                            <label for="attr_type">Type: <select class="attr_type">
+                            <label for="key">Key: <input type="text" class="key"></label>
+                            <label for="label">Label: <input type="text" class="label"></label>
+                            <label for="type">Type: <select class="type">
                                 <?php foreach (self::$attributes_type as $type => $label) { ?>
                                    <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                 <?php } ?>
                             </select></label>
-                            <label for="attr_control">Control: <select class="attr_control">
+                            <label for="control">Control: <select class="control">
                                 <option value=""><?php _e('Auto', 'wizard-blocks'); ?></option>
                                 <?php foreach (self::$attributes_control as $type => $label) { ?>
                                     <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                 <?php } ?>
                             </select></label>
-                            <label for="attr_position">Position: <select class="attr_position">
+                            <label for="position">Position: <select class="position">
                                 <option value="content"><?php _e('Content', 'wizard-blocks'); ?></option>
                                 <option value="style"><?php _e('Style', 'wizard-blocks'); ?></option>
                                 <option value="inspector"><?php _e('Inspector', 'wizard-blocks'); ?></option>
                                 <option value="block"><?php _e('Block Content', 'wizard-blocks'); ?></option>
                             </select></label>
-                            <label for="attr_options">Options: <textarea class="attr_options"></textarea></label>
-                            <label for="attr_default">Default: <input type="text" class="attr_default"></label>
-                            <label for="attr_source">Source: <input type="text" class="attr_source"></label>
-                            <label for="attr_selector">Selector: <input type="text" class="attr_selector"></label>
-                            <label for="attr_attribute">Attribute: <input type="text" class="attr_attribute"></label>
+                            <label for="options">Options: <textarea class="options"></textarea></label>
+                            <label for="default">Default: <input type="text" class="default"></label>
+                            <label for="source">Source: <input type="text" class="source"></label>
+                            <label for="selector">Selector: <input type="text" class="selector"></label>
+                            <label for="attribute">Attribute: <input type="text" class="attribute"></label>
                             <label for="attr_extra">Extra: <textarea class="attr_extra"></textarea></label>
                         </div>
                     </div>
