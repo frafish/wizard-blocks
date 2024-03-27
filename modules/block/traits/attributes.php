@@ -284,6 +284,17 @@ if ($wrapper) { ?></script><?php }
                             color: props.attributes.<?php echo $id; ?><?php if (!empty($color)) { echo ' || "'.$color.'"'; } ?>,
                         <?php
                             break;
+                        case 'DatePicker':
+                        case 'DateTimePicker':
+                        case 'TimePicker': 
+                            $date = 'new Date()';
+                            if (!empty($attr['default'])) { 
+                                $date = '"'.$attr['default'].'"';
+                            }
+                            ?>
+                            currentDate: props.attributes.<?php echo $id; ?> || <?php echo $date; ?>,
+                        <?php 
+                            break;
                         case 'CheckboxControl':
                         case 'ToggleControl': ?>
                             checked: props.attributes.<?php echo $id; ?>,
@@ -390,6 +401,9 @@ if ($wrapper) { ?></script><?php }
                     <?php }
                     if (!empty($attr['indeterminate'])) { ?>
                         indeterminate: true,
+                    <?php }
+                    if (!empty($attr['inputType'])) { ?>
+                        type: "<?php echo $attr['inputType']; ?>",
                     <?php } ?>
                 }
             ),

@@ -80,6 +80,13 @@ trait Pages {
         foreach ($blocks as $name => $block) {
             $textdomain = $this->get_block_textdomain($block);
             $blocks_count[$textdomain] = empty($blocks_count[$textdomain]) ? 1 : ++$blocks_count[$textdomain];
+            $block_slug = $this->get_block_slug($name);
+            if ($block_post = $this->get_block_post($block_slug)) {
+                $blocks[$name]['post'] = $block_post;
+            }
+            if ($block_dir = $this->get_blocks_dir($block_slug)) {
+                $blocks[$name]['file'] = $block_dir.DIRECTORY_SEPARATOR.'block.json';
+            }
         }
         $blocks_usage = $this->get_blocks_usage()
         ?>

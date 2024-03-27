@@ -107,6 +107,11 @@ jQuery(document).ready(function ($) {
     var attr_editor = jQuery('#_block_attributes_editor');
     var attr_attributes = jQuery('#_block_attributes');
     
+    function update_block_label(row, title) {
+        let key = row.find('.key').val();
+        //row.find('.attr_name').text(row.find('.attr_name').text().replace('attr_key', key).replace('attr_title', title));
+        row.find('.attr_name').text('[' + key + '] ' + title);
+    }
     function update_block_attributes_editor() {
         attr_editor.find('.repeat_attrs').html(''); // reset
         var attributes = JSON.parse(attr_attributes.val());
@@ -115,12 +120,11 @@ jQuery(document).ready(function ($) {
         jQuery.each(attributes, function(key, element){
             //console.log(index);
             //console.log(key);
-            //console.log(element);
+            console.log(element);
             attr_editor.find('.attr_add').trigger('click');
             let row = attr_editor.find('.repeat_attr').eq(index);
-            console.log(row);
-            let title = element.title ? element.title : key;
-            row.find('.attr_name').text(row.find('.attr_name').text().replace('attr_key', key).replace('attr_title', title));
+            //console.log(row);
+            let title = element.label ? element.label : key;
             row.find('.key').val(key);
             if (element.type) {
                 row.find('.type').val(element.type);
@@ -133,6 +137,10 @@ jQuery(document).ready(function ($) {
             if (element.label) {
                 row.find('.label').val(element.label);
                 delete(element.label);
+            }
+            if (element.help) {
+                row.find('.help').val(element.help);
+                delete(element.help);
             }
             if (element.hasOwnProperty('default')) {
                 row.find('.default').val(element.default);
@@ -158,9 +166,14 @@ jQuery(document).ready(function ($) {
                 row.find('.selector').val(element.selector);
                 delete(element.selector);
             }
+            if (element.multiple) {
+                row.find('.multiple').val(element.multiple);
+                delete(element.multiple);
+            }
             if (Object.keys(element).length) {
                 row.find('.extra').val(JSON.stringify(element));
             }
+            update_block_label(row, title);
             index++;
         });
     }
@@ -183,8 +196,24 @@ jQuery(document).ready(function ($) {
             if (row.find('.label').val()) {
                 attributes[key]['label'] = row.find('.label').val();
             }
+            if (row.find('.help').val()) {
+                attributes[key]['help'] = row.find('.help').val();
+            }
             if (row.find('.default').val()) {
-                attributes[key]['default'] = row.find('.default').val();
+                if (attributes[key]['control'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['control'])) {
+                    attributes[key]['checked'] = true;
+                } else if (attributes[key]['control'] && attributes[key]['control'] == 'RadioControl') {
+                    attributes[key]['selected'] = row.find('.default').val();
+                } else if (attributes[key]['control'] && attributes[key]['control'] == 'InputControl') {
+                    attributes[key]['value'] = row.find('.default').val();
+                } else {
+                    attributes[key]['default'] = row.find('.default').val();
+                }
+            }
+            if (row.find('.inputType').val()) {
+                if (attributes[key]['control'] && attributes[key]['control'] == 'InputControl') {
+                    attributes[key]['inputType'] = row.find('.inputType').val();
+                }
             }
             if (row.find('.options').val()) {
                 let evals = row.find('.options').val().split('\n');
@@ -211,6 +240,9 @@ jQuery(document).ready(function ($) {
             }
             if (row.find('.selector').val()) {
                 attributes[key]['selector'] = row.find('.selector').val();
+            }
+            if (row.find('.multiple').val() && row.find('.multiple').val() == 'true') {
+                attributes[key]['multiple'] = true;
             }
             if (row.find('.extra').val()) {
                 attributes[key] =  { ...attributes[key], ...JSON.parse(row.find('.extra').val()) };
@@ -296,6 +328,11 @@ jQuery(document).ready(function ($) {
         
         attr_editor.on('change', '.repeat_attr input, .repeat_attr select, .repeat_attr textarea', function(){
             console.log('update');
+            if (jQuery(this).hasClass('key') || jQuery(this).hasClass('label')) {
+                let row = jQuery(this).closest('.repeat_attr');
+                let title = row.find('.label').val();
+                update_block_label(row, title);
+            }
             setTimeout(function() {
                 update_block_attributes();
             }, 100);

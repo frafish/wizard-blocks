@@ -97,16 +97,63 @@ trait Metabox {
     ];
     
     //https://developer.wordpress.org/block-editor/reference-guides/components/
+    //https://wp-gb.com/
     public static $attributes_control = [
-        'TextControl' => 'Text',
-        'RadioControl' => 'Radio',
-        'SelectControl' => 'Select',
         'CheckboxControl' => 'Checkbox',
-        'ToggleControl' => 'Toggle',
-        'RichText' => 'RichText',
-        'MediaUpload' => 'Media',
+        'ColorPicker' => 'Color',
+        'DatePicker' => 'Date',
+        'DateTimePicker' => 'DateTime',
+        //'InputControl' => 'Email',
         'Heading' => 'Heading',
+        'InputControl' => 'InputControl',
+        'MediaUpload' => 'Media',
+        'NumberControl' => 'Number',
+        'RadioControl' => 'Radio',
+        'RadioGroup' => 'RadioGroup',
+        'RichText' => 'RichText',
+        'SelectControl' => 'Select',
         'Separator' => 'Separator',
+        //'InputControl' => 'Tel',
+        'TextareaControl' => 'TextArea',
+        'TextControl' => 'Text',
+        'TimePicker' => 'Time',
+        'ToggleControl' => 'Toggle',
+        //'InputControl' => 'URL',
+    ];
+    
+    //https://www.w3schools.com/html/html_form_input_types.asp
+    public static $attributes_input_type = [
+        'text',
+        //'button',
+        'checkbox',
+        'color',
+        'date',
+        //'datetime-local',
+        'email',
+        //'file',
+        //'hidden',
+        //'image',
+        'month',
+        'number',
+        'password',
+        //'radio',
+        'range',
+        //'reset',
+        //'search',
+        //'submit',
+        'tel',
+        'time',
+        'url',
+        'week',
+    ];
+    
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#value-source
+    public static $attributes_source = [
+        'attribute' => 'Attribute',
+        'text' => 'Text',
+        'html' => 'HTML',
+        'query' => 'Query',
+        'meta' => 'Meta (deprecated)'
     ];
 
 // register meta box
@@ -344,38 +391,53 @@ trait Metabox {
                     <div class="repeat_attr">
                         <div class="attr_ops">
                             <span class="attr_toggle"><span class="dashicons dashicons-editor-expand"></span></span>
-                            <span class="attr_name">[attr_key] attr_title</span>
+                            <span class="attr_name"><?php _e('Add an attribute key', 'wizard-blocks'); ?></span>
                             <abbr title="<?php _e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php _e('Up', 'wizard-blocks'); ?>" class="button attr_up pull-right"><span class="dashicons dashicons-arrow-up-alt"></span></abbr>
                             <abbr title="<?php _e('Down', 'wizard-blocks'); ?>" class="button attr_down pull-right"><span class="dashicons dashicons-arrow-down-alt"></span></abbr>
                             <abbr title="<?php _e('Clone', 'wizard-blocks'); ?>" class="button attr_clone pull-right"><span class="dashicons dashicons-admin-page"></span></abbr>
                         </div>
                         <div class="attr_data">
-                            <label for="key">Key: <input type="text" class="key"></label>
-                            <label for="label">Label: <input type="text" class="label"></label>
-                            <label for="type">Type: <select class="type">
+                            <label for="key"><?php _e('Key', 'wizard-blocks'); ?>*: <input type="text" class="key"></label>
+                            <label for="label"><?php _e('Label', 'wizard-blocks'); ?>: <input type="text" class="label"></label>
+                            <label for="label"><?php _e('Help', 'wizard-blocks'); ?>: <input type="text" class="help"></label>
+                            <label for="type"><?php _e('Type', 'wizard-blocks'); ?>: <select class="type">
                                 <?php foreach (self::$attributes_type as $type => $label) { ?>
                                    <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                 <?php } ?>
                             </select></label>
-                            <label for="control">Control: <select class="control">
+                            <label for="inputType"><?php _e('Input Type', 'wizard-blocks'); ?>: <select class="inputType">
+                                <?php foreach (self::$attributes_input_type as $type => $label) { ?>
+                                   <option value="<?php echo $label ?>"><?php echo ucfirst($label); ?></option>
+                                <?php } ?>
+                            </select></label>
+                            <label for="control"><?php _e('Control', 'wizard-blocks'); ?>: <select class="control">
                                 <option value=""><?php _e('Auto', 'wizard-blocks'); ?></option>
                                 <?php foreach (self::$attributes_control as $type => $label) { ?>
                                     <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                 <?php } ?>
                             </select></label>
-                            <label for="position">Position: <select class="position">
-                                <option value="content"><?php _e('Content', 'wizard-blocks'); ?></option>
-                                <option value="style"><?php _e('Style', 'wizard-blocks'); ?></option>
+                            <label for="position"><?php _e('Position', 'wizard-blocks'); ?>: <select class="position">
+                                <option value="content"><?php _e('Editor Content', 'wizard-blocks'); ?></option>
+                                <option value="style"><?php _e('Editor Style', 'wizard-blocks'); ?></option>
                                 <option value="inspector"><?php _e('Inspector', 'wizard-blocks'); ?></option>
                                 <option value="block"><?php _e('Block Content', 'wizard-blocks'); ?></option>
                             </select></label>
-                            <label for="options">Options: <textarea class="options"></textarea></label>
-                            <label for="default">Default: <input type="text" class="default"></label>
-                            <label for="source">Source: <input type="text" class="source"></label>
-                            <label for="selector">Selector: <input type="text" class="selector"></label>
-                            <label for="attribute">Attribute: <input type="text" class="attribute"></label>
-                            <label for="attr_extra">Extra: <textarea class="attr_extra"></textarea></label>
+                            <label for="multiple"><?php _e('Multiple', 'wizard-blocks'); ?>: <select class="multiple">
+                                <option value="false"><?php _e('False', 'wizard-blocks'); ?></option>
+                                <option value="true"><?php _e('True', 'wizard-blocks'); ?></option>                                
+                            </select></label>
+                            <label for="options"><?php _e('Options', 'wizard-blocks'); ?>: <textarea class="options"></textarea></label>
+                            <label for="default"><?php _e('Default', 'wizard-blocks'); ?>: <input type="text" class="default"></label>
+                            <label for="source"><?php _e('Source', 'wizard-blocks'); ?>: <select class="source">
+                                <option value=""><?php _e('No value', 'wizard-blocks'); ?></option>
+                                <?php foreach (self::$attributes_source as $type => $label) { ?>
+                                    <option value="<?php echo $type ?>"><?php echo $label ?></option>
+                                <?php } ?>
+                            </select></label>
+                            <label for="selector"><?php _e('Selector', 'wizard-blocks'); ?>: <input type="text" class="selector"></label>
+                            <label for="attribute"><?php _e('Attribute', 'wizard-blocks'); ?>: <input type="text" class="attribute"></label>
+                            <label for="extra"><?php _e('Extra', 'wizard-blocks'); ?>: <textarea class="extra" placeholder='{ "var": "value" }'></textarea></label>
                         </div>
                     </div>
                 </div>
