@@ -20,9 +20,9 @@ jQuery(document).ready(function ($) {
                 mode: 'css'
             }
     );
-    var _block_style = wp.codeEditor.initialize(jQuery('#_block_style'), editorSettings);
-    var _block_editorStyle = wp.codeEditor.initialize(jQuery('#_block_editorStyle'), editorSettings);
-    var _block_viewStyle = wp.codeEditor.initialize(jQuery('#_block_viewStyle'), editorSettings);
+    var _block_style = wp.codeEditor.initialize(jQuery('#_block_style_file'), editorSettings);
+    var _block_editorStyle = wp.codeEditor.initialize(jQuery('#_block_editorStyle_file'), editorSettings);
+    var _block_viewStyle = wp.codeEditor.initialize(jQuery('#_block_viewStyle_file'), editorSettings);
 
     editorSettings.codemirror = _.extend(
             {},
@@ -33,10 +33,10 @@ jQuery(document).ready(function ($) {
                 mode: 'javascript',
             }
     );
-    var _block_script = wp.codeEditor.initialize(jQuery('#_block_script'), editorSettings);
-    var _block_editorScript = wp.codeEditor.initialize(jQuery('#_block_editorScript'), editorSettings);
-    var _block_viewScriptModule = wp.codeEditor.initialize(jQuery('#_block_viewScriptModule'), editorSettings);
-    var _block_viewScript = wp.codeEditor.initialize(jQuery('#_block_viewScript'), editorSettings);
+    var _block_script = wp.codeEditor.initialize(jQuery('#_block_script_file'), editorSettings);
+    var _block_editorScript = wp.codeEditor.initialize(jQuery('#_block_editorScript_file'), editorSettings);
+    var _block_viewScriptModule = wp.codeEditor.initialize(jQuery('#_block_viewScriptModule_file'), editorSettings);
+    var _block_viewScript = wp.codeEditor.initialize(jQuery('#_block_viewScript_file'), editorSettings);
 
     editorSettings.codemirror = _.extend(
             {},
@@ -49,11 +49,10 @@ jQuery(document).ready(function ($) {
             }
     );
     var _block_attributes = wp.codeEditor.initialize(jQuery('#_block_attributes'), editorSettings);
-    console.log(_block_attributes);
-    console.log(wp.codeEditor);
-    console.log(wp.CodeMirror);
+    //console.log(_block_attributes);
+    //console.log(wp.codeEditor);
+    //console.log(wp.CodeMirror);
 
-    var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
     editorSettings.codemirror = _.extend(
             {},
             editorSettings.codemirror,
@@ -66,6 +65,7 @@ jQuery(document).ready(function ($) {
     );
     var _block_supports_custom = wp.codeEditor.initialize(jQuery('#_block_supports_custom'), editorSettings);
     var _block_providesContext = wp.codeEditor.initialize(jQuery('#_block_providesContext'), editorSettings);
+    var _block_blockHooks = wp.codeEditor.initialize(jQuery('#_block_blockHooks'), editorSettings);
     var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
 
 
@@ -143,6 +143,9 @@ jQuery(document).ready(function ($) {
                 delete(element.help);
             }
             if (element.hasOwnProperty('default')) {
+                if (row.find('.type').val() == 'object') {
+                    element.default = JSON.stringify(element.default);
+                }
                 row.find('.default').val(element.default);
                 delete(element.default);
             }
@@ -153,6 +156,10 @@ jQuery(document).ready(function ($) {
             if (element.enum) {
                 row.find('.options').val(element.enum.join("\r\n"));
                 delete(element.enum);
+            }
+            if (element.options) {
+                row.find('.options').val(element.options.join("\r\n"));
+                delete(element.options);
             }
             if (element.source) {
                 row.find('.source').val(element.source);
@@ -167,13 +174,17 @@ jQuery(document).ready(function ($) {
                 delete(element.selector);
             }
             if (element.multiple) {
-                row.find('.multiple').val(element.multiple);
+                row.find('.multiple').val(element.multiple ? 'true' : 'false');
                 delete(element.multiple);
             }
             if (Object.keys(element).length) {
+                row.find('label[for="extra"]').show();
                 row.find('.extra').val(JSON.stringify(element));
+            } else {
+                row.find('label[for="extra"]').hide();
             }
             update_block_label(row, title);
+            row.find('.control, .source').trigger('change');
             index++;
         });
     }
@@ -200,6 +211,16 @@ jQuery(document).ready(function ($) {
                 attributes[key]['help'] = row.find('.help').val();
             }
             if (row.find('.default').val()) {
+                let defa = row.find('.default').val();
+                if (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer') {
+                    defa = parseFloat(defa);
+                }
+                if (attributes[key]['type'] == 'boolean') {
+                    defa = defa == 'true';
+                }
+                if (attributes[key]['type'] == 'object') {
+                    defa = JSON.parse(defa);
+                }
                 if (attributes[key]['control'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['control'])) {
                     attributes[key]['checked'] = true;
                 } else if (attributes[key]['control'] && attributes[key]['control'] == 'RadioControl') {
@@ -207,7 +228,7 @@ jQuery(document).ready(function ($) {
                 } else if (attributes[key]['control'] && attributes[key]['control'] == 'InputControl') {
                     attributes[key]['value'] = row.find('.default').val();
                 } else {
-                    attributes[key]['default'] = row.find('.default').val();
+                    attributes[key]['default'] = defa;
                 }
             }
             if (row.find('.inputType').val()) {
@@ -217,7 +238,7 @@ jQuery(document).ready(function ($) {
             }
             if (row.find('.options').val()) {
                 let evals = row.find('.options').val().split('\n');
-                if (row.find('.options').val().includes('|')) {
+                if (row.find('.options').val().includes('|') || attributes[key]['type']) {
                     attributes[key]['options'] = {};
                     jQuery(evals).each(function(id, label){
                         let tmp = label.split('|');
@@ -328,11 +349,41 @@ jQuery(document).ready(function ($) {
         
         attr_editor.on('change', '.repeat_attr input, .repeat_attr select, .repeat_attr textarea', function(){
             console.log('update');
+            let row = jQuery(this).closest('.repeat_attr');
             if (jQuery(this).hasClass('key') || jQuery(this).hasClass('label')) {
-                let row = jQuery(this).closest('.repeat_attr');
                 let title = row.find('.label').val();
                 update_block_label(row, title);
             }
+            if (jQuery(this).hasClass('control') && ['InputControl'].includes(jQuery(this).val()) ) {
+                row.find('label[for="inputType"]').show();
+            } else {
+                row.find('label[for="inputType"]').hide();
+            }
+            
+            if (jQuery(this).hasClass('control') && ['SelectControl'].includes(jQuery(this).val())) {
+                row.find('label[for="multiple"]').show();
+            } else {
+                row.find('label[for="multiple"]').hide();
+            }
+            
+            if (jQuery(this).hasClass('control') && ['SelectControl', 'RadioControl', ''].includes(jQuery(this).val())) {
+                row.find('label[for="options"]').show();
+            } else {
+                row.find('label[for="options"]').hide();
+            }
+            
+            if (jQuery(this).hasClass('source') && ![''].includes(jQuery(this).val())) {
+                row.find('label[for="selector"]').show();
+                if (['attribute'].includes(jQuery(this).val())) {
+                    row.find('label[for="attribute"]').show();
+                }
+            } else {
+                row.find('label[for="selector"]').hide();
+                if (!['attribute'].includes(jQuery(this).val())) {
+                    row.find('label[for="attribute"]').hide();
+                }
+            }
+            
             setTimeout(function() {
                 update_block_attributes();
             }, 100);

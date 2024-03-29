@@ -1,6 +1,7 @@
 <?php
 
 namespace WizardBlocks\Modules\Block\Traits;
+use WizardBlocks\Core\Utils;
 
 trait Metabox {
 
@@ -84,7 +85,6 @@ trait Metabox {
         'typography.fontSize' => false,
         'typography.lineHeight' => false
     ];
-    
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
     public static $attributes_type = [
         'string' => 'String',
@@ -95,7 +95,6 @@ trait Metabox {
         'null' => 'Null',
         'object' => 'Object',
     ];
-    
     //https://developer.wordpress.org/block-editor/reference-guides/components/
     //https://wp-gb.com/
     public static $attributes_control = [
@@ -118,9 +117,8 @@ trait Metabox {
         'TextControl' => 'Text',
         'TimePicker' => 'Time',
         'ToggleControl' => 'Toggle',
-        //'InputControl' => 'URL',
+            //'InputControl' => 'URL',
     ];
-    
     //https://www.w3schools.com/html/html_form_input_types.asp
     public static $attributes_input_type = [
         'text',
@@ -146,7 +144,6 @@ trait Metabox {
         'url',
         'week',
     ];
-    
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#value-source
     public static $attributes_source = [
         'attribute' => 'Attribute',
@@ -160,7 +157,7 @@ trait Metabox {
     public function meta_fields_add_meta_box() {
         add_meta_box(
                 'render_meta_box',
-                esc_html__('Block Content', 'wizard-blocks'),
+                esc_html__('Content', 'wizard-blocks'),
                 [$this, 'meta_fields_build_render_callback'],
                 'block',
                 //'side',
@@ -168,22 +165,26 @@ trait Metabox {
         );
 
         add_meta_box(
-                'meta_fields_meta_box',
-                esc_html__('Block Assets', 'wizard-blocks'),
-                [$this, 'meta_fields_build_meta_box_callback'],
-                'block',
-                //'side',
-                //'default'
+                'css_meta_box',
+                esc_html__('CSS Assets', 'wizard-blocks'),
+                [$this, 'meta_fields_build_css_callback'],
+                'block'
+        );
+        add_meta_box(
+                'js_meta_box',
+                esc_html__('JS Assets', 'wizard-blocks'),
+                [$this, 'meta_fields_build_js_callback'],
+                'block'
         );
         add_meta_box(
                 'attributes_meta_box',
-                esc_html__('Block Attributes', 'wizard-blocks'),
+                esc_html__('Attributes', 'wizard-blocks'),
                 [$this, 'meta_fields_build_attributes_callback'],
                 'block'
         );
         add_meta_box(
                 'meta_fields_side_meta_box',
-                esc_html__('Block Info', 'wizard-blocks'),
+                esc_html__('Info', 'wizard-blocks'),
                 [$this, 'meta_fields_build_meta_box_side_callback'],
                 'block',
                 'side',
@@ -215,9 +216,9 @@ trait Metabox {
                 $file = str_replace('/\\', DIRECTORY_SEPARATOR, $file);
                 $file = str_replace('/', DIRECTORY_SEPARATOR, $file);
                 $file = str_replace(' ', '', $file);
-                $file = str_replace(DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR, '', $file); // \.\
+                $file = str_replace(DIRECTORY_SEPARATOR . '.' . DIRECTORY_SEPARATOR, '', $file); // \.\
             }
-            
+
             $render_file = $this->get_ensure_blocks_dir($post->post_name) . $file;
             if (file_exists($render_file)) {
                 $render = file_get_contents($render_file);
@@ -239,12 +240,10 @@ trait Metabox {
         <?php
     }
 
-// build meta box
-    public function meta_fields_build_meta_box_callback($post, $metabox) {
-        //wp_nonce_field('meta_fields_save_meta_box_data', 'meta_fields_meta_box_nonce');
-        //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
+    // build meta box
+    public function meta_fields_build_css_callback($post, $metabox) {
         $plugin_name = $this->get_plugin_slug();
-        $style = $editorStyle = $viewStyle = $script = $editorScript = $viewScriptModule = $viewScript = '';
+        $style = $editorStyle = $viewStyle = '';
         if ($post) {
 
             $json = $post ? $this->get_json_data($post->post_name) : [];
@@ -269,7 +268,7 @@ trait Metabox {
             if (file_exists($asset_file)) {
                 $editorStyle = file_get_contents($asset_file);
             }
-            
+
             $asset_file = 'viewStyle.css';
             if (!empty($json['viewStyle'])) {
                 $asset_file = str_replace('file:', '', $json['viewStyle']);
@@ -279,7 +278,30 @@ trait Metabox {
             if (file_exists($asset_file)) {
                 $viewStyle = file_get_contents($asset_file);
             }
-            
+        }
+        ?>
+        <div class="inside">
+            <h3><label for="_block_style"><?php _e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p><textarea id="_block_style_file" name="_block_style_file"><?php echo $style; ?></textarea></p>	
+
+            <h3><label for="_block_viewStyle"><?php _e('View Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p><textarea id="_block_viewStyle_file" name="_block_viewStyle_file"><?php echo $viewStyle; ?></textarea></p>
+
+            <h3><label for="_block_editorStyle"><?php _e('Editor Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p><textarea id="_block_editorStyle_file" name="_block_editorStyle_file"><?php echo $editorStyle; ?></textarea></p>	
+
+        </div>
+        <?php
+    }
+
+    public function meta_fields_build_js_callback($post, $metabox) {
+        $plugin_name = $this->get_plugin_slug();
+        $script = $editorScript = $viewScriptModule = $viewScript = '';
+        if ($post) {
+
+            $json = $post ? $this->get_json_data($post->post_name) : [];
+            $basepath = $this->get_ensure_blocks_dir($post->post_name);
+
             $asset_file = 'script.js';
             if (!empty($json['script'])) {
                 $asset_file = str_replace('file:', '', $json['script']);
@@ -319,7 +341,7 @@ trait Metabox {
             if (file_exists($asset_file)) {
                 $viewScriptModule = file_get_contents($asset_file);
             }
-            
+
             $asset_file = 'viewScript.js';
             if (!empty($json['viewScript'])) {
                 $asset_file = str_replace('file:', '', $json['viewScript']);
@@ -333,33 +355,29 @@ trait Metabox {
         ?>
         <div class="inside">
 
-            <a class="tab-head tab-active" href="#css"><?php _e('CSS', 'wizard-blocks'); ?></a> <a class="tab-head" href="js"><?php _e('SCRIPT', 'wizard-blocks'); ?></a>
+            <h3><label for="_block_editorScript"><?php _e('Editor Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php _e('Block type editor scripts definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
+            <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript_file" name="_block_editorScript_file"><?php echo $editorScript; ?></textarea></p>
+            <p><input type="text" id="_block_editorScript" name="_block_editorScript" value="<?php echo empty($json['editorScript']) ? '' : Utils::implode($json['editorScript']); ?>" placeholder="file:./editorScript.js"></p>
+            <?php //https://codex.wordpress.org/Uploading_Files#To_Upload_a_File_in_a_Post ?>
+            <hr>
+            
+            <h3><label for="_block_script"><?php _e('Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#script"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php _e('Block type frontend and editor scripts definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
+            <p><textarea id="_block_script_file" name="_block_script_file"><?php echo $script; ?></textarea></p>
+            <p><input type="text" id="_block_script" name="_block_script" value="<?php echo empty($json['script']) ? '' : Utils::implode($json['script']); ?>" placeholder="file:./script.js"></p>
+            
+            <hr>
+            
+            <h3><label for="_block_viewScript"><?php _e('View Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php _e('Block type frontend scripts definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
+            <p><textarea id="_block_viewScript_file" name="_block_viewScript_file"><?php echo $viewScript; ?></textarea></p>
 
-            <div class="tab-body tab-css">
-                <h3><label for="_block_style"><?php _e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_style" name="_block_style"><?php echo $style; ?></textarea></p>	
-
-                <h3><label for="_block_viewStyle"><?php _e('View Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_viewStyle" name="_block_viewStyle"><?php echo $viewStyle; ?></textarea></p>
-                
-                <h3><label for="_block_editorStyle"><?php _e('Editor Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_editorStyle" name="_block_editorStyle"><?php echo $editorStyle; ?></textarea></p>	
-            </div>
-            <div class="tab-body tab-js">
-
-                <h3><label for="_block_editorScript"><?php _e('Editor Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript" name="_block_editorScript"><?php echo $editorScript; ?></textarea></p>
-                
-                <h3><label for="_block_script"><?php _e('Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_script" name="_block_script"><?php echo $script; ?></textarea></p>
-
-                <h3><label for="_block_viewScript"><?php _e('View Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_viewScript" name="_block_viewScript"><?php echo $viewScript; ?></textarea></p>
-
-                <h3><label for="_block_viewScriptModule"><?php _e('View Script Module', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script-module"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><textarea id="_block_viewScriptModule" name="_block_viewScriptModule"><?php echo $viewScriptModule; ?></textarea></p>
-
-            </div>
+            <hr>
+            
+            <h3><label for="_block_viewScriptModule"><?php _e('View Script Module', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script-module"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php _e('Block type frontend script module definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
+            <p><textarea id="_block_viewScriptModule_file" name="_block_viewScriptModule_file"><?php echo $viewScriptModule; ?></textarea></p>
 
         </div>
         <?php
@@ -390,8 +408,7 @@ trait Metabox {
                 <div class="repeat_attrs">
                     <div class="repeat_attr">
                         <div class="attr_ops">
-                            <span class="attr_toggle"><span class="dashicons dashicons-editor-expand"></span></span>
-                            <span class="attr_name"><?php _e('Add an attribute key', 'wizard-blocks'); ?></span>
+                            <span class="attr_name dashicons-before dashicons-editor-expand"> <?php _e('Add an attribute KEY', 'wizard-blocks'); ?></span>
                             <abbr title="<?php _e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php _e('Up', 'wizard-blocks'); ?>" class="button attr_up pull-right"><span class="dashicons dashicons-arrow-up-alt"></span></abbr>
                             <abbr title="<?php _e('Down', 'wizard-blocks'); ?>" class="button attr_down pull-right"><span class="dashicons dashicons-arrow-down-alt"></span></abbr>
@@ -400,43 +417,43 @@ trait Metabox {
                         <div class="attr_data">
                             <label for="key"><?php _e('Key', 'wizard-blocks'); ?>*: <input type="text" class="key"></label>
                             <label for="label"><?php _e('Label', 'wizard-blocks'); ?>: <input type="text" class="label"></label>
-                            <label for="label"><?php _e('Help', 'wizard-blocks'); ?>: <input type="text" class="help"></label>
                             <label for="type"><?php _e('Type', 'wizard-blocks'); ?>: <select class="type">
-                                <?php foreach (self::$attributes_type as $type => $label) { ?>
-                                   <option value="<?php echo $type ?>"><?php echo $label ?></option>
-                                <?php } ?>
-                            </select></label>
-                            <label for="inputType"><?php _e('Input Type', 'wizard-blocks'); ?>: <select class="inputType">
-                                <?php foreach (self::$attributes_input_type as $type => $label) { ?>
-                                   <option value="<?php echo $label ?>"><?php echo ucfirst($label); ?></option>
-                                <?php } ?>
-                            </select></label>
+        <?php foreach (self::$attributes_type as $type => $label) { ?>
+                                        <option value="<?php echo $type ?>"><?php echo $label ?></option>
+        <?php } ?>
+                                </select></label>
                             <label for="control"><?php _e('Control', 'wizard-blocks'); ?>: <select class="control">
-                                <option value=""><?php _e('Auto', 'wizard-blocks'); ?></option>
-                                <?php foreach (self::$attributes_control as $type => $label) { ?>
-                                    <option value="<?php echo $type ?>"><?php echo $label ?></option>
-                                <?php } ?>
-                            </select></label>
+                                    <option value=""><?php _e('Auto', 'wizard-blocks'); ?></option>
+                                    <?php foreach (self::$attributes_control as $type => $label) { ?>
+                                        <option value="<?php echo $type ?>"><?php echo $label ?></option>
+        <?php } ?>
+                                </select></label>
+                            <label for="inputType"><?php _e('Input Type', 'wizard-blocks'); ?>: <select class="inputType">
+                                    <?php foreach (self::$attributes_input_type as $type => $label) { ?>
+                                        <option value="<?php echo $label ?>"><?php echo ucfirst($label); ?></option>
+                                    <?php } ?>
+                                </select></label>
                             <label for="position"><?php _e('Position', 'wizard-blocks'); ?>: <select class="position">
-                                <option value="content"><?php _e('Editor Content', 'wizard-blocks'); ?></option>
-                                <option value="style"><?php _e('Editor Style', 'wizard-blocks'); ?></option>
-                                <option value="inspector"><?php _e('Inspector', 'wizard-blocks'); ?></option>
-                                <option value="block"><?php _e('Block Content', 'wizard-blocks'); ?></option>
-                            </select></label>
+                                    <option value="content"><?php _e('Settings Panel Content', 'wizard-blocks'); ?></option>
+                                    <option value="style"><?php _e('Settings Panel Style', 'wizard-blocks'); ?></option>
+                                    <option value="inspector"><?php _e('Block Inspector', 'wizard-blocks'); ?></option>
+                                    <option value="block"><?php _e('Block Content canvas', 'wizard-blocks'); ?></option>
+                                </select></label>
                             <label for="multiple"><?php _e('Multiple', 'wizard-blocks'); ?>: <select class="multiple">
-                                <option value="false"><?php _e('False', 'wizard-blocks'); ?></option>
-                                <option value="true"><?php _e('True', 'wizard-blocks'); ?></option>                                
-                            </select></label>
+                                    <option value="false"><?php _e('False', 'wizard-blocks'); ?></option>
+                                    <option value="true"><?php _e('True', 'wizard-blocks'); ?></option>                                
+                                </select></label>
                             <label for="options"><?php _e('Options', 'wizard-blocks'); ?>: <textarea class="options"></textarea></label>
                             <label for="default"><?php _e('Default', 'wizard-blocks'); ?>: <input type="text" class="default"></label>
                             <label for="source"><?php _e('Source', 'wizard-blocks'); ?>: <select class="source">
-                                <option value=""><?php _e('No value', 'wizard-blocks'); ?></option>
-                                <?php foreach (self::$attributes_source as $type => $label) { ?>
-                                    <option value="<?php echo $type ?>"><?php echo $label ?></option>
-                                <?php } ?>
-                            </select></label>
+                                    <option value=""><?php _e('No value', 'wizard-blocks'); ?></option>
+        <?php foreach (self::$attributes_source as $type => $label) { ?>
+                                        <option value="<?php echo $type ?>"><?php echo $label ?></option>
+        <?php } ?>
+                                </select></label>
                             <label for="selector"><?php _e('Selector', 'wizard-blocks'); ?>: <input type="text" class="selector"></label>
                             <label for="attribute"><?php _e('Attribute', 'wizard-blocks'); ?>: <input type="text" class="attribute"></label>
+                            <label for="label"><?php _e('Help', 'wizard-blocks'); ?>: <input type="text" class="help"></label>
                             <label for="extra"><?php _e('Extra', 'wizard-blocks'); ?>: <textarea class="extra" placeholder='{ "var": "value" }'></textarea></label>
                         </div>
                     </div>
@@ -497,66 +514,69 @@ trait Metabox {
 
             <h3><label for="_block_apiVersion"><?php _e('apiVersion', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_apiVersion" name="_block_apiVersion"><?php
-                    if (empty($json['apiVersion']))
-                        $json['apiVersion'] = 3;
-                    foreach (self::$apiVersions as $apiVersion) {
-                        $selected = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
-                        echo '<option value="' . $apiVersion . '"' . $selected . '>' . $apiVersion . '</option>';
-                    }
-                    ?></select></p>	           
+        if (empty($json['apiVersion']))
+            $json['apiVersion'] = 3;
+        foreach (self::$apiVersions as $apiVersion) {
+            $selected = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
+            echo '<option value="' . $apiVersion . '"' . $selected . '>' . $apiVersion . '</option>';
+        }
+        ?></select></p>	           
 
-            <?php if (!empty($post->post_name)) { ?>
+                    <?php if (!empty($post->post_name)) { ?>
                 <h3><label for="_block_name"><?php _e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
                 <p><?php echo $this->get_block_textdomain($json); ?>/<input style="width: 60%;" type="text" id="_block_name" name="_block_name" value="<?php echo $post->post_name; ?>" /></p>
-            <?php } ?>
+                    <?php } ?>
 
             <h3><label for="_block_version"><?php _e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php
-                if (!empty($json['version'])) {
-                    echo $json['version'];
-                }
-                ?>" /></p>	           
+        if (!empty($json['version'])) {
+            echo $json['version'];
+        }
+        ?>" /></p>	           
 
             <h3><label for="_block_icon"><?php _e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select id="_block_icon" name="_block_icon"><option value=""><?php _e('Custom', 'wizard-blocks'); ?></option><?php
-                    if (empty($json['icon']))
-                        $json['icon'] = 'smiley';
-                    $is_dash = false;
-                    foreach ($icons as $icon) {
-                        $selected = '';
-                        if (!empty($json['icon']) && $json['icon'] == $icon) { 
-                            $selected = ' selected'; 
-                            $is_dash = true; 
-                        }
-                        echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
+                if (empty($json['icon']))
+                    $json['icon'] = 'smiley';
+                $is_dash = false;
+                foreach ($icons as $icon) {
+                    $selected = '';
+                    if (!empty($json['icon']) && $json['icon'] == $icon) {
+                        $selected = ' selected';
+                        $is_dash = true;
                     }
-                    ?></select>
-                    <span id="icon_svg">
-                        <textarea id="_block_icon_svg" name="_block_icon_svg" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo $json['icon']; ?></textarea>
-                        <?php if (!empty($json['icon'])) { ?> 
-                            <b><?php _e('Current', 'wizard-blocks'); ?>:</b><br>
-                            <?php echo $is_dash ? '<span class="dashicons dashicons-'.$json['icon'].'"></span>' : $json['icon']; ?>
-                        <?php } ?> 
-                    </span>
+                    echo '<option value="' . $icon . '"' . $selected . '>' . $icon . '</option>';
+                }
+                ?></select>
+                <span id="icon_svg">
+                    <textarea id="_block_icon_svg" name="_block_icon_svg" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo $json['icon']; ?></textarea>
+                    <?php if (!empty($json['icon'])) { ?> 
+                        <b><?php _e('Current', 'wizard-blocks'); ?>:</b><br>
+                        <?php echo $is_dash ? '<span class="dashicons dashicons-' . $json['icon'] . '"></span>' : $json['icon']; ?>
+        <?php } ?> 
+                </span>
             </p>	
-            <?php
-            $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
-            $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));
-            ?>
+                    <?php
+                    $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
+                    $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));
+                    $block_categories = get_default_block_categories();
+                    $block_categories = apply_filters('block_categories_all', $block_categories);
+                    //var_dump($block_categories);
+                    ?>
             <h3><label for="_block_category"><?php _e('Category', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_category" name="_block_category"><?php
-                    foreach (self::$categories as $cat) {
-                        $selected = (!empty($json['category']) && $json['category'] == $cat) ? ' selected' : '';
-                        echo '<option value="' . $cat . '"' . $selected . '>' . $cat . '</option>';
-                    }
-                    ?></select></p>	
+            foreach ($block_categories as $cat) {
+                $selected = (!empty($json['category']) && $json['category'] == $cat['slug']) ? ' selected' : '';
+                echo '<option value="' . $cat['slug'] . '"' . $selected . '>' . $cat['title'] . '</option>';
+            }
+            ?></select></p>
 
             <h3><label for="_block_keywords"><?php _e('Keywords', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#keywords"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_keywords" name="_block_keywords" placeholder="alert, message" value="<?php
-                if (!empty($json['keywords'])) {
-                    echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
-                }
-                ?>" /></p>	           
+                    if (!empty($json['keywords'])) {
+                        echo is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords'];
+                    }
+                    ?>" /></p>	           
 
             <h3><label for="_block_parent"><?php _e('Parent', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#parent"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_parent" name="_block_parent" placeholder="core/group"  value="<?php
@@ -571,41 +591,48 @@ trait Metabox {
                     echo is_array($json['ancestor']) ? implode(', ', $json['ancestor']) : $json['ancestor'];
                 }
                 ?>" /></p>	
-            
+
             <h3><label for="_block_allowedBlocks"><?php _e('Allowed Blocks', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#allowed-blocks"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_allowedBlocks" name="_block_allowedBlocks" placeholder="my-block/product, my-block/title"  value="<?php
                 if (!empty($json['allowedBlocks'])) {
                     echo is_array($json['allowedBlocks']) ? implode(', ', $json['allowedBlocks']) : $json['allowedBlocks'];
                 }
-                ?>" /></p>	
-            
+                ?>" /></p>
+
+            <h3><label for="_block_blockHooks"><?php _e('Hooks', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#block-hooks"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p><textarea id="_block_blockHooks" name="_block_blockHooks" placeholder='{ "my-plugin/banner": "after" }'><?php
+                if (!empty($json['blockHooks'])) {
+                    echo wp_json_encode($json['blockHooks'], JSON_PRETTY_PRINT);
+                }
+                ?></textarea></p>
+
             <h3><label for="_block_providesContext"><?php _e('providesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#provides-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><textarea id="_block_providesContext" name="_block_providesContext" placeholder='"my-plugin/recordId": "recordId"'><?php
+            <p><textarea id="_block_providesContext" name="_block_providesContext" placeholder='{ "my-plugin/recordId": "recordId" }'><?php
                     if (!empty($json['providesContext'])) {
-                        echo $providesContext = wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
+                        echo wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
                     }
                     ?></textarea></p>	
 
             <h3><label for="_block_usesContext"><?php _e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#uses-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php
-                if (!empty($json['usesContext'])) {
-                    echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
-                }
-                ?>" /></p>	           
+                    if (!empty($json['usesContext'])) {
+                        echo is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext'];
+                    }
+                    ?>" /></p>	           
 
             <h3><label for="_block_supports"><?php _e('Supports', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <div style="height: 180px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
                 <?php
-                $custom = [];
-                foreach (self::$supports as $sup => $default) {
-                    ?>
+                      $custom = [];
+                      foreach (self::$supports as $sup => $default) {
+                          ?>
                     <p>
                         <label for="_block_supports_<?php echo $sup; ?>"><b><?php echo $sup; ?></b></label><br>
                         <!-- <input type="checkbox" id="_block_supports_<?php echo $sup; ?>" name="_block_supports[<?php echo $sup; ?>]"<?php
-                        if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
-                            echo ' checked';
-                        }
-                        ?>> <b><?php echo $sup; ?></b></label> -->
+                    if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
+                        echo ' checked';
+                    }
+                    ?>> <b><?php echo $sup; ?></b></label> -->
                         <?php
                         $value = $default;
                         if (!empty($json['supports'])) {
@@ -640,33 +667,33 @@ trait Metabox {
                         }
                         ?>> <label for="_block_supports_<?php echo $sup; ?>_false"><?php echo 'False'; ?></label>
                     </p>
-                <?php } ?>	
+                    <?php } ?>	
             </div>
-            <?php
-            if (!empty($json['supports'])) {
-                foreach ($json['supports'] as $sup => $support) {
-                    if (!isset($custom[$sup]) && !isset(self::$supports[$sup])) {
-                        $custom[$sup] = $support;
-                    } else {
-                        if (is_array($support)) {
-                            foreach ($support as $sub => $suppo) {
-                                if (!isset($custom[$sup][$sub]) && !isset(self::$supports[$sup . '.' . $sub])) {
-                                    $custom[$sup][$sub] = $suppo;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                    <?php
+                           if (!empty($json['supports'])) {
+                               foreach ($json['supports'] as $sup => $support) {
+                                   if (!isset($custom[$sup]) && !isset(self::$supports[$sup])) {
+                                       $custom[$sup] = $support;
+                                   } else {
+                                       if (is_array($support)) {
+                                           foreach ($support as $sub => $suppo) {
+                                               if (!isset($custom[$sup][$sub]) && !isset(self::$supports[$sup . '.' . $sub])) {
+                                                   $custom[$sup][$sub] = $suppo;
+                                               }
+                                           }
+                                       }
+                                   }
+                               }
+                           }
 
-            $custom_transien = get_post_meta($post->ID, '_transient_block_supports_custom', true);
-            if ($custom_transien) {
-                //warn
-                $this->_notice(__('Custom Supports are not saved! Please <a href="#supports_custom">fix it</a> and resave block.'), 'danger error');
-                $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!'), 'danger error inline');
-            }
-            $custom = empty($custom) ? $custom_transien : wp_json_encode($custom, JSON_PRETTY_PRINT);
-            ?>
+                           $custom_transien = get_post_meta($post->ID, '_transient_block_supports_custom', true);
+                           if ($custom_transien) {
+                               //warn
+                               $this->_notice(__('Custom Supports are not saved! Please <a href="#supports_custom">fix it</a> and resave block.'), 'danger error');
+                               $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!'), 'danger error inline');
+                           }
+                           $custom = empty($custom) ? $custom_transien : wp_json_encode($custom, JSON_PRETTY_PRINT);
+                           ?>
             <label id="supports_custom" for="_block_supports_custom"><b><?php _e('Supports custom values', 'wizard-blocks'); ?></b></label>
             <textarea rows="10" id="_block_supports_custom" name="_block_supports_custom" style="width: 100%;" placeholder='{ "spacing": { "margin": [ "top", "bottom" ] } }'><?php echo $custom; ?></textarea>
 
@@ -688,6 +715,7 @@ trait Metabox {
             <h3><label id="extra" for="_block_extra"><b><?php _e('Extra', 'wizard-blocks'); ?></b></label></h3>
             <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;"><?php echo $extra; ?></textarea>
         </div>
-        <?php
+            <?php
+        }
     }
-}
+    

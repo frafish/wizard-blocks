@@ -55,6 +55,51 @@ class Utils {
         //var_dump($string); die();
         return $string;
     }
+    
+    /**
+     * Join array elements with a string
+     * <p>Join array elements with a <code>glue</code> string.</p><p><b>Note</b>:</p><p><b>implode()</b> can, for historical reasons, accept its parameters in either order. For consistency with <code>explode()</code>, however, it may be less confusing to use the documented order of arguments.</p>
+     * @param string $glue <p>Defaults to an empty string.</p>
+     * @param array $pieces <p>The array of strings to implode.</p>
+     * @param bool $listed <p>Return array as a list, maybe use it with empty glue.</p>
+     * @return string <p>Returns a string containing a string representation of all the array elements in the same order, with the glue string between each element.</p>
+     */
+    public static function implode($pieces = array(), $glue = ', ', $listed = false) {
+        $string = '';
+        if (is_string($pieces)) {
+            $string = $pieces;
+        }
+        if (!empty($pieces) && is_array($pieces)) {
+            if ($listed) {
+                $string .= (is_string($listed)) ? '<' . $listed . '>' : '<ul>';
+            }
+            $i = 0;
+            foreach ($pieces as $av) {
+                if ($listed) {
+                    $string .= '<li>';
+                }
+                if (is_object($av)) {
+                    $av = self::to_string($av);
+                }
+                if (is_array($av)) {
+                    $string .= self::implode($av, $glue, $listed);
+                } else {
+                    if ($i) {
+                        $string .= $glue;
+                    }
+                    $string .= $av;
+                }
+                if ($listed) {
+                    $string .= '</li>';
+                }
+                $i++;
+            }
+            if ($listed) {
+                $string .= (is_string($listed)) ? '</' . $listed . '>' : '</ul>';
+            }
+        }
+        return $string;
+    }
 
     /**
      * Maybe JSON Decode — Decodes a JSON string if valid

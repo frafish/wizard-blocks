@@ -254,8 +254,17 @@ class Block extends Module_Base {
                 $providesContext = '{' . $providesContext . '}';
             }
             $providesContext = $this->unescape($providesContext);
-            //var_dump($providesContext); die();
             $providesContext = json_decode($providesContext);
+        }
+        
+        $blockHooks = [];
+        if (!empty($_POST['_block_blockHooks'])) {
+            $blockHooks = trim($_POST['_block_blockHooks']);
+            if (substr($blockHooks, 0, 1) != '{') {
+                $blockHooks = '{' . $blockHooks . '}';
+            }
+            $blockHooks = $this->unescape($blockHooks);
+            $blockHooks = json_decode($blockHooks);
         }
 
         $parent = [];
@@ -337,6 +346,7 @@ class Block extends Module_Base {
             "version" => $version,
             "textdomain" => $textdomain,
             "attributes" => $attributes,
+            "blockHooks" => $blockHooks,
             "providesContext" => $providesContext,
             "usesContext" => $usesContext,
             "supports" => $supports,
@@ -358,8 +368,8 @@ class Block extends Module_Base {
         ];
         foreach ($assets as $asset => $type) {
             $code = '';
-            if (!empty($_POST['_block_' . $asset])) {
-                $code = trim($_POST['_block_' . $asset]);
+            if (!empty($_POST['_block_' . $asset.'_file'])) {
+                $code = trim($_POST['_block_' . $asset.'_file']);
                 $code = $this->unescape($code);
                 if (!empty($json_old[$asset])) {
                     $file = $json_old[$asset];
@@ -369,7 +379,7 @@ class Block extends Module_Base {
                 }
                 $path = $this->get_ensure_blocks_dir($post_slug) . $file;
                 if (file_put_contents($path, $code)) {
-                    $json[$asset] = "file:./" . $file;
+                    $json[$asset] = [ "file:./" . $file ];
                 }
             }
             if (in_array($asset, ['editorScript', 'viewScript'])) {
@@ -389,7 +399,7 @@ class Block extends Module_Base {
                     // save minified file to disk
                     $minifier->minify($path_min);
 
-                    $json[$asset] = "file:./" . $asset . (SCRIPT_DEBUG ? '.' : $min) . $type;
+                    $json[$asset] = [ "file:./" . $asset . (SCRIPT_DEBUG ? '.' : $min) . $type ];
 
                     $path = $this->get_ensure_blocks_dir($post_slug) . $asset . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
                     $code = "<?php return array('dependencies'=>[], 'version'=>'".date('U')."');";
@@ -397,7 +407,7 @@ class Block extends Module_Base {
                 }
             }
         }
-
+        
         $json = array_filter($json);
         
         if (!empty($_POST['_block_extra'])) {            

@@ -50,9 +50,17 @@
 #_block_attributes_editor .attr_name {
     font-weight: bold;
     cursor: pointer;
+    padding: 5px;
+    display: inline-block;
+}
+#_block_attributes_editor .attr_name:before {
+    margin-right: 15px;
 }
 #_block_attributes_editor .pull-right {
     float: right;
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
 }
 #_block_attributes_editor .attr_ops:after {
     content: '';
