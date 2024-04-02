@@ -506,6 +506,45 @@ class Block extends Module_Base {
         }
         return [];
     }
+    
+    public function get_asset_file_contents($asset, $basepath) {
+        $type = self::$assets[$asset];
+        $asset_file = $asset.'.'.$type;
+        if (!empty($json[$asset])) {
+            //var_dump($json[$asset]);
+            $asset_file = $json[$asset];
+            if (is_array($style_file)) {
+                $key = array_search('file:./' . $asset_file, $json[$asset]);
+                //var_dump($style_key);
+                if ($key !== false) {
+                    $asset_file = $json[$asset][$key];
+                } else {
+                    foreach ($json[$asset] as $tmp) {
+                        if ($tmp == 'file:./'.$asset_file) {
+                            $asset_file = $tmp;
+                        }
+                        if (substr($tmp, 0, 5) == 'file:') {
+                            $asset_file = $tmp;
+                        }
+                    }
+                }
+            }
+            
+            $unmin = str_replace('.min.js', '.js', $asset_file);
+            $unmin_file = $basepath . $unmin;
+            if (file_exists($unmin_file)) {
+                $asset_file = $unmin;
+            }
+
+            $asset_file = str_replace('file:', '', $asset_file);
+            $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
+        }
+        $asset_file = $basepath . $asset_file;
+        if (file_exists($asset_file)) {
+            return file_get_contents($asset_file);
+        }
+        return '';
+    }
 
     public function unescape($code = '', $quote = '') {
         $code = str_replace('\"', $quote ? $quote : '"', $code);
