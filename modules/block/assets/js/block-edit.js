@@ -68,6 +68,49 @@ jQuery(document).ready(function ($) {
     var _block_blockHooks = wp.codeEditor.initialize(jQuery('#_block_blockHooks'), editorSettings);
     var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
 
+    /**************************************************************************/
+
+    // Set all variables to be used in scope
+    var frame;
+    
+    // ADD IMAGE LINK
+    jQuery('.upload-assets').on('click', function (event) {
+        event.preventDefault();
+        // If the media frame already exists, reopen it.
+        if (frame) {
+            frame.open();
+            return;
+        }
+        // Create a new media frame
+        frame = wp.media({
+            title: 'Select or Upload Assets',
+            button: {
+                text: 'Use this asset'
+            },
+            multiple: true  // Set to true to allow multiple files to be selected
+        });
+        // When an image is selected in the media frame...
+        frame.on('select', () => {
+            // Get media attachment details from the frame state
+            console.log(frame.state().get('selection'));
+            frame.state().get('selection').each((attachment, index ) => {
+                //console.log(index);
+                //console.log(attachment);
+                let asset = attachment.toJSON();
+                console.log(asset);
+                let input = jQuery(this).siblings('input');
+                console.log(input);
+                // Send the attachment URL to our custom image input field.
+                input.val( (input.val() ? input.val()+', ' : '') + asset.url );
+                // Send the attachment id to our hidden input
+                //input.val(asset.id);
+            });
+        });
+        // Finally, open the modal on click
+        frame.open();
+    });
+
+    /**************************************************************************/
 
     jQuery('#_block_icon').select2({
         templateResult: function (state) {
@@ -80,6 +123,8 @@ jQuery(document).ready(function ($) {
             return $state;
         }
     });
+
+    /**************************************************************************/
 
     jQuery('.tab-head').on('click', function () {
         jQuery('.tab-head').removeClass('tab-active');
@@ -101,12 +146,12 @@ jQuery(document).ready(function ($) {
             jQuery('#_block_icon_svg').show();
         }
     });
-    
-    
-    
+
+    /**************************************************************************/
+
     var attr_editor = jQuery('#_block_attributes_editor');
     var attr_attributes = jQuery('#_block_attributes');
-    
+
     function update_block_label(row, title) {
         let key = row.find('.key').val();
         //row.find('.attr_name').text(row.find('.attr_name').text().replace('attr_key', key).replace('attr_title', title));
@@ -117,7 +162,7 @@ jQuery(document).ready(function ($) {
         var attributes = JSON.parse(attr_attributes.val());
         //console.log(attributes);
         var index = 0;
-        jQuery.each(attributes, function(key, element){
+        jQuery.each(attributes, function (key, element) {
             //console.log(index);
             //console.log(key);
             console.log(element);
@@ -188,10 +233,10 @@ jQuery(document).ready(function ($) {
             index++;
         });
     }
-    
+
     function update_block_attributes() {
         let attributes = {};
-        attr_editor.find('.repeat_attr').each(function(index, row){
+        attr_editor.find('.repeat_attr').each(function (index, row) {
             row = jQuery(row);
             let key = row.find('.key').val();
             //console.log(key);
@@ -240,7 +285,7 @@ jQuery(document).ready(function ($) {
                 let evals = row.find('.options').val().split('\n');
                 if (row.find('.options').val().includes('|') || attributes[key]['type']) {
                     attributes[key]['options'] = {};
-                    jQuery(evals).each(function(id, label){
+                    jQuery(evals).each(function (id, label) {
                         let tmp = label.split('|');
                         let value = label;
                         if (tmp.length > 1) {
@@ -266,7 +311,7 @@ jQuery(document).ready(function ($) {
                 attributes[key]['multiple'] = true;
             }
             if (row.find('.extra').val()) {
-                attributes[key] =  { ...attributes[key], ...JSON.parse(row.find('.extra').val()) };
+                attributes[key] = {...attributes[key], ...JSON.parse(row.find('.extra').val())};
             }
         });
         //console.log(attributes);
@@ -284,54 +329,54 @@ jQuery(document).ready(function ($) {
         attr_editor.data('row', attr_editor.find('.repeat_attrs').html());
         //console.log(attr_editor.data('row'));
         attr_editor.find('.repeat_attr').remove();
-        
-        
-        _block_attributes.codemirror.on('change', function(){
+
+
+        _block_attributes.codemirror.on('change', function () {
             // destroy and rebuild 
             console.log('codemirror change');
             _block_attributes.codemirror.save();
             update_block_attributes_editor();
         });
-        attr_attributes.on('change', function(){
+        attr_attributes.on('change', function () {
             console.log('textarea change');
             // destroy and rebuild 
             update_block_attributes_editor();
         });
-        
-        attr_editor.on('click', '.attr_add', function(){
+
+        attr_editor.on('click', '.attr_add', function () {
             console.log('add');
             attr_editor.find('.repeat_attrs').append(attr_editor.data('row'));
         });
-        
-        attr_editor.on('click', '.repeat_attr .button', function(){
+
+        attr_editor.on('click', '.repeat_attr .button', function () {
             console.log('update');
-            setTimeout(function() {
+            setTimeout(function () {
                 update_block_attributes();
             }, 100);
         });
-        
-        attr_editor.on('click', '.attr_toggle, .attr_name', function(){
+
+        attr_editor.on('click', '.attr_toggle, .attr_name', function () {
             console.log('toggle');
             jQuery(this).closest('.attr_ops').siblings('.attr_data').toggle();
         });
-        
-        attr_editor.on('click', '.attr_up', function(){
+
+        attr_editor.on('click', '.attr_up', function () {
             console.log('up');
             let row = jQuery(this).closest('.repeat_attr');
             if (row.eq()) {
-                    row.insertBefore(row.prev());
+                row.insertBefore(row.prev());
             }
         });
-        
-        attr_editor.on('click', '.attr_down', function(){
+
+        attr_editor.on('click', '.attr_down', function () {
             console.log('down');
             let row = jQuery(this).closest('.repeat_attr');
             if (!row.is(':last-child')) {
                 row.insertAfter(row.next());
             }
         });
-        
-        attr_editor.on('click', '.attr_clone', function(){
+
+        attr_editor.on('click', '.attr_clone', function () {
             console.log('clone');
             let row = jQuery(this).closest('.repeat_attr');
             //row.clone().appendTo(row.parent());
@@ -339,39 +384,39 @@ jQuery(document).ready(function ($) {
             clone.insertAfter(row);
             clone.find('.attr_toggle').trigger('click');
         });
-        
-        attr_editor.on('click', '.attr_remove', function(){
+
+        attr_editor.on('click', '.attr_remove', function () {
             console.log('remove');
             let row = jQuery(this).closest('.repeat_attr');
             row.remove();
         });
-        
-        
-        attr_editor.on('change', '.repeat_attr input, .repeat_attr select, .repeat_attr textarea', function(){
+
+
+        attr_editor.on('change', '.repeat_attr input, .repeat_attr select, .repeat_attr textarea', function () {
             console.log('update');
             let row = jQuery(this).closest('.repeat_attr');
             if (jQuery(this).hasClass('key') || jQuery(this).hasClass('label')) {
                 let title = row.find('.label').val();
                 update_block_label(row, title);
             }
-            if (jQuery(this).hasClass('control') && ['InputControl'].includes(jQuery(this).val()) ) {
+            if (jQuery(this).hasClass('control') && ['InputControl'].includes(jQuery(this).val())) {
                 row.find('label[for="inputType"]').show();
             } else {
                 row.find('label[for="inputType"]').hide();
             }
-            
+
             if (jQuery(this).hasClass('control') && ['SelectControl'].includes(jQuery(this).val())) {
                 row.find('label[for="multiple"]').show();
             } else {
                 row.find('label[for="multiple"]').hide();
             }
-            
+
             if (jQuery(this).hasClass('control') && ['SelectControl', 'RadioControl', ''].includes(jQuery(this).val())) {
                 row.find('label[for="options"]').show();
             } else {
                 row.find('label[for="options"]').hide();
             }
-            
+
             if (jQuery(this).hasClass('source') && ![''].includes(jQuery(this).val())) {
                 row.find('label[for="selector"]').show();
                 if (['attribute'].includes(jQuery(this).val())) {
@@ -383,12 +428,12 @@ jQuery(document).ready(function ($) {
                     row.find('label[for="attribute"]').hide();
                 }
             }
-            
-            setTimeout(function() {
+
+            setTimeout(function () {
                 update_block_attributes();
             }, 100);
         });
-        
+
         update_block_attributes_editor()
     }
 });

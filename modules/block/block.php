@@ -17,7 +17,24 @@ class Block extends Module_Base {
     use Traits\Pages;
     use Traits\Actions;
     use Traits\Icons;
+    
+    public static $assets = [
+            'script' => 'js',
+            'viewScript' => 'js',
+            'viewScriptModule' => 'js',
+            'editorScript' => 'js',
+            'style' => 'css',
+            'viewStyle' => 'css',
+            'editorStyle' => 'css',
+            'render' => 'php'
+        ];
 
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+    public static $mimes = [
+        'js' => 'text/javascript',
+        'css' => 'text/css',
+    ];
+    
     /**
      * Twig constructor.
      *
@@ -79,6 +96,45 @@ class Block extends Module_Base {
             }
             return $blocks;
         });
+        
+        if ($this->is_block_edit()) {
+            add_filter( 'upload_mimes', [$this, 'add_mime_types'] );
+        }
+        add_filter( 'wp_check_filetype_and_ext', [$this, '_add_mime_types'], 10, 5);
+        
+    }
+    
+    public function is_block_edit() {
+        return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && get_post_type() == 'block') || (!empty($_GET['post_type']) && $_GET['post_type'] == 'block'));
+    }
+    
+    public function add_mime_types( $mimes ) {
+        foreach (self::$mimes as $mkey => $mime) {
+            $mimes[$mkey] = $mime;
+        }
+        //var_dump($_GET);var_dump($_POST);
+        //var_dump($mimes); die();
+        return $mimes;
+    }
+    
+    function _add_mime_types($attr, $file, $filename, $mimes, $real_mime = null){
+        $proper_filename = '';
+        if (!empty($attr['ext'])) {
+            $ext = $attr['ext'];
+        } else {
+            $tmp = explode(".", $filename);
+            if (count($tmp) == 1){
+                return $attr;
+            }
+            $ext  = array_pop($tmp);
+            //$proper_filename = $filename; //implode('.', $tmp);
+        }
+        //var_dump($_GET);var_dump($_POST);var_dump($ext); var_dump($attr); var_dump($file); var_dump($filename); var_dump($mime); var_dump($real_mime); die();
+        if (isset(self::$mimes[$ext])) {
+            $type = self::$mimes[$ext];
+            return compact('ext', 'type', 'proper_filename');
+        }
+        return $attr;
     }
     
     public function get_block_post($slug) {
@@ -356,17 +412,8 @@ class Block extends Module_Base {
         ];
 
         
-        $assets = [
-            'script' => 'js',
-            'viewScript' => 'js',
-            'viewScriptModule' => 'js',
-            'editorScript' => 'js',
-            'style' => 'css',
-            'viewStyle' => 'css',
-            'editorStyle' => 'css',
-            'render' => 'php'
-        ];
-        foreach ($assets as $asset => $type) {
+        foreach (self::$assets as $asset => $type) {
+            $json[$asset] = [];
             $code = '';
             if (!empty($_POST['_block_' . $asset.'_file'])) {
                 $code = trim($_POST['_block_' . $asset.'_file']);
@@ -405,6 +452,29 @@ class Block extends Module_Base {
                     $code = "<?php return array('dependencies'=>[], 'version'=>'".date('U')."');";
                     file_put_contents($path, $code);
                 }
+            }
+        }
+        
+        foreach (self::$assets as $asset => $type) {
+            if (!empty($_POST['_block_' . $asset])) {
+                $files = Utils::explode($_POST['_block_' . $asset]);
+                foreach ($files as $file) {
+                    if (substr($file, 0, 5) != 'file:') {
+                        // if local file copy into block folder
+                        // TODO
+                    }
+                    // prevent duplicates
+                    if (empty($json[$asset]) || !in_array($file, $json[$asset])) {
+                        $json[$asset][] = $file;
+                    }
+                }
+            }
+        }
+        
+        // from array to string in case of single asset
+        foreach (self::$assets as $asset => $type) {
+            if (is_array($json[$asset]) && count($json[$asset]) == 1) {
+                $json[$asset] = reset($json[$asset]);
             }
         }
         
