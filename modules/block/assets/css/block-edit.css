@@ -34,6 +34,13 @@
     height: auto;
 }
 
+.d-flex {
+    display: flex;
+}
+.d-flex .dashicons-before {
+  display: flex !important;
+  align-items: center;
+}
 
 #_block_attributes_editor .repeat_attr {
     border: 1px solid;

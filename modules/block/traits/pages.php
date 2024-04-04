@@ -5,7 +5,7 @@ namespace WizardBlocks\Modules\Block\Traits;
 trait Pages {
 
     public function admin_menu_action() {
-        
+
         add_submenu_page(
                 'edit.php?post_type=block',
                 __('All Blocks'),
@@ -14,7 +14,7 @@ trait Pages {
                 'wblocks',
                 [$this, 'wizard_blocks'] //callback function
         );
-        
+
         add_submenu_page(
                 'edit.php?post_type=block',
                 __('Tools'),
@@ -23,7 +23,6 @@ trait Pages {
                 'wtools',
                 [$this, 'wizard_tools'] //callback function
         );
-        
     }
 
     public function _notice($message, $type = 'success') {
@@ -73,7 +72,7 @@ trait Pages {
 
     public function wizard_blocks() {
         $this->execute_actions();
-        
+
         $blocks_dir = apply_filters('wizard/dirs', []);
         $blocks = $this->get_registered_blocks();
         $blocks_count = [];
@@ -83,12 +82,23 @@ trait Pages {
             $block_slug = $this->get_block_slug($name);
             if ($block_post = $this->get_block_post($block_slug)) {
                 $blocks[$name]['post'] = $block_post;
-            }
-            if ($block_dir = $this->get_blocks_dir($block_slug)) {
-                $blocks[$name]['file'] = $block_dir.DIRECTORY_SEPARATOR.'block.json';
+                if ($block_dir = $this->get_blocks_dir($block_slug)) {
+                    $blocks[$name]['file'] = $block_dir . DIRECTORY_SEPARATOR . $block_slug . DIRECTORY_SEPARATOR . 'block.json';
+                }
             }
         }
-        $blocks_usage = $this->get_blocks_usage()
+        $blocks_usage = $this->get_blocks_usage();
+
+        $blocks_disabled = get_option(self::$blocks_disabled_key);
+        //var_dump($blocks_disabled);
+        
+        $block_categories = get_default_block_categories();
+        $block_categories = apply_filters('block_categories_all', $block_categories);
+        $tmp = [];
+        foreach ($block_categories as $cat) {
+            $tmp[$cat['slug']] = $cat['title'];
+        }
+        $block_categories = $tmp;
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php _e('All Registered Blocks', 'wizard-blocks'); ?></h1>           
@@ -109,7 +119,7 @@ trait Pages {
                     jQuery('.blocks .hentry').show();
                     let filter = jQuery(this).attr('href').replace('#', '');
                     if (filter) {
-                        console.log(filter);
+                        //console.log(filter);
                         jQuery('.blocks .hentry').hide();
                         jQuery('.blocks .hentry.block-' + filter).show();
                     }
@@ -117,14 +127,39 @@ trait Pages {
                 });
             </script>
             <hr style="clear: both; padding-top: 10px;">
+            <form action="?post_type=block&page=<?php echo $_GET['page']; ?>" method="POST">
+                <input type="hidden" name="action" value="disable">
+                <div class="card" style="max-width: none; width: 100%; display: flex; justify-content: space-between;">
+                    <input id="blocks-search" placeholder="<?php _e('Search'); ?>" type="search">
+                    <span>
+                        <a class="button button-danger" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=reset"><?php _e('Reset'); ?></a> 
+                        <input class="button button-primary" type="submit" value="<?php _e('Save'); ?>">
+                    </span>
+                </div>
+                <script>
+                    jQuery('#blocks-search').on('change keyup', function () {
+                                jQuery('.blocks .hentry').show();
+                                let value = jQuery(this).val();
+                                //console.log(value);
+                                if (value) {
+                                    jQuery('.blocks .hentry').each(function() {
+                                       if (!jQuery(this).find('.title').text().toLowerCase().includes(value.toLowerCase())) {
+                                           jQuery(this).hide();
+                                       }
+                                    });
+                                }
+                            });
+                        </script>
             <table class="wp-list-table widefat fixed striped table-view-list blocks">
                 <thead>
                     <tr>
                         <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php _e('Icon'); ?></th>
-                        <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php _e('Title'); ?></span></th>
+                        <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php _e('Title'); ?></span></th>
+                        <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php _e('Status'); ?></th>
                         <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
+                        <th scope="col" id="category" class="manage-column column-category"><?php _e('Category'); ?></th>
+                        <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php _e('Usage'); ?></th>
                         <th scope="col" id="plugin" class="manage-column column-plugin"><?php _e('Plugin'); ?></th>
-                        <th scope="col" id="usage" class="manage-column column-usage" style="width: 50px;"><?php _e('Usage'); ?></th>
                         <th scope="col" id="actions" class="manage-column column-actions"><?php _e('Actions'); ?></th>
                     </tr>
                 </thead>
@@ -156,18 +191,36 @@ trait Pages {
                                         <?php if ($block_post) { ?></a><?php } ?>
                                 </strong>
                             </td>
+                            <td class="status column-status" data-colname="<?php _e('Status', 'wizard-blocks'); ?>">
+                                <label class="switch">
+                                    <input type="checkbox" name="blocks_disabled[<?php echo $block['name']; ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
                             <td class="description column-description" data-colname="<?php _e('Description', 'wizard-blocks'); ?>">
                                 <?php echo empty($block['description']) ? '' : $block['description']; ?>
+                            </td>
+                            <td class="category column-category" data-colname="<?php _e('Category', 'wizard-blocks'); ?>">
+                                <?php
+                                if (!empty($block['category'])) {
+                                    echo '<abbr title="' . $block['category'] . '">';
+                                    echo empty($block_categories[$block['category']]) ? ucfirst($block['category']) : $block_categories[$block['category']];
+                                    echo '</abbr>';
+                                }
+                                ?>
+                            </td>
+                            <td class="usage column-usage" data-colname="<?php _e('Usage', 'wizard-blocks'); ?>">
+                                <?php echo empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]; ?>
                             </td>
                             <td class="folder column-folder" data-colname="<?php _e('Folder', 'wizard-blocks'); ?>">
                                 <?php
                                 if (!empty($block['file'])) {
-                                    echo '<abbr title="'.$block['file'].'">';
-                                    /*$tmp = explode('/plugins/', $block['file']);
-                                    if (count($tmp) > 1) {
-                                        list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
-                                        echo $plugin_slug;
-                                    }*/
+                                    echo '<abbr title="' . $block['file'] . '">';
+                                    /* $tmp = explode('/plugins/', $block['file']);
+                                      if (count($tmp) > 1) {
+                                      list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
+                                      echo $plugin_slug;
+                                      } */
                                 }
                                 echo $block['textdomain'];
                                 if (!empty($block['file'])) {
@@ -182,38 +235,50 @@ trait Pages {
                                 }
                                 ?>
                             </td>	
-                            <td class="usage column-usage" data-colname="<?php _e('Usage', 'wizard-blocks'); ?>">
-                                <?php echo empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]; ?>
-                            </td>
+
                             <td class="actions column-actions" data-colname="<?php _e('Actions', 'wizard-blocks'); ?>">
                                 <?php if ($block['textdomain'] == 'core') { ?>
-                                    <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank"><?php _e('Docs', 'wizard-blocks'); ?></a>
-                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=clone&block=<?php echo $block_slug; ?>"><?php _e('Clone', 'wizard-blocks'); ?></a>
+                                    <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php _e('Docs', 'wizard-blocks'); ?>"></a>
+                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=clone&block=<?php echo $block_slug; ?>" title="<?php _e('Clone', 'wizard-blocks'); ?>"></a>
                                 <?php } ?>
-
+                                <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=disable&block=<?php echo $block_slug ?>" title="<?php _e('Disable', 'wizard-blocks'); ?>"></a>
                                 <?php if (!empty($block['folder'])) { ?>
-                                    <a class="btn button dashicons-before dashicons-download" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=download&block=<?php echo $block_slug; ?>"><?php _e('Download', 'wizard-blocks'); ?></a>
+                                    <a class="btn button dashicons-before dashicons-download" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=download&block=<?php echo $block_slug; ?>" title="<?php _e('Download', 'wizard-blocks'); ?>"></a>
                                 <?php } ?>
                                 <?php
                                 if (empty($block['post'])) {
                                     if (!empty($block['folder'])) {
                                         ?>
-                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=import&block=<?php echo $block_slug; ?>"><?php _e('Import', 'wizard-blocks'); ?></a>
+                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=import&block=<?php echo $block_slug; ?>" title="<?php _e('Import', 'wizard-blocks'); ?>"></a>
                                         <?php
                                     }
                                 } else {
                                     ?>
-                                    <a class="btn button button-primary dashicons-before dashicons-edit" href=" <?php echo get_edit_post_link($block_post->ID); ?>"><?php _e('Edit', 'wizard-blocks'); ?></a>
+                                    <a class="btn button button-primary dashicons-before dashicons-edit" href="<?php echo get_edit_post_link($block_post->ID); ?>" title="<?php _e('Edit', 'wizard-blocks'); ?>"></a>
                                 <?php }
                                 ?>
-            <?php do_action('wizard/blocks/action/btn', $block); ?>
+                                <?php do_action('wizard/blocks/action/btn', $block); ?>
                             </td>		
                         </tr>
                         <?php
                     }
                     ?>
                 </tbody>
+                
+                <tfoot>
+                    <tr>
+                        <th scope="col" id="icon" class="manage-column column-icon"><?php _e('Icon'); ?></th>
+                        <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php _e('Title'); ?></span></th>
+                        <th scope="col" id="status" class="manage-column column-status"><?php _e('Status'); ?></th>
+                        <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
+                        <th scope="col" id="category" class="manage-column column-category"><?php _e('Category'); ?></th>
+                        <th scope="col" id="usage" class="manage-column column-usage sortable"><?php _e('Usage'); ?></th>
+                        <th scope="col" id="plugin" class="manage-column column-plugin"><?php _e('Plugin'); ?></th>
+                        <th scope="col" id="actions" class="manage-column column-actions"><?php _e('Actions'); ?></th>
+                    </tr>
+                </tfoot>
             </table>
+            </form>
         </div>
         <style>
             .page-title-action.dashicons-before:before,
@@ -226,6 +291,56 @@ trait Pages {
                 max-width: 100%;
                 height: auto;
                 width: 20px;
+            }
+            
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 40px;
+                height: 20px;
+            }
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #135e96;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                right: 21px;
+                top: 1px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+            input:checked + .slider {
+                background-color: #ccc;
+            }
+            input:focus + .slider {
+                box-shadow: 0 0 1px #ccc;
+            }
+            input:checked + .slider:before {
+                transform: translateX(20px);
+            }
+            /* Rounded sliders */
+            .slider.round {
+                border-radius: 20px;
+            }
+            .slider.round:before {
+                border-radius: 50%;
             }
         </style>
         <?php
@@ -282,7 +397,6 @@ trait Pages {
                 if (!empty($icons_block[$name]) && !empty($icons_core[$icons_block[$name]])) {
                     $blocks[$name]['icon'] = $icons_core[$icons_block[$name]];
                 }
-                
             }
         }
 
@@ -292,16 +406,17 @@ trait Pages {
             $block = $this->get_json_data($block_slug);
             $block['folder'] = $ablock;
             $blocks[$block['name']] = $block;
+            $blocks[$block['name']]['file'] = $ablock . DIRECTORY_SEPARATOR . 'block.json';
         }
 
         return $blocks;
     }
-    
+
     function get_blocks_usage() {
         global $wpdb;
         $block_init = '<!-- wp:';
         $block_count = [];
-        $sql = 'SELECT * FROM '.$wpdb->posts.' WHERE post_content LIKE "%'.$block_init.'%" AND post_status = "publish"';
+        $sql = 'SELECT * FROM ' . $wpdb->posts . ' WHERE post_content LIKE "%' . $block_init . '%" AND post_status = "publish"';
         $posts = $wpdb->get_results($sql);
         foreach ($posts as $post) {
             $tmp = explode($block_init, $post->post_content);

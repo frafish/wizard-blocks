@@ -2,7 +2,31 @@
 namespace WizardBlocks\Modules\Block\Traits;
 
 Trait Actions {
+    
+    static public $blocks_disabled_key = 'blocks_disabled';
+    
     function execute_actions() {
+        
+        if (!empty($_POST['action'])) {
+
+            $blocks_dir = apply_filters('wizard/dirs', []);
+            $dirs = wp_upload_dir();
+            $basedir = str_replace('/', DIRECTORY_SEPARATOR, $dirs['basedir']) . DIRECTORY_SEPARATOR;
+
+            switch ($_POST['action']) {
+                
+                case 'disable':
+                    if (!empty($_POST[self::$blocks_disabled_key])) {
+                        $disabled = array_keys($_POST[self::$blocks_disabled_key]);
+                        update_option(self::$blocks_disabled_key, $disabled);
+                        $this->_notice(__('Blocks disabled settings has been saved!', 'wizard-blocks'));
+                    }
+                    break;
+                    
+            }
+        }
+        
+        
         if (!empty($_GET['action'])) {
 
             $blocks_dir = apply_filters('wizard/dirs', []);
@@ -11,6 +35,21 @@ Trait Actions {
 
             switch ($_GET['action']) {
                 
+                case 'disable':
+                    if (!empty($_GET['block'])) {
+                        $block_name = [ $_GET['block'] ];
+                        $disabled = get_option(self::$blocks_disabled_key);
+                        $disabled = empty($disabled) ? [$block_name] : array_merge($disabled, $block_name);
+                        update_option(self::$blocks_disabled_key, $disabled);
+                        $this->_notice(__('Block disabled!', 'wizard-blocks'));
+                    }
+                    break;
+                    
+                case 'reset':
+                    delete_option(self::$blocks_disabled_key);
+                    $this->_notice(__('Block disabled settings has been resetted!', 'wizard-blocks'));
+                    break;
+                    
                 case 'clone':
                     if (!empty($_GET['block'])) {
                         $block_name = $_GET['block'];

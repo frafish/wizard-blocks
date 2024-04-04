@@ -263,9 +263,7 @@ trait Metabox {
             <p><textarea id="_block_style_file" name="_block_style_file"><?php echo $this->get_asset_file_contents('style', $basepath); ?></textarea></p>	
             <p class="d-flex assets">
                 <input type="text" id="_block_style" name="_block_style" value="<?php echo empty($json['style']) ? '' : Utils::implode($json['style']); ?>" placeholder="file:./style.css">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             <hr>
 
@@ -274,9 +272,7 @@ trait Metabox {
             <p><textarea id="_block_viewStyle_file" name="_block_viewStyle_file"><?php echo $this->get_asset_file_contents('viewStyle', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewStyle" name="_block_viewStyle" value="<?php echo empty($json['viewStyle']) ? '' : Utils::implode($json['viewStyle']); ?>" placeholder="file:./viewStyle.css">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
             <hr>
@@ -286,9 +282,7 @@ trait Metabox {
             <p><textarea id="_block_editorStyle_file" name="_block_editorStyle_file"><?php echo $this->get_asset_file_contents('editorStyle', $basepath); ?></textarea></p>	
             <p class="d-flex assets">
                 <input type="text" id="_block_editorStyle" name="_block_editorStyle" value="<?php echo empty($json['editorStyle']) ? '' : Utils::implode($json['editorStyle']); ?>" placeholder="file:./editorStyle.css">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
         </div>
@@ -317,9 +311,7 @@ trait Metabox {
             <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript_file" name="_block_editorScript_file"><?php echo $this->get_asset_file_contents('editorScript', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_editorScript" name="_block_editorScript" value="<?php echo empty($json['editorScript']) ? '' : Utils::implode($json['editorScript']); ?>" placeholder="file:./editorScript.js">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
             <hr>
@@ -329,9 +321,7 @@ trait Metabox {
             <p><textarea id="_block_script_file" name="_block_script_file"><?php echo $this->get_asset_file_contents('script', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_script" name="_block_script" value="<?php echo empty($json['script']) ? '' : Utils::implode($json['script']); ?>" placeholder="file:./script.js">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
             <hr>
@@ -341,9 +331,7 @@ trait Metabox {
             <p><textarea id="_block_viewScript_file" name="_block_viewScript_file"><?php echo $this->get_asset_file_contents('viewScript', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewScript" name="_block_viewScript" value="<?php echo empty($json['viewScript']) ? '' : Utils::implode($json['viewScript']); ?>" placeholder="file:./viewScript.js">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
             <hr>
@@ -353,9 +341,7 @@ trait Metabox {
             <p><textarea id="_block_viewScriptModule_file" name="_block_viewScriptModule_file"><?php echo $this->get_asset_file_contents('viewScriptModule', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewScriptModule" name="_block_viewScriptModule" value="<?php echo empty($json['viewScriptModule']) ? '' : Utils::implode($json['viewScriptModule']); ?>" placeholder="file:./viewScriptModule.js">
-                <a class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank">
-                   <?php _e('Upload new asset') ?>
-                </a>
+                <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
             </p>
             
         </div>

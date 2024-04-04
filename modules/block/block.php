@@ -102,6 +102,33 @@ class Block extends Module_Base {
         }
         add_filter( 'wp_check_filetype_and_ext', [$this, '_add_mime_types'], 10, 5);
         
+        
+        add_action('init', [$this, 'unregister_blocks_disabled'], 99);
+        
+    }
+    
+    public function unregister_blocks_disabled() {
+        if (!isset($_GET['post_type']) || $_GET['post_type'] != 'block') {
+            $blocks_disabled = get_option(self::$blocks_disabled_key);
+            if (!empty($blocks_disabled)) {
+                foreach ($blocks_disabled as $block_name) {
+                    if (\WP_Block_Type_Registry::get_instance()->is_registered($block_name)) {
+                        $registered_blocks = \WP_Block_Type_Registry::get_instance()->unregister($block_name);
+                    }
+                }
+                add_filter( "get_user_metadata", function($value, $object_id, $meta_key, $single, $meta_type ) use ($blocks_disabled) {
+                    if ($meta_key == 'wp_persisted_preferences') {
+                        global $wpdb;
+                        $value = $wpdb->get_var('SELECT meta_value FROM '.$wpdb->usermeta.' WHERE user_id = '.$object_id.' AND meta_key = "'.$meta_key.'"');
+                        $value = maybe_unserialize($value);
+                        $value['core']['hiddenBlockTypes'] = empty($value['core']['hiddenBlockTypes']) ? $blocks_disabled : array_merge($value['core']['hiddenBlockTypes'], $blocks_disabled);
+                        //echo '<pre>';var_dump($blocks_disabled); var_dump($value); die();
+                        return [$value];
+                    }
+                    return $value;
+                }, 10, 5);
+            }
+        }
     }
     
     public function is_block_edit() {
