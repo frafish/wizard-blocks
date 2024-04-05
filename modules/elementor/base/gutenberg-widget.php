@@ -3,6 +3,7 @@
 namespace WizardBlocks\Modules\Elementor\Base;
 
 use Elementor\Widget_Base;
+use WizardBlocks\Core\Utils;
 
 /**
  * Elementor Gutenberg Widget.
@@ -187,7 +188,13 @@ class GutenbergWidget extends Widget_Base {
             }
             
             if (!empty($attribute['default'])) {
-                $control['default'] = $attribute['default'];
+                $default = $attribute['default'];
+                if (is_object($default)) {
+                    $default = wp_json_encode($default);
+                }
+                $default = Utils::maybe_json_decode($default);
+                $default = maybe_unserialize($default);
+                $control['default'] = $default;
             }
             if (!empty($attribute['selected'])) {
                 $control['default'] = $attribute['selected'];

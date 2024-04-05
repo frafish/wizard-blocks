@@ -13,15 +13,22 @@ Trait Attributes {
         return isset($_GET['context']) && $_GET['context'] == "edit";
     }
     
-    public function get_attributes($attributes, $panel = 'base', $group = 'settings') {
+    public function get_attributes($attributes, $panel = 'base', $group = 'settings', $position = 'default') {
         $attributes_panel = [];
+        $panel = empty($group) ? 'base' : $panel;
+        $group = empty($group) ? 'settings' : $group;
+        $position = empty($position) ? 'default' : $position;
         if (!empty($attributes)) {
             foreach ($attributes as $key => $attr) {
-                if (!empty($attr['panel']) && $attr['panel'] == $panel) {
-                    $attributes_panel[$key] = $attr;
-                }
-                if (empty($attr['panel']) && 'base' == $panel) {
-                    $attributes_panel[$key] = $attr;
+                if ((empty($attr['position']) && $position == 'default') 
+                        || (!empty($attr['position']) && $attr['position'] == $position)) {
+                    if ((empty($attr['group']) && $group == 'settings') 
+                            || (!empty($attr['group']) && $attr['group'] == $group)) {
+                        if ((empty($attr['panel']) && $panel == 'base') 
+                                || (!empty($attr['panel']) && $attr['panel'] == $panel)) {
+                            $attributes_panel[$key] = $attr;
+                        }
+                    }
                 }
             }
         }
@@ -140,6 +147,13 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
                             ?>
                         ),
                     <?php }
+                    
+                    $inline = $this->get_attributes($args['attributes'], null, null, 'block');
+                    if (!empty($inline)) {
+                        foreach ($inline as $id => $attr) {
+                            $this->_component($id, $attr, $args);
+                        }
+                    }
                 }?>
                 wp.element.createElement(
                     wp.components.Disabled, {},
@@ -171,8 +185,8 @@ if ($wrapper) { ?></script><?php }
        
        if (empty($attr['type'])) {
            $attr['type'] = 'string';
-           if (!empty($attr['control'])) {
-               switch($attr['control']) {
+           if (!empty($attr['component'])) {
+               switch($attr['component']) {
                    case 'CheckboxControl':
                        $attr['type'] = 'boolean';
                }
@@ -180,32 +194,32 @@ if ($wrapper) { ?></script><?php }
        }
        
        // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
-       $control = 'TextControl';
-       if (empty($attr['control'])) {
+       $component = 'TextControl';
+       if (empty($attr['component'])) {
            if (!empty($attr['type'])) {
             switch ($attr['type']) {
                 case 'boolean':
-                    $control = 'ToggleControl';
+                    $component = 'ToggleControl';
                     break;
                 case 'string':
                 default:
-                    $control = 'TextControl';
+                    $component = 'TextControl';
             }
            }
            if (!empty($attr['enum'])) {
                $attr['options'] = $attr['enum'];
            }
            if (!empty($attr['options'])) { 
-               $control = 'SelectControl'; 
+               $component = 'SelectControl'; 
            }
        } else {
-           $control = $attr['control'];
+           $component = $attr['component'];
        }
        
        ?>
        wp.element.createElement(
             <?php
-            if ($control == 'ButtonGroup') { ?>
+            if ($component == 'ButtonGroup') { ?>
                 //wp.element.createElement(wp.components.PanelRow, {}, 
                     /*wp.element.createElement(wp.components.BaseControl, { 
                         label: wp.i18n.__("<?php echo $label ?>", "<?php echo $args['textdomain']; ?>"),
@@ -268,10 +282,10 @@ if ($wrapper) { ?></script><?php }
                 //)
             //),
             <?php } else { ?>
-            <?php echo in_array($control, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo $control; ?>,
+            <?php echo in_array($component, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo $component; ?>,
                 {
                     label: wp.i18n.__("<?php echo $label ?>", "<?php echo $args['textdomain']; ?>"),
-                    <?php switch($control) {
+                    <?php switch($component) {
                         case 'ColorPicker': 
                             $color = '';
                             if (!empty($attr['default'])) { 

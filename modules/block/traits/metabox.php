@@ -96,9 +96,28 @@ trait Metabox {
         'null' => 'Null',
         'object' => 'Object',
     ];
+    
+    //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
+    //https://developer.wordpress.org/news/2023/06/02/using-block-inspector-sidebar-groups/
+    public static $attributes_position = [
+        "default" => 'Settings Sidebar - Panel Content',
+        //"settings" => 'Settings Sidebar',
+        //"color" => 'Settings Sidebar - Panel Content',
+        //"typography" => 'Settings Sidebar - Panel Typography',
+        //"dimensions" => 'Settings Sidebar - Panel Dimensions',
+        //"border" => 'Settings Sidebar - Panel Border',
+        "advanced" => 'Settings Sidebar - Panel Advanced',
+        //"position" => 'Settings Sidebar - Panel Position',
+        "style" => 'Settings Sidebar - Panel Style',
+        //"list" => 'Settings Sidebar - Children List',
+        "toolbar" => 'Block Toolbar',
+        "block" => 'Block Content canvas'
+    ];
+    
+    
     //https://developer.wordpress.org/block-editor/reference-guides/components/
     //https://wp-gb.com/
-    public static $attributes_control = [
+    public static $attributes_component = [
         'CheckboxControl' => 'Checkbox',
         'ColorPicker' => 'Color',
         'DatePicker' => 'Date',
@@ -222,15 +241,16 @@ trait Metabox {
             }
 
             $render_file = $this->get_ensure_blocks_dir($post->post_name) . $file;
+            //var_dump($render_file);
             if (file_exists($render_file)) {
                 $render = file_get_contents($render_file);
             }
         }
         ?>
         <div class="inside">
-            <h3><label fot="_block_render"><?php _e('Render', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#render"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <h3><label for="_block_render_file"><?php _e('Render', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#render"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('PHP file to use when rendering the block type on the server to show on the front end.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_render" name="_block_render" placeholder="Hello world!"><?php echo $render; ?></textarea></p>	           
+            <p><textarea id="_block_render_file" name="_block_render_file" placeholder="Hello world!"><?php echo $render; ?></textarea></p>	           
             <div class="notice inline notice-primary notice-alt" style="display: block; padding: 20px;">
                 <span class="dashicons dashicons-info"></span> <?php _e('The following variables are exposed to the file:', 'wizard-blocks'); ?>
                 <ul>
@@ -382,39 +402,41 @@ trait Metabox {
                         <div class="attr_data">
                             <label for="key"><?php _e('Key', 'wizard-blocks'); ?>*: <input type="text" class="key"></label>
                             <label for="label"><?php _e('Label', 'wizard-blocks'); ?>: <input type="text" class="label"></label>
-                            <label for="type"><?php _e('Type', 'wizard-blocks'); ?>: <select class="type">
+                            <label for="type"><?php _e('Type', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation" target="_blank"></a>: 
+                                <select class="type">
                                     <?php foreach (self::$attributes_type as $type => $label) { ?>
                                         <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                     <?php } ?>
                                 </select></label>
-                            <label for="control"><?php _e('Control', 'wizard-blocks'); ?>: <select class="control">
+                            <label for="component"><?php _e('Component', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/reference-guides/components/" target="_blank"></a>: 
+                                <select class="component">
                                     <option value=""><?php _e('Auto', 'wizard-blocks'); ?></option>
-                                    <?php foreach (self::$attributes_control as $type => $label) { ?>
+                                    <?php foreach (self::$attributes_component as $type => $label) { ?>
                                         <option value="<?php echo $type ?>"><?php echo $label ?></option>
                                     <?php } ?>
                                 </select></label>
-                            <label for="inputType"><?php _e('Input Type', 'wizard-blocks'); ?>: <select class="inputType">
-        <?php foreach (self::$attributes_input_type as $type => $label) { ?>
-                                        <option value="<?php echo $label ?>"><?php echo ucfirst($label); ?></option>
-        <?php } ?>
+                            <label for="inputType"><?php _e('Input Type', 'wizard-blocks'); ?>: 
+                                <select class="inputType">
+                                <?php foreach (self::$attributes_input_type as $type => $label) { ?>
+                                    <option value="<?php echo $label ?>"><?php echo ucfirst($label); ?></option>
+                                <?php } ?>
                                 </select></label>
-                            <label for="position"><?php _e('Position', 'wizard-blocks'); ?>: <select class="position">
-                                    <option value="content"><?php _e('Settings Panel Content', 'wizard-blocks'); ?></option>
-                                    <option value="style"><?php _e('Settings Panel Style', 'wizard-blocks'); ?></option>
-                                    <option value="inspector"><?php _e('Block Inspector', 'wizard-blocks'); ?></option>
-                                    <option value="block"><?php _e('Block Content canvas', 'wizard-blocks'); ?></option>
+                            <label for="position"><?php _e('Position', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/block-in-the-editor/#block-controls-block-toolbar-and-settings-sidebar" target="_blank"></a>: <select class="position">
+                                    <?php foreach (self::$attributes_position as $postion => $label) { ?>
+                                        <option value="<?php echo $postion ?>"><?php echo $label ?></option>
+                                    <?php } ?>
                                 </select></label>
                             <label for="multiple"><?php _e('Multiple', 'wizard-blocks'); ?>: <select class="multiple">
                                     <option value="false"><?php _e('False', 'wizard-blocks'); ?></option>
                                     <option value="true"><?php _e('True', 'wizard-blocks'); ?></option>                                
                                 </select></label>
-                            <label for="options"><?php _e('Options', 'wizard-blocks'); ?>: <textarea class="options"></textarea></label>
+                            <label for="options"><?php _e('Options', 'wizard-blocks'); ?>: <textarea class="options" placeholder="FF00FF|Magenta"></textarea></label>
                             <label for="default"><?php _e('Default', 'wizard-blocks'); ?>: <input type="text" class="default"></label>
                             <label for="source"><?php _e('Source', 'wizard-blocks'); ?>: <select class="source">
                                     <option value=""><?php _e('No value', 'wizard-blocks'); ?></option>
-        <?php foreach (self::$attributes_source as $type => $label) { ?>
+                                    <?php foreach (self::$attributes_source as $type => $label) { ?>
                                         <option value="<?php echo $type ?>"><?php echo $label ?></option>
-        <?php } ?>
+                                    <?php } ?>
                                 </select></label>
                             <label for="selector"><?php _e('Selector', 'wizard-blocks'); ?>: <input type="text" class="selector"></label>
                             <label for="attribute"><?php _e('Attribute', 'wizard-blocks'); ?>: <input type="text" class="attribute"></label>
@@ -427,25 +449,6 @@ trait Metabox {
             </div>
         </div>
         <?php
-        /*
-          Currently available block fields
-
-          Inner Blocks Field
-          File Field
-          Text Field
-          Image Field
-          URL Field
-          Toggle Field
-          Textarea Field
-          Select Field
-          Range Field
-          Radio Field
-          Number Field
-          Multi-select Field
-          Email Field
-          Color Field
-          Checkbox Field
-         */
     }
 
     public function meta_fields_build_meta_box_side_callback($post, $metabox) {

@@ -9,7 +9,7 @@ jQuery(document).ready(function ($) {
                 mode: 'text/x-php'
             }
     );
-    var _block_render = wp.codeEditor.initialize(jQuery('#_block_render'), editorSettings);
+    var _block_render = wp.codeEditor.initialize(jQuery('#_block_render_file'), editorSettings);
 
     editorSettings.codemirror = _.extend(
             {},
@@ -175,9 +175,9 @@ jQuery(document).ready(function ($) {
                 row.find('.type').val(element.type);
                 delete(element.type);
             }
-            if (element.control) {
-                row.find('.control').val(element.control);
-                delete(element.control);
+            if (element.component) {
+                row.find('.component').val(element.component);
+                delete(element.component);
             }
             if (element.label) {
                 row.find('.label').val(element.label);
@@ -228,8 +228,12 @@ jQuery(document).ready(function ($) {
             } else {
                 row.find('label[for="extra"]').hide();
             }
+            if (element.position) {
+                row.find('.position').val(element.position);
+                delete(element.position);
+            }
             update_block_label(row, title);
-            row.find('.control, .source').trigger('change');
+            row.find('.component, .source').trigger('change');
             index++;
         });
     }
@@ -246,8 +250,8 @@ jQuery(document).ready(function ($) {
             if (row.find('.type').val()) {
                 attributes[key]['type'] = row.find('.type').val();
             }
-            if (row.find('.control').val()) {
-                attributes[key]['control'] = row.find('.control').val();
+            if (row.find('.component').val()) {
+                attributes[key]['component'] = row.find('.component').val();
             }
             if (row.find('.label').val()) {
                 attributes[key]['label'] = row.find('.label').val();
@@ -266,24 +270,24 @@ jQuery(document).ready(function ($) {
                 if (attributes[key]['type'] == 'object') {
                     defa = JSON.parse(defa);
                 }
-                if (attributes[key]['control'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['control'])) {
+                if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
                     attributes[key]['checked'] = true;
-                } else if (attributes[key]['control'] && attributes[key]['control'] == 'RadioControl') {
+                } else if (attributes[key]['component'] && attributes[key]['component'] == 'RadioControl') {
                     attributes[key]['selected'] = row.find('.default').val();
-                } else if (attributes[key]['control'] && attributes[key]['control'] == 'InputControl') {
+                } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
                     attributes[key]['value'] = row.find('.default').val();
                 } else {
                     attributes[key]['default'] = defa;
                 }
             }
             if (row.find('.inputType').val()) {
-                if (attributes[key]['control'] && attributes[key]['control'] == 'InputControl') {
+                if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
                     attributes[key]['inputType'] = row.find('.inputType').val();
                 }
             }
             if (row.find('.options').val()) {
                 let evals = row.find('.options').val().split('\n');
-                if (row.find('.options').val().includes('|') || attributes[key]['type']) {
+                if (row.find('.options').val().includes('|') || attributes[key]['component']) {
                     attributes[key]['options'] = {};
                     jQuery(evals).each(function (id, label) {
                         let tmp = label.split('|');
@@ -309,6 +313,9 @@ jQuery(document).ready(function ($) {
             }
             if (row.find('.multiple').val() && row.find('.multiple').val() == 'true') {
                 attributes[key]['multiple'] = true;
+            }
+            if (row.find('.position').val() && row.find('.position').val() != 'default') {
+                attributes[key]['position'] = row.find('.position').val();
             }
             if (row.find('.extra').val()) {
                 attributes[key] = {...attributes[key], ...JSON.parse(row.find('.extra').val())};
@@ -399,36 +406,38 @@ jQuery(document).ready(function ($) {
                 let title = row.find('.label').val();
                 update_block_label(row, title);
             }
-            if (jQuery(this).hasClass('control') && ['InputControl'].includes(jQuery(this).val())) {
-                row.find('label[for="inputType"]').show();
-            } else {
-                row.find('label[for="inputType"]').hide();
-            }
-
-            if (jQuery(this).hasClass('control') && ['SelectControl'].includes(jQuery(this).val())) {
-                row.find('label[for="multiple"]').show();
-            } else {
-                row.find('label[for="multiple"]').hide();
-            }
-
-            if (jQuery(this).hasClass('control') && ['SelectControl', 'RadioControl', ''].includes(jQuery(this).val())) {
-                row.find('label[for="options"]').show();
-            } else {
-                row.find('label[for="options"]').hide();
-            }
-
-            if (jQuery(this).hasClass('source') && ![''].includes(jQuery(this).val())) {
-                row.find('label[for="selector"]').show();
-                if (['attribute'].includes(jQuery(this).val())) {
-                    row.find('label[for="attribute"]').show();
+            if (jQuery(this).hasClass('component')) {
+                if (['InputControl'].includes(jQuery(this).val())) {
+                    row.find('label[for="inputType"]').show();
+                } else {
+                    row.find('label[for="inputType"]').hide();
                 }
-            } else {
-                row.find('label[for="selector"]').hide();
-                if (!['attribute'].includes(jQuery(this).val())) {
-                    row.find('label[for="attribute"]').hide();
+                if (['SelectControl'].includes(jQuery(this).val())) {
+                    row.find('label[for="multiple"]').show();
+                } else {
+                    row.find('label[for="multiple"]').hide();
+                }
+                if (['SelectControl', 'RadioControl', ''].includes(jQuery(this).val())) {
+                    row.find('label[for="options"]').show();
+                } else {
+                    row.find('label[for="options"]').hide();
                 }
             }
 
+            if (jQuery(this).hasClass('source')) {
+                if (![''].includes(jQuery(this).val())) {
+                    row.find('label[for="selector"]').show();
+                    if (['attribute'].includes(jQuery(this).val())) {
+                        row.find('label[for="attribute"]').show();
+                    }
+                } else {
+                    row.find('label[for="selector"]').hide();
+                    if (!['attribute'].includes(jQuery(this).val())) {
+                        row.find('label[for="attribute"]').hide();
+                    }
+                }
+            }
+            
             setTimeout(function () {
                 update_block_attributes();
             }, 100);
