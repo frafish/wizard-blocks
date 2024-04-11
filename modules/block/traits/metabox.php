@@ -95,6 +95,7 @@ trait Metabox {
         'array' => 'Array',
         'null' => 'Null',
         'object' => 'Object',
+        '' => 'Eval',
     ];
     
     //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
@@ -111,33 +112,37 @@ trait Metabox {
         "style" => 'Settings Sidebar - Panel Style',
         //"list" => 'Settings Sidebar - Children List',
         "toolbar" => 'Block Toolbar',
-        "block" => 'Block Content canvas'
+        //"menu" => 'Block Toolbar - Dropdown Menu',
+        "block" => 'Block Content canvas',
     ];
     
     
     //https://developer.wordpress.org/block-editor/reference-guides/components/
     //https://wp-gb.com/
     public static $attributes_component = [
+        'AnglePickerControl' => 'Angle',
+        'ButtonGroup' => 'Buttons',
         'CheckboxControl' => 'Checkbox',
         'ColorPicker' => 'Color',
         'DatePicker' => 'Date',
         'DateTimePicker' => 'DateTime',
+        //'Divider' => 'Divider',
+        'Dropdown' => 'Dropdown',
         //'InputControl' => 'Email',
-        'Heading' => 'Heading',
-        'InputControl' => 'InputControl',
+        //'Heading' => 'Heading',
+        //'InputControl' => 'InputControl',
         'MediaUpload' => 'Media',
         'NumberControl' => 'Number',
         'RadioControl' => 'Radio',
         'RadioGroup' => 'RadioGroup',
         'RichText' => 'RichText',
         'SelectControl' => 'Select',
-        'Separator' => 'Separator',
         //'InputControl' => 'Tel',
         'TextareaControl' => 'TextArea',
         'TextControl' => 'Text',
         'TimePicker' => 'Time',
         'ToggleControl' => 'Toggle',
-            //'InputControl' => 'URL',
+        //'InputControl' => 'URL',
     ];
     //https://www.w3schools.com/html/html_form_input_types.asp
     public static $attributes_input_type = [
@@ -267,9 +272,9 @@ trait Metabox {
     public function meta_fields_build_css_callback($post, $metabox) {
         $plugin_name = $this->get_plugin_slug();
         $basepath = '';
+        $json = [];
         if ($post) {
-
-            $json = $post ? $this->get_json_data($post->post_name) : [];
+            $json = $this->get_json_data($post->post_name);
             $basepath = $this->get_ensure_blocks_dir($post->post_name);
         }
         
@@ -280,7 +285,7 @@ trait Metabox {
             
             <h3><label for="_block_style"><?php _e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type frontend and editor styles definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_style_file" name="_block_style_file"><?php echo $this->get_asset_file_contents('style', $basepath); ?></textarea></p>	
+            <p><textarea id="_block_style_file" name="_block_style_file"><?php echo $this->get_asset_file_contents($json, 'style', $basepath); ?></textarea></p>	
             <p class="d-flex assets">
                 <input type="text" id="_block_style" name="_block_style" value="<?php echo empty($json['style']) ? '' : Utils::implode($json['style']); ?>" placeholder="file:./style.css">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -289,7 +294,7 @@ trait Metabox {
 
             <h3><label for="_block_viewStyle"><?php _e('View Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type frontend styles definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewStyle_file" name="_block_viewStyle_file"><?php echo $this->get_asset_file_contents('viewStyle', $basepath); ?></textarea></p>
+            <p><textarea id="_block_viewStyle_file" name="_block_viewStyle_file"><?php echo $this->get_asset_file_contents($json, 'viewStyle', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewStyle" name="_block_viewStyle" value="<?php echo empty($json['viewStyle']) ? '' : Utils::implode($json['viewStyle']); ?>" placeholder="file:./viewStyle.css">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -299,7 +304,7 @@ trait Metabox {
 
             <h3><label for="_block_editorStyle"><?php _e('Editor Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type editor styles definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_editorStyle_file" name="_block_editorStyle_file"><?php echo $this->get_asset_file_contents('editorStyle', $basepath); ?></textarea></p>	
+            <p><textarea id="_block_editorStyle_file" name="_block_editorStyle_file"><?php echo $this->get_asset_file_contents($json, 'editorStyle', $basepath); ?></textarea></p>	
             <p class="d-flex assets">
                 <input type="text" id="_block_editorStyle" name="_block_editorStyle" value="<?php echo empty($json['editorStyle']) ? '' : Utils::implode($json['editorStyle']); ?>" placeholder="file:./editorStyle.css">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -312,12 +317,12 @@ trait Metabox {
     public function meta_fields_build_js_callback($post, $metabox) {
         $plugin_name = $this->get_plugin_slug();
         $basepath = '';
+        $json = [];
         if ($post) {
-
-            $json = $post ? $this->get_json_data($post->post_name) : [];
+            $json = $this->get_json_data($post->post_name);
             $basepath = $this->get_ensure_blocks_dir($post->post_name);
 
-            //$is_editor_script_generated = strpos($this->get_asset_file_contents('editorScript', $basepath), 'generated by ' . $plugin_name);
+            //$is_editor_script_generated = strpos($this->get_asset_file_contents($json, 'editorScript', $basepath), 'generated by ' . $plugin_name);
             //var_dump($is_editor_script_generated);
         }
         
@@ -328,7 +333,7 @@ trait Metabox {
 
             <h3><label for="_block_editorScript"><?php _e('Editor Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type editor scripts definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-            <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript_file" name="_block_editorScript_file"><?php echo $this->get_asset_file_contents('editorScript', $basepath); ?></textarea></p>
+            <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript_file" name="_block_editorScript_file"><?php echo $this->get_asset_file_contents($json, 'editorScript', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_editorScript" name="_block_editorScript" value="<?php echo empty($json['editorScript']) ? '' : Utils::implode($json['editorScript']); ?>" placeholder="file:./editorScript.js">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -338,7 +343,7 @@ trait Metabox {
 
             <h3><label for="_block_script"><?php _e('Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type frontend and editor scripts definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_script_file" name="_block_script_file"><?php echo $this->get_asset_file_contents('script', $basepath); ?></textarea></p>
+            <p><textarea id="_block_script_file" name="_block_script_file"><?php echo $this->get_asset_file_contents($json, 'script', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_script" name="_block_script" value="<?php echo empty($json['script']) ? '' : Utils::implode($json['script']); ?>" placeholder="file:./script.js">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -348,7 +353,7 @@ trait Metabox {
 
             <h3><label for="_block_viewScript"><?php _e('View Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type frontend scripts definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewScript_file" name="_block_viewScript_file"><?php echo $this->get_asset_file_contents('viewScript', $basepath); ?></textarea></p>
+            <p><textarea id="_block_viewScript_file" name="_block_viewScript_file"><?php echo $this->get_asset_file_contents($json, 'viewScript', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewScript" name="_block_viewScript" value="<?php echo empty($json['viewScript']) ? '' : Utils::implode($json['viewScript']); ?>" placeholder="file:./viewScript.js">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -358,7 +363,7 @@ trait Metabox {
 
             <h3><label for="_block_viewScriptModule"><?php _e('View Script Module', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script-module"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php _e('Block type frontend script module definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewScriptModule_file" name="_block_viewScriptModule_file"><?php echo $this->get_asset_file_contents('viewScriptModule', $basepath); ?></textarea></p>
+            <p><textarea id="_block_viewScriptModule_file" name="_block_viewScriptModule_file"><?php echo $this->get_asset_file_contents($json, 'viewScriptModule', $basepath); ?></textarea></p>
             <p class="d-flex assets">
                 <input type="text" id="_block_viewScriptModule" name="_block_viewScriptModule" value="<?php echo empty($json['viewScriptModule']) ? '' : Utils::implode($json['viewScriptModule']); ?>" placeholder="file:./viewScriptModule.js">
                 <a title="<?php _e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo $upload_link ?>" target="_blank"></a>
@@ -505,11 +510,11 @@ trait Metabox {
             <h3><label for="_block_icon"><?php _e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select id="_block_icon" name="_block_icon"><option value=""><?php _e('Custom', 'wizard-blocks'); ?></option><?php
                     if (empty($json['icon']))
-                        $json['icon'] = 'smiley';
+                        $json['icon'] = '';
                     $is_dash = false;
                     foreach ($icons as $icon) {
                         $selected = '';
-                        if (!empty($json['icon']) && $json['icon'] == $icon) {
+                        if (isset($json['icon']) && $json['icon'] == $icon) {
                             $selected = ' selected';
                             $is_dash = true;
                         }
@@ -592,6 +597,7 @@ trait Metabox {
             <div style="height: 180px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
         <?php
         $custom = [];
+        $supports_array = [];
         foreach (self::$supports as $sup => $default) {
             ?>
                     <p>
@@ -611,16 +617,24 @@ trait Metabox {
                                     $custom[$sup] = $value;
                                 }
                             } else {
-                                $tmp = explode('.', $sup);
-                                if (count($tmp) > 2) {
+                                $tmp = explode('.', $sup, 2);
+                                if (count($tmp) > 1) {
+                                    $supports_array[reset($tmp)] = reset($tmp);
                                     if (isset($json['supports'][reset($tmp)][end($tmp)])) {
                                         if (is_bool($json['supports'][reset($tmp)][end($tmp)])) {
                                             $value = $json['supports'][reset($tmp)][end($tmp)];
                                         } else {
                                             $custom[reset($tmp)][end($tmp)] = $value;
                                         }
+                                    } else {
+                                        // like interactive which can be bool or obj
+                                        if (isset($json['supports'][reset($tmp)])) {
+                                            if (is_bool($json['supports'][reset($tmp)])) {
+                                                $value = $json['supports'][reset($tmp)];
+                                            }
+                                        }
                                     }
-                                }
+                                }                                    
                             }
                         }
                         ?>
@@ -639,12 +653,14 @@ trait Metabox {
             </div>
             <?php
             if (!empty($json['supports'])) {
+                //var_dump($supports_array);
                 foreach ($json['supports'] as $sup => $support) {
-                    if (!isset($custom[$sup]) && !isset(self::$supports[$sup])) {
+                    if (!isset($custom[$sup]) && !isset(self::$supports[$sup]) && !in_array($sup, $supports_array)) {
                         $custom[$sup] = $support;
                     } else {
                         if (is_array($support)) {
                             foreach ($support as $sub => $suppo) {
+                                //var_dump($sub); var_dump($sup);
                                 if (!isset($custom[$sup][$sub]) && !isset(self::$supports[$sup . '.' . $sub])) {
                                     $custom[$sup][$sub] = $suppo;
                                 }
@@ -654,13 +670,13 @@ trait Metabox {
                 }
             }
 
-            $custom_transien = get_post_meta($post->ID, '_transient_block_supports_custom', true);
-            if ($custom_transien) {
+            $custom_transient = get_post_meta($post->ID, '_transient_block_supports_custom', true);
+            if ($custom_transient) {
                 //warn
                 $this->_notice(__('Custom Supports are not saved! Please <a href="#supports_custom">fix it</a> and resave block.'), 'danger error');
                 $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!'), 'danger error inline');
             }
-            $custom = empty($custom) ? $custom_transien : wp_json_encode($custom, JSON_PRETTY_PRINT);
+            $custom = empty($custom) ? $custom_transient : wp_json_encode($custom, JSON_PRETTY_PRINT);
             ?>
             <label id="supports_custom" for="_block_supports_custom"><b><?php _e('Supports custom values', 'wizard-blocks'); ?></b></label>
             <textarea rows="10" id="_block_supports_custom" name="_block_supports_custom" style="width: 100%;" placeholder='{ "spacing": { "margin": [ "top", "bottom" ] } }'><?php echo $custom; ?></textarea>
@@ -668,8 +684,15 @@ trait Metabox {
             <?php
             $extra = $json;
             foreach (self::$fields as $field) {
-                if (isset($extra[$field])) {
-                    unset($extra[$field]);
+                $tmp = explode('.', $field, 2);
+                if (count($tmp) == 2) {
+                    if (isset($extra[reset($tmp)][end($tmp)])) {
+                        unset($extra[reset($tmp)][end($tmp)]);
+                    }
+                } else {
+                    if (isset($extra[$field])) {
+                        unset($extra[$field]);
+                    }
                 }
             }
             $extra_transien = get_post_meta($post->ID, '_transient_block_extra', true);

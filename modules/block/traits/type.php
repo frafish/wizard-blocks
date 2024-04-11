@@ -2,6 +2,8 @@
 namespace WizardBlocks\Modules\Block\Traits;
 
 trait Type {
+    
+    public static $cpt_name = 'block';
 
     /**
      * Register a custom post type called "book".
@@ -44,7 +46,7 @@ trait Type {
             'show_ui' => true,
             'show_in_menu' => true,
             'query_var' => true,
-            'rewrite' => array('slug' => 'block'),
+            'rewrite' => array('slug' => self::$cpt_name),
             'capability_type' => 'post',
             'has_archive' => false,
             'hierarchical' => false,
@@ -53,6 +55,38 @@ trait Type {
             'menu_icon' => 'dashicons-block-default',
         );
 
-        register_post_type('block', $args);
+        register_post_type(self::$cpt_name, $args);
+        
+        add_filter( 'manage_posts_columns', function($posts_columns, $post_type ) {
+            if ($post_type == self::$cpt_name) {
+                return $this->array_insert_after($posts_columns, 'title', ['description' => __('Description')]);
+            }
+            return $posts_columns;
+        }, 10, 2);
+        add_action('manage_posts_custom_column', function($column_name, $post_ID) {
+            if ($column_name == 'description') {
+                $post_content = get_the_excerpt($post_ID);
+                echo $str1= substr ($post_content,0,50);
+            }
+        }, 10, 2);
+ 
     }
+    
+    /**
+    * Insert a value or key/value pair after a specific key in an array.  If key doesn't exist, value is appended
+    * to the end of the array.
+    *
+    * @param array $array
+    * @param string $key
+    * @param array $new
+    *
+    * @return array
+    */
+   function array_insert_after( array $array, $key, array $new ) {
+           $keys = array_keys( $array );
+           $index = array_search( $key, $keys );
+           $pos = false === $index ? count( $array ) : $index + 1;
+
+           return array_merge( array_slice( $array, 0, $pos ), $new, array_slice( $array, $pos ) );
+   }
 }

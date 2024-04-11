@@ -80,5 +80,34 @@ class Helper {
         }
         return $wp_plugin_dir;
     }
+    
+    static public function url_to_path($url) {
+        include_once(ABSPATH.'wp-admin'.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'file.php');
+        $rel = wp_make_link_relative($url);
+        $rel = str_replace('/', DIRECTORY_SEPARATOR, $rel);
+        $home_url = get_home_url();
+        $tmp = explode('/', $home_url);
+        if (count($tmp) > 3) {
+            $tmp = array_slice($tmp, 3);
+            if (!empty($tmp)) {
+                $tmp = DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $tmp);
+                if (substr($rel, 0, strlen($tmp)) == $tmp) {
+                    $rel = substr($rel, strlen($tmp));
+                }
+            }
+        }
+        $tmp = substr(get_home_path(), 0, -1) . $rel;
+        $tmp = str_replace('/', DIRECTORY_SEPARATOR, $tmp);
+        return $tmp;
+    }
+
+    public static function path_to_url($path) {
+        $wp_upload_dir = wp_upload_dir();
+        $url = str_replace($wp_upload_dir["basedir"], $wp_upload_dir["baseurl"], $path);
+        $ABSPATH = str_replace('/', DIRECTORY_SEPARATOR, ABSPATH);
+        $url = str_replace($ABSPATH, get_home_url(null, '/'), $url);
+        $url = str_replace('\\', '/', $url);
+        return $url;
+    }
 
 }

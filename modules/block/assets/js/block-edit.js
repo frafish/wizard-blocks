@@ -72,10 +72,11 @@ jQuery(document).ready(function ($) {
 
     // Set all variables to be used in scope
     var frame;
-    
+    var btn;
     // ADD IMAGE LINK
     jQuery('.upload-assets').on('click', function (event) {
         event.preventDefault();
+        btn = jQuery(this);
         // If the media frame already exists, reopen it.
         if (frame) {
             frame.open();
@@ -92,14 +93,14 @@ jQuery(document).ready(function ($) {
         // When an image is selected in the media frame...
         frame.on('select', () => {
             // Get media attachment details from the frame state
-            console.log(frame.state().get('selection'));
+            //console.log(frame.state().get('selection'));
             frame.state().get('selection').each((attachment, index ) => {
                 //console.log(index);
                 //console.log(attachment);
                 let asset = attachment.toJSON();
-                console.log(asset);
-                let input = jQuery(this).siblings('input');
-                console.log(input);
+                //console.log(asset);
+                let input = btn.siblings('input');
+                //console.log(input);
                 // Send the attachment URL to our custom image input field.
                 input.val( (input.val() ? input.val()+', ' : '') + asset.url );
                 // Send the attachment id to our hidden input
@@ -126,6 +127,7 @@ jQuery(document).ready(function ($) {
 
     /**************************************************************************/
 
+    /*
     jQuery('.tab-head').on('click', function () {
         jQuery('.tab-head').removeClass('tab-active');
         jQuery(this).addClass('tab-active');
@@ -135,7 +137,10 @@ jQuery(document).ready(function ($) {
     setTimeout(function () {
         jQuery('.tab-js').hide();
     }, 1000);
-
+    */
+   
+    /**************************************************************************/
+   
     if (jQuery('#_block_icon').val()) {
         jQuery('#_block_icon_svg').hide();
     }
@@ -146,7 +151,7 @@ jQuery(document).ready(function ($) {
             jQuery('#_block_icon_svg').show();
         }
     });
-
+   
     /**************************************************************************/
 
     var attr_editor = jQuery('#_block_attributes_editor');
@@ -159,83 +164,105 @@ jQuery(document).ready(function ($) {
     }
     function update_block_attributes_editor() {
         attr_editor.find('.repeat_attrs').html(''); // reset
-        var attributes = JSON.parse(attr_attributes.val());
-        //console.log(attributes);
-        var index = 0;
-        jQuery.each(attributes, function (key, element) {
-            //console.log(index);
-            //console.log(key);
-            console.log(element);
-            attr_editor.find('.attr_add').trigger('click');
-            let row = attr_editor.find('.repeat_attr').eq(index);
-            //console.log(row);
-            let title = element.label ? element.label : key;
-            row.find('.key').val(key);
-            if (element.type) {
-                row.find('.type').val(element.type);
-                delete(element.type);
+        if (attr_attributes.val()) {
+            var attributes = JSON.parse(attr_attributes.val());
+            if (attributes) {
+                //console.log(attributes);
+                var index = 0;
+                jQuery.each(attributes, function (key, element) {
+                    //console.log(index);
+                    //console.log(key);
+                    //console.log(element);
+                    attr_editor.find('.attr_add').trigger('click');
+                    let row = attr_editor.find('.repeat_attr').eq(index);
+                    //console.log(row);
+                    let title = element.label ? element.label : key;
+                    row.find('.key').val(key);
+                    if (element.type) {
+                        row.find('.type').val(element.type);
+                        delete(element.type);
+                    } else {
+                        row.find('.type').val(''); //eval
+                    }
+                    if (element.component) {
+                        row.find('.component').val(element.component);
+                        delete(element.component);
+                    }
+                    if (element.label) {
+                        row.find('.label').val(element.label);
+                        delete(element.label);
+                    }
+                    if (element.help) {
+                        row.find('.help').val(element.help);
+                        delete(element.help);
+                    }
+                    if (element.hasOwnProperty('default')) {
+                        if (row.find('.type').val() == 'object') {
+                            element.default = JSON.stringify(element.default);
+                        }
+                        row.find('.default').val(element.default);
+                        delete(element.default);
+                    }
+                    if (element.hasOwnProperty('selected')) {
+                        row.find('.default').val(element.selected);
+                        delete(element.selected);
+                    }
+                    if (element.enum) {
+                        row.find('.options').val(element.enum.join("\r\n"));
+                        delete(element.enum);
+                    }
+                    if (element.options) {
+                        if (typeof element.options == "object") {
+                            if (Array.isArray(element.options)) {
+                                row.find('.options').val(element.options.join("\r\n"));
+                            } else {
+                                let options = '';
+                                for (const property in element.options) {
+                                    //console.log(property);
+                                    //console.log(element.options[property]);
+                                    let opt = element.options[property];
+                                    if (property != element.options[property]) {
+                                        opt = opt + "|" + property;
+                                    }
+                                    options += options ? "\r\n" + opt : opt;
+                                }
+                                row.find('.options').val(options);
+                            }
+                        }
+                        delete(element.options);
+                    }
+                    if (element.source) {
+                        row.find('.source').val(element.source);
+                        delete(element.source);
+                    }
+                    if (element.attribute) {
+                        row.find('.attribute').val(element.attribute);
+                        delete(element.attribute);
+                    }
+                    if (element.selector) {
+                        row.find('.selector').val(element.selector);
+                        delete(element.selector);
+                    }
+                    if (element.multiple) {
+                        row.find('.multiple').val(element.multiple ? 'true' : 'false');
+                        delete(element.multiple);
+                    }
+                    if (Object.keys(element).length) {
+                        row.find('label[for="extra"]').show();
+                        row.find('.extra').val(JSON.stringify(element));
+                    } else {
+                        row.find('label[for="extra"]').hide();
+                    }
+                    if (element.position) {
+                        row.find('.position').val(element.position);
+                        delete(element.position);
+                    }
+                    update_block_label(row, title);
+                    row.find('.component, .source').trigger('change');
+                    index++;
+                });
             }
-            if (element.component) {
-                row.find('.component').val(element.component);
-                delete(element.component);
-            }
-            if (element.label) {
-                row.find('.label').val(element.label);
-                delete(element.label);
-            }
-            if (element.help) {
-                row.find('.help').val(element.help);
-                delete(element.help);
-            }
-            if (element.hasOwnProperty('default')) {
-                if (row.find('.type').val() == 'object') {
-                    element.default = JSON.stringify(element.default);
-                }
-                row.find('.default').val(element.default);
-                delete(element.default);
-            }
-            if (element.hasOwnProperty('selected')) {
-                row.find('.default').val(element.selected);
-                delete(element.selected);
-            }
-            if (element.enum) {
-                row.find('.options').val(element.enum.join("\r\n"));
-                delete(element.enum);
-            }
-            if (element.options) {
-                row.find('.options').val(element.options.join("\r\n"));
-                delete(element.options);
-            }
-            if (element.source) {
-                row.find('.source').val(element.source);
-                delete(element.source);
-            }
-            if (element.attribute) {
-                row.find('.attribute').val(element.attribute);
-                delete(element.attribute);
-            }
-            if (element.selector) {
-                row.find('.selector').val(element.selector);
-                delete(element.selector);
-            }
-            if (element.multiple) {
-                row.find('.multiple').val(element.multiple ? 'true' : 'false');
-                delete(element.multiple);
-            }
-            if (Object.keys(element).length) {
-                row.find('label[for="extra"]').show();
-                row.find('.extra').val(JSON.stringify(element));
-            } else {
-                row.find('label[for="extra"]').hide();
-            }
-            if (element.position) {
-                row.find('.position').val(element.position);
-                delete(element.position);
-            }
-            update_block_label(row, title);
-            row.find('.component, .source').trigger('change');
-            index++;
-        });
+        }
     }
 
     function update_block_attributes() {
@@ -246,79 +273,96 @@ jQuery(document).ready(function ($) {
             //console.log(key);
             if (key) {
                 attributes[key] = {};
-            }
-            if (row.find('.type').val()) {
-                attributes[key]['type'] = row.find('.type').val();
-            }
-            if (row.find('.component').val()) {
-                attributes[key]['component'] = row.find('.component').val();
-            }
-            if (row.find('.label').val()) {
-                attributes[key]['label'] = row.find('.label').val();
-            }
-            if (row.find('.help').val()) {
-                attributes[key]['help'] = row.find('.help').val();
-            }
-            if (row.find('.default').val()) {
-                let defa = row.find('.default').val();
-                if (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer') {
-                    defa = parseFloat(defa);
+                if (row.find('.type').val()) {
+                    attributes[key]['type'] = row.find('.type').val();
                 }
-                if (attributes[key]['type'] == 'boolean') {
-                    defa = defa == 'true';
+                if (row.find('.component').val()) {
+                    attributes[key]['component'] = row.find('.component').val();
                 }
-                if (attributes[key]['type'] == 'object') {
-                    defa = JSON.parse(defa);
+                if (row.find('.label').val()) {
+                    attributes[key]['label'] = row.find('.label').val();
                 }
-                if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
-                    attributes[key]['checked'] = true;
-                } else if (attributes[key]['component'] && attributes[key]['component'] == 'RadioControl') {
-                    attributes[key]['selected'] = row.find('.default').val();
-                } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
-                    attributes[key]['value'] = row.find('.default').val();
-                } else {
-                    attributes[key]['default'] = defa;
+                if (row.find('.help').val()) {
+                    attributes[key]['help'] = row.find('.help').val();
                 }
-            }
-            if (row.find('.inputType').val()) {
-                if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
-                    attributes[key]['inputType'] = row.find('.inputType').val();
+                if (row.find('.default').val()) {
+                    let defa = row.find('.default').val();
+                    if (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer') {
+                        defa = parseFloat(defa);
+                    }
+                    if (attributes[key]['type'] == 'boolean') {
+                        defa = defa == 'true';
+                    }
+                    if (attributes[key]['type'] == 'object') {
+                        defa = JSON.parse(defa);
+                    }
+                    if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
+                        attributes[key]['checked'] = true;
+                    } else if (attributes[key]['component'] && attributes[key]['component'] == 'RadioControl') {
+                        attributes[key]['selected'] = row.find('.default').val();
+                    } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
+                        attributes[key]['value'] = row.find('.default').val();
+                    } else {
+                        attributes[key]['default'] = defa;
+                    }
                 }
-            }
-            if (row.find('.options').val()) {
-                let evals = row.find('.options').val().split('\n');
-                if (row.find('.options').val().includes('|') || attributes[key]['component']) {
-                    attributes[key]['options'] = {};
-                    jQuery(evals).each(function (id, label) {
-                        let tmp = label.split('|');
-                        let value = label;
-                        if (tmp.length > 1) {
-                            value = tmp.pop();
-                            label = tmp.pop();
+                if (row.find('.inputType').val()) {
+                    if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
+                        attributes[key]['inputType'] = row.find('.inputType').val();
+                    }
+                }
+                if (row.find('.options').val()) {
+                    let evals = row.find('.options').val().split('\n');
+                    if (row.find('.options').val().includes('|') || attributes[key]['component']) {
+                        if (!row.find('.options').val().includes('|') && (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer')) {
+                            attributes[key]['options'] = [];
+                        } else {
+                            attributes[key]['options'] = {};
                         }
-                        attributes[key]['options'][value] = label;
-                    });
-                } else {
-                    attributes[key]['eval'] = evals;
+                        let is_array = true;
+                        jQuery(evals).each(function (id, label) {
+                            if (Array.isArray(attributes[key]['options'])) {                                
+                                label = value = parseFloat(label);
+                                attributes[key]['options'].push(label);
+                            } else {
+                                let tmp = label.split('|');
+                                let value = label;
+                                if (tmp.length > 1) {
+                                    value = tmp.pop();
+                                    label = tmp.pop();
+                                    is_array = false;
+                                }
+                                attributes[key]['options'][value] = label;
+                            }
+                        });
+                        if (is_array) {
+                            if (!Array.isArray(attributes[key]['options'])) {
+                                attributes[key]['options'] = Object.values(attributes[key]['options']);
+                            }  
+                        }
+                    } else {
+                        attributes[key]['enum'] = evals;
+                        delete(attributes[key]['type']);
+                    }
                 }
-            }
-            if (row.find('.source').val()) {
-                attributes[key]['source'] = row.find('.source').val();
-            }
-            if (row.find('.attribute').val()) {
-                attributes[key]['attribute'] = row.find('.attribute').val();
-            }
-            if (row.find('.selector').val()) {
-                attributes[key]['selector'] = row.find('.selector').val();
-            }
-            if (row.find('.multiple').val() && row.find('.multiple').val() == 'true') {
-                attributes[key]['multiple'] = true;
-            }
-            if (row.find('.position').val() && row.find('.position').val() != 'default') {
-                attributes[key]['position'] = row.find('.position').val();
-            }
-            if (row.find('.extra').val()) {
-                attributes[key] = {...attributes[key], ...JSON.parse(row.find('.extra').val())};
+                if (row.find('.source').val()) {
+                    attributes[key]['source'] = row.find('.source').val();
+                }
+                if (row.find('.attribute').val()) {
+                    attributes[key]['attribute'] = row.find('.attribute').val();
+                }
+                if (row.find('.selector').val()) {
+                    attributes[key]['selector'] = row.find('.selector').val();
+                }
+                if (row.find('.multiple').val() && row.find('.multiple').val() == 'true') {
+                    attributes[key]['multiple'] = true;
+                }
+                if (row.find('.position').val() && row.find('.position').val() != 'default') {
+                    attributes[key]['position'] = row.find('.position').val();
+                }
+                if (row.find('.extra').val()) {
+                    attributes[key] = {...attributes[key], ...JSON.parse(row.find('.extra').val())};
+                }
             }
         });
         //console.log(attributes);
@@ -353,6 +397,7 @@ jQuery(document).ready(function ($) {
         attr_editor.on('click', '.attr_add', function () {
             console.log('add');
             attr_editor.find('.repeat_attrs').append(attr_editor.data('row'));
+            attr_editor.find('.repeat_attrs').find('.repeat_attr:last-child').find('.component, .source').trigger('change');
         });
 
         attr_editor.on('click', '.repeat_attr .button', function () {
@@ -417,7 +462,7 @@ jQuery(document).ready(function ($) {
                 } else {
                     row.find('label[for="multiple"]').hide();
                 }
-                if (['SelectControl', 'RadioControl', ''].includes(jQuery(this).val())) {
+                if (['SelectControl', 'RadioControl', 'ButtonGroup', ''].includes(jQuery(this).val())) {
                     row.find('label[for="options"]').show();
                 } else {
                     row.find('label[for="options"]').hide();
