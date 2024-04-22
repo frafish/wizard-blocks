@@ -1,4 +1,4 @@
-=== Wizard Blocks Manager for Gutenberg ===
+=== Wizard Blocks Manager ===
 Contributors: frapesce
 Tags: block, editor, gutenberg, generate, create, edit, dynamic, easy
 Requires at least: 5.0

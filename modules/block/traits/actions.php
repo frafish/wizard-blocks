@@ -1,256 +1,259 @@
 <?php
+
 namespace WizardBlocks\Modules\Block\Traits;
 
 Trait Actions {
-    
+
     static public $blocks_disabled_key = 'blocks_disabled';
-    
+
     function execute_actions() {
-        
-        if (!empty($_POST['action'])) {
 
-            $blocks_dir = apply_filters('wizard/dirs', []);
+        if (!empty($_REQUEST['action'])) {
+            $blocks_dir = apply_filters('wizard/blocks/dirs', []);
             $dirs = wp_upload_dir();
             $basedir = str_replace('/', DIRECTORY_SEPARATOR, $dirs['basedir']) . DIRECTORY_SEPARATOR;
 
-            switch ($_POST['action']) {
-                
-                case 'disable':
-                    if (!empty($_POST[self::$blocks_disabled_key])) {
-                        $disabled = array_keys($_POST[self::$blocks_disabled_key]);
-                        update_option(self::$blocks_disabled_key, $disabled);
-                        $this->_notice(__('Blocks disabled settings has been saved!', 'wizard-blocks'));
+            if (!empty($_POST['action'])) {
+                if (!empty($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'wizard-blocks-nonce')) {
+
+                    switch ($_POST['action']) {
+
+                        case 'disable':
+                            if (!empty($_POST[self::$blocks_disabled_key])) {
+                                $disabled = array_keys($_POST[self::$blocks_disabled_key]);
+                                update_option(self::$blocks_disabled_key, $disabled);
+                                $this->_notice(__('Blocks disabled settings has been saved!', 'wizard-blocks'));
+                            }
+                            break;
                     }
-                    break;
-                    
+                }
             }
-        }
-        
-        
-        if (!empty($_GET['action'])) {
 
-            $blocks_dir = apply_filters('wizard/dirs', []);
-            $dirs = wp_upload_dir();
-            $basedir = str_replace('/', DIRECTORY_SEPARATOR, $dirs['basedir']) . DIRECTORY_SEPARATOR;
+            if (!empty($_GET['action'])) {
+                if (!empty($_GET['nonce']) && wp_verify_nonce($_GET['nonce'], 'wizard-blocks-nonce')) {
 
-            switch ($_GET['action']) {
-                
-                case 'disable':
-                    if (!empty($_GET['block'])) {
-                        $block_name = [ $_GET['block'] ];
-                        $disabled = get_option(self::$blocks_disabled_key);
-                        $disabled = empty($disabled) ? [$block_name] : array_merge($disabled, $block_name);
-                        update_option(self::$blocks_disabled_key, $disabled);
-                        $this->_notice(__('Block disabled!', 'wizard-blocks'));
-                    }
-                    break;
-                    
-                case 'reset':
-                    delete_option(self::$blocks_disabled_key);
-                    $this->_notice(__('Block disabled settings has been resetted!', 'wizard-blocks'));
-                    break;
-                    
-                case 'clone':
-                    if (!empty($_GET['block'])) {
-                        $block_name = $_GET['block'];
-                        
-                        $block = $this->get_registered_block($block_name);
-                        $block_slug = $this->get_block_slug($block);
-                        
-                        if (!empty($block)) {
-                            $dest = $this->get_ensure_blocks_dir($block_slug);
+                    switch ($_GET['action']) {
 
-                            if (!empty($block['render_callback'])) {
-                                $tmp = explode(' ', $block['render_callback']);
-                                if (count($tmp) == 1) {
-                                    if (is_callable($block['render_callback'])) {
-                                        $block['render'] = 'file: ./render.php';
-                                        file_put_contents($dest.'render.php', '<?php echo '.$block['render_callback'].'($attributes, $content, $block);');
-                                        unset($block['render_callback']);
-                                    }
-                                }
+                        case 'disable':
+                            if (!empty($_GET['block'])) {
+                                $block_name = [$_GET['block']];
+                                $disabled = get_option(self::$blocks_disabled_key);
+                                $disabled = empty($disabled) ? [$block_name] : array_merge($disabled, $block_name);
+                                update_option(self::$blocks_disabled_key, $disabled);
+                                $this->_notice(__('Block disabled!', 'wizard-blocks'));
                             }
-                            
-                            $block = $this->normalize_block($block);
-                            $block['textdomain'] = $this->get_plugin_slug();
-                            
-                            $block['name'] = $block['textdomain'].'/'.$block_slug;
-                            
-                            $block_json = wp_json_encode($block);
-                            //var_dump($block_json); die();
-                            file_put_contents($dest.'block.json', $block_json);
+                            break;
 
-                            $block_post = $this->get_block_post($block_slug);
-                            if (!$block_post) {
-                                $args = $this->get_json_data($block_slug);
-                                $block_post_id = $this->insert_block_post($block_slug, $args);
-                            }
+                        case 'reset':
+                            delete_option(self::$blocks_disabled_key);
+                            $this->_notice(__('Block disabled settings has been resetted!', 'wizard-blocks'));
+                            break;
 
-                            $this->_notice(__('Block cloned!', 'wizard-blocks'));
-                        }
-                    }
-                    break;
-                
-                case 'import':
-                    if (!empty($_FILES["zip"]["tmp_name"])) {
-                        //var_dump($_FILES); die();
-                        $target_file = $basedir . basename($_FILES["zip"]["name"]);
-                        $tmpdir = $basedir . 'tmp';
-                        if (move_uploaded_file($_FILES["zip"]["tmp_name"], $target_file)) {
-                            $zip = new \ZipArchive;
-                            if ($zip->open($target_file) === TRUE) {
-                                $zip->extractTo($tmpdir);
-                                $zip->close();
+                        case 'clone':
+                            if (!empty($_GET['block'])) {
+                                $block_name = $_GET['block'];
 
-                                $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
-                                foreach ($jsons as $json) {
-                                    //var_dump($json);
-                                    $jfolder = dirname($json);
-                                    //var_dump($jfolder);
-                                    $block = basename($jfolder);
-                                    //var_dump($block);
-                                    if ($block == 'src') {
-                                        continue;
-                                    }
-                                    $json_code = file_get_contents($json);
-                                    $args = json_decode($json_code, true);
-                                    //if (!empty($args['$schema'])) {
-                                    if (!empty($args['name'])) {
-                                        //var_dump($args); die();
-                                        // is a valid block
-                                        list($domain, $slug) = explode('/', $args['name'], 2);
-                                        $dest = $this->get_ensure_blocks_dir($slug);
-                                        //var_dump($jfolder); var_dump($dest); die();
-                                        $this->dir_copy($jfolder, $dest);
-                                        $block_post = $this->get_block_post($slug);
-                                        if (!$block_post) {
-                                            $block_post_id = $this->insert_block_post($slug, $args);
+                                $block = $this->get_registered_block($block_name);
+                                //var_dump($block); die();
+                                $block_slug = $this->get_block_slug($block);
+
+                                if (!empty($block)) {
+                                    $dest = $this->get_ensure_blocks_dir($block_slug);
+
+                                    if (!empty($block['render_callback'])) {
+                                        $tmp = explode(' ', $block['render_callback']);
+                                        if (count($tmp) == 1) {
+                                            if (is_callable($block['render_callback'])) {
+                                                $block['render'] = 'file: ./render.php';
+                                                file_put_contents($dest . 'render.php', '<?php echo ' . $block['render_callback'] . '($attributes, $content, $block);');
+                                                unset($block['render_callback']);
+                                            }
                                         }
                                     }
-                                    //}
+
+                                    $block = $this->normalize_block($block);
+                                    $block['textdomain'] = $this->get_plugin_slug();
+
+                                    $block['name'] = $block['textdomain'] . '/' . $block_slug;
+
+                                    $block_json = wp_json_encode($block);
+                                    //var_dump($block_json); die();
+                                    file_put_contents($dest . 'block.json', $block_json);
+
+                                    $block_post = $this->get_block_post($block_slug);
+                                    if (!$block_post) {
+                                        $args = $this->get_json_data($block_slug);
+                                        $block_post_id = $this->insert_block_post($block_slug, $args);
+                                    }
+
+                                    $this->_notice(__('Block cloned!', 'wizard-blocks'));
                                 }
-                                $this->_notice(__('Blocks imported!', 'wizard-blocks'));
                             }
-                            // clean tmp
-                            $this->dir_delete($tmpdir);
-                            unlink($target_file);
-                        }
+                            break;
+
+                        case 'import':
+                            if (!empty($_FILES["zip"]["tmp_name"])) {
+                                //var_dump($_FILES); die();
+                                $target_file = $basedir . basename($_FILES["zip"]["name"]);
+                                $tmpdir = $basedir . 'tmp';
+                                if (move_uploaded_file($_FILES["zip"]["tmp_name"], $target_file)) {
+                                    $zip = new \ZipArchive;
+                                    if ($zip->open($target_file) === TRUE) {
+                                        $zip->extractTo($tmpdir);
+                                        $zip->close();
+
+                                        $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
+                                        foreach ($jsons as $json) {
+                                            //var_dump($json);
+                                            $jfolder = dirname($json);
+                                            //var_dump($jfolder);
+                                            $block = basename($jfolder);
+                                            //var_dump($block);
+                                            if ($block == 'src') {
+                                                continue;
+                                            }
+                                            $json_code = file_get_contents($json);
+                                            $args = json_decode($json_code, true);
+                                            //if (!empty($args['$schema'])) {
+                                            if (!empty($args['name'])) {
+                                                //var_dump($args); die();
+                                                // is a valid block
+                                                list($domain, $slug) = explode('/', $args['name'], 2);
+                                                $dest = $this->get_ensure_blocks_dir($slug);
+                                                //var_dump($jfolder); var_dump($dest); die();
+                                                $this->dir_copy($jfolder, $dest);
+                                                $block_post = $this->get_block_post($slug);
+                                                if (!$block_post) {
+                                                    $block_post_id = $this->insert_block_post($slug, $args);
+                                                }
+                                            }
+                                            //}
+                                        }
+                                        $this->_notice(__('Blocks imported!', 'wizard-blocks'));
+                                    }
+                                    // clean tmp
+                                    $this->dir_delete($tmpdir);
+                                    unlink($target_file);
+                                }
+                            }
+                            if (!empty($_GET['block'])) {
+                                $block = $_GET['block'];
+                                list($domain, $slug) = explode('/', $args['name'], 2);
+                                $block_post = $this->get_block_post($slug);
+                                if (!$block_post) {
+                                    $args = $this->get_json_data($slug);
+                                    $block_post_id = $this->insert_block_post($slug, $args);
+                                }
+                                $this->_notice(__('Block imported!', 'wizard-blocks'));
+                            }
+
+                            break;
+                        case 'export':
+
+                            // Make sure our zipping class exists
+                            if (!class_exists('ZipArchive')) {
+                                die('Cannot find class ZipArchive');
+                            }
+
+                            $zip = new \ZipArchive();
+
+                            // Set the system path for our zip file
+                            $filename = 'blocks_' . date('Y-m-d') . '.zip';
+                            $filepath = $basedir . $filename;
+
+                            // Remove any existing file with that filename
+                            if (file_exists($filepath))
+                                unlink($filepath);
+
+                            // Create and open the zip file
+                            if (!$zip->open($filepath, \ZipArchive::CREATE)) {
+                                die(esc_html('Failed to create zip at ' . $filepath));
+                            }
+
+                            foreach ($blocks_dir as $adir) {
+                                // Add any other files by directory
+                                $block_files = $adir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.*';
+                                $blocks = glob($block_files);
+                                //var_dump($block_files); die();
+                                foreach ($blocks as $file) {
+                                    list($tmp, $local) = explode($adir . DIRECTORY_SEPARATOR, $file, 2);
+                                    //var_dump($local); die();
+                                    $zip->addFile($file, $local);
+                                }
+                            }
+
+                            $zip->close();
+
+                            $download_url = $dirs['baseurl'] . '/' . $filename;
+                            $this->_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
+                            ?>
+                            <script>
+                                // Simulate an HTTP redirect:
+                                setTimeout(() => {
+                                    let download = "<?php echo esc_url($download_url); ?>";
+                                    window.location.replace(download);
+                                }, 1000);
+                            </script>
+                            <?php
+                            break;
+
+                        case 'download':
+
+                            if (!empty($_GET['block'])) {
+                                // Make sure our zipping class exists
+                                if (!class_exists('ZipArchive')) {
+                                    die('Cannot find class ZipArchive');
+                                }
+
+                                $zip = new \ZipArchive();
+
+                                $block_slug = $_GET['block'];
+                                $block_json = $this->get_json_data($block_slug);
+                                // Set the system path for our zip file
+                                $filename = 'block_' . $block_slug . '_' . $block_json['version'] . '.zip';
+                                $filepath = $basedir . $filename;
+
+                                // Remove any existing file with that filename
+                                if (file_exists($filepath))
+                                    unlink($filepath);
+
+                                // Create and open the zip file
+                                if (!$zip->open($filepath, \ZipArchive::CREATE)) {
+                                    die(esc_html('Failed to create zip at ' . $filepath));
+                                }
+
+                                $block_dir = $this->get_ensure_blocks_dir($block_slug);
+                                $block_basedir = $this->get_blocks_dir($block_slug) . DIRECTORY_SEPARATOR;
+                                // Add any other files by directory
+                                $blocks = glob($block_dir . '*.*');
+                                foreach ($blocks as $file) {
+                                    list($tmp, $local) = explode($block_basedir, $file, 2);
+                                    $zip->addFile($file, $local);
+                                }
+
+                                $zip->close();
+
+                                $download_url = $dirs['baseurl'] . '/' . $filename;
+                                $this->_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
+                                ?>
+                                <script>
+                                    // Simulate an HTTP redirect:
+                                    setTimeout(() => {
+                                        let download = "<?php echo esc_url($download_url); ?>";
+                                        window.location.replace(download);
+                                    }, 1000);
+                                </script>
+                                <?php
+                            }
+                            break;
                     }
-                    if (!empty($_GET['block'])) {
-                        $block = $_GET['block'];
-                        list($domain, $slug) = explode('/', $args['name'], 2);
-                        $block_post = $this->get_block_post($slug);
-                        if (!$block_post) {
-                            $args = $this->get_json_data($slug);
-                            $block_post_id = $this->insert_block_post($slug, $args);
-                        }
-                        $this->_notice(__('Block imported!', 'wizard-blocks'));
-                    }
 
-                    break;
-                case 'export':
 
-                    // Make sure our zipping class exists
-                    if (!class_exists('ZipArchive')) {
-                        die('Cannot find class ZipArchive');
-                    }
-
-                    $zip = new \ZipArchive();
-
-                    // Set the system path for our zip file
-                    $filename = 'blocks_' . date('Y-m-d') . '.zip';
-                    $filepath = $basedir . $filename;
-
-                    // Remove any existing file with that filename
-                    if (file_exists($filepath))
-                        unlink($filepath);
-
-                    // Create and open the zip file
-                    if (!$zip->open($filepath, \ZipArchive::CREATE)) {
-                        die('Failed to create zip at ' . $filepath);
-                    }
-
-                    $blocks_dir = apply_filters('wizard/dirs', []);
-                    foreach ($blocks_dir as $adir) {
-                        // Add any other files by directory
-                        $block_files = $adir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.*';
-                        $blocks = glob($block_files);
-                        //var_dump($block_files); die();
-                        foreach ($blocks as $file) {
-                            list($tmp, $local) = explode($adir . DIRECTORY_SEPARATOR, $file, 2);
-                            //var_dump($local);
-                            $zip->addFile($file, $local);
-                        }
-                    }
-
-                    $zip->close();
-
-                    $download_url = $dirs['baseurl'] . '/' . $filename;
-                    $this->_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
-                    ?>
-                    <script>
-                        // Simulate an HTTP redirect:
-                        setTimeout(() => {
-                            let download = "<?php echo $download_url; ?>";
-                            window.location.replace(download);
-                        }, 1000);
-                    </script>
-                    <?php
-                    break;
-
-                case 'download':
-
-                    if (!empty($_GET['block'])) {
-                        // Make sure our zipping class exists
-                        if (!class_exists('ZipArchive')) {
-                            die('Cannot find class ZipArchive');
-                        }
-
-                        $zip = new \ZipArchive();
-
-                        $block_slug = $_GET['block'];
-                        $block_json = $this->get_json_data($block_slug);
-                        // Set the system path for our zip file
-                        $filename = 'block_' . $block_slug . '_' . $block_json['version'] . '.zip';
-                        $filepath = $basedir . $filename;
-
-                        // Remove any existing file with that filename
-                        if (file_exists($filepath))
-                            unlink($filepath);
-
-                        // Create and open the zip file
-                        if (!$zip->open($filepath, \ZipArchive::CREATE)) {
-                            die('Failed to create zip at ' . $filepath);
-                        }
-
-                        $block_dir = $this->get_ensure_blocks_dir($block_slug);
-                        $block_basedir = $this->get_blocks_dir($block_slug) . DIRECTORY_SEPARATOR;
-                        // Add any other files by directory
-                        $blocks = glob($block_dir . '*.*');
-                        foreach ($blocks as $file) {
-                            list($tmp, $local) = explode($block_basedir, $file, 2);
-                            $zip->addFile($file, $local);
-                        }
-
-                        $zip->close();
-
-                        $download_url = $dirs['baseurl'] . '/' . $filename;
-                        $this->_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
-                        ?>
-                        <script>
-                            // Simulate an HTTP redirect:
-                            setTimeout(() => {
-                                let download = "<?php echo $download_url; ?>";
-                                window.location.replace(download);
-                            }, 1000);
-                        </script>
-                        <?php
-                    }
-                    break;
+                    do_action('wizard/blocks/action');
+                } else {
+                    $this->_notice(__('Security nonce not valid!', 'wizard-blocks'), 'error');
+                }
             }
-            
-            
-            do_action('wizard/blocks/action');
         }
     }
 }

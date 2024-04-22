@@ -156,13 +156,15 @@ jQuery(document).ready(function ($) {
 
     var attr_editor = jQuery('#_block_attributes_editor');
     var attr_attributes = jQuery('#_block_attributes');
-
+    var _block_attributes_update = false;
+    var _block_attributes_lock = false;
+    
     function update_block_label(row, title) {
         let key = row.find('.key').val();
         //row.find('.attr_name').text(row.find('.attr_name').text().replace('attr_key', key).replace('attr_title', title));
         row.find('.attr_name').text('[' + key + '] ' + title);
     }
-    function update_block_attributes_editor() {
+    function update_block_attributes_editor(trigger = true) {
         attr_editor.find('.repeat_attrs').html(''); // reset
         if (attr_attributes.val()) {
             var attributes = JSON.parse(attr_attributes.val());
@@ -207,9 +209,17 @@ jQuery(document).ready(function ($) {
                         row.find('.default').val(element.selected);
                         delete(element.selected);
                     }
+                    if (element.hasOwnProperty('template')) {
+                        row.find('.default').val(element.template);
+                        delete(element.template);
+                    }
                     if (element.enum) {
                         row.find('.options').val(element.enum.join("\r\n"));
                         delete(element.enum);
+                    }
+                    if (element.allowedBlocks) {
+                        row.find('.options').val(element.allowedBlocks.join("\r\n"));
+                        delete(element.allowedBlocks);
                     }
                     if (element.options) {
                         if (typeof element.options == "object") {
@@ -257,8 +267,15 @@ jQuery(document).ready(function ($) {
                         row.find('.position').val(element.position);
                         delete(element.position);
                     }
+                    if (element.className) {
+                        row.find('.className').val(element.className);
+                        delete(element.className);
+                    }
                     update_block_label(row, title);
-                    row.find('.component, .source').trigger('change');
+                    if (trigger) {
+                        //console.log('input force trigger');
+                        row.find('.component, .source').trigger('change');
+                    }
                     index++;
                 });
             }
@@ -302,9 +319,14 @@ jQuery(document).ready(function ($) {
                         attributes[key]['selected'] = row.find('.default').val();
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
                         attributes[key]['value'] = row.find('.default').val();
+                    } else if (attributes[key]['component'] && attributes[key]['component'] == 'InnerBlocks') {
+                        attributes[key]['template'] = row.find('.default').val();
                     } else {
                         attributes[key]['default'] = defa;
                     }
+                }
+                if (row.find('.className').val()) {
+                    attributes[key]['className'] = row.find('.className').val();
                 }
                 if (row.find('.inputType').val()) {
                     if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
@@ -312,37 +334,42 @@ jQuery(document).ready(function ($) {
                     }
                 }
                 if (row.find('.options').val()) {
-                    let evals = row.find('.options').val().split('\n');
-                    if (row.find('.options').val().includes('|') || attributes[key]['component']) {
-                        if (!row.find('.options').val().includes('|') && (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer')) {
-                            attributes[key]['options'] = [];
-                        } else {
-                            attributes[key]['options'] = {};
-                        }
-                        let is_array = true;
-                        jQuery(evals).each(function (id, label) {
-                            if (Array.isArray(attributes[key]['options'])) {                                
-                                label = value = parseFloat(label);
-                                attributes[key]['options'].push(label);
-                            } else {
-                                let tmp = label.split('|');
-                                let value = label;
-                                if (tmp.length > 1) {
-                                    value = tmp.pop();
-                                    label = tmp.pop();
-                                    is_array = false;
-                                }
-                                attributes[key]['options'][value] = label;
-                            }
-                        });
-                        if (is_array) {
-                            if (!Array.isArray(attributes[key]['options'])) {
-                                attributes[key]['options'] = Object.values(attributes[key]['options']);
-                            }  
-                        }
+                    let rowptions = row.find('.options').val().split('\n');
+                    if ( attributes[key]['component'] && attributes[key]['component'] == 'InnerBlocks') {
+                        attributes[key]['allowedBlocks'] = rowptions;
+                        attributes[key]['type'] = 'null';
                     } else {
-                        attributes[key]['enum'] = evals;
-                        delete(attributes[key]['type']);
+                        if (row.find('.options').val().includes('|') || attributes[key]['component']) {
+                            if (!row.find('.options').val().includes('|') && (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer')) {
+                                attributes[key]['options'] = [];
+                            } else {
+                                attributes[key]['options'] = {};
+                            }
+                            let is_array = true;
+                            jQuery(rowptions).each(function (id, label) {
+                                if (Array.isArray(attributes[key]['options'])) {                                
+                                    label = value = parseFloat(label);
+                                    attributes[key]['options'].push(label);
+                                } else {
+                                    let tmp = label.split('|');
+                                    let value = label;
+                                    if (tmp.length > 1) {
+                                        value = tmp.pop();
+                                        label = tmp.pop();
+                                        is_array = false;
+                                    }
+                                    attributes[key]['options'][value] = label;
+                                }
+                            });
+                            if (is_array) {
+                                if (!Array.isArray(attributes[key]['options'])) {
+                                    attributes[key]['options'] = Object.values(attributes[key]['options']);
+                                }  
+                            }
+                        } else {
+                            attributes[key]['enum'] = rowptions;
+                            delete(attributes[key]['type']);
+                        }
                     }
                 }
                 if (row.find('.source').val()) {
@@ -371,49 +398,77 @@ jQuery(document).ready(function ($) {
         attr_attributes.val(attr_json);
         //_block_attributes.codemirror.refresh()
         //_block_attributes.destroy();
-        attr_attributes.next('.CodeMirror').remove();
-        _block_attributes = wp.codeEditor.initialize(attr_attributes, editorSettings);
+        
+        if (!_block_attributes_lock) {
+            //console.log('codemirror reinit');
+            attr_attributes.next('.CodeMirror').remove();
+            _block_attributes = wp.codeEditor.initialize(attr_attributes, editorSettings);
+
+            _block_attributes.codemirror.on('change', function () {
+                // destroy and rebuild 
+                //console.log('codemirror change');
+                if (_block_attributes_update) {
+                    clearTimeout(_block_attributes_update);
+                }
+                _block_attributes_update = setTimeout(function(){
+                    _block_attributes.codemirror.save();
+                    //console.log('codemirror save');
+                    update_block_attributes_editor(false);
+                }, 500);
+                
+                if (_block_attributes_lock) {
+                    clearTimeout(_block_attributes_lock);
+                }
+                _block_attributes_lock = setTimeout(function(){
+                    //console.log('codemirror unlock');
+                    _block_attributes_lock = false;
+                }, 1000);
+            });
+        }
         //attr_attributes.trigger('change');
-    }
+    } 
+    
     if (attr_editor.length) {
-        console.log('init');
+        //console.log('init');
         attr_editor.data('row', attr_editor.find('.repeat_attrs').html());
         //console.log(attr_editor.data('row'));
         attr_editor.find('.repeat_attr').remove();
 
-
+        /*
         _block_attributes.codemirror.on('change', function () {
             // destroy and rebuild 
             console.log('codemirror change');
             _block_attributes.codemirror.save();
             update_block_attributes_editor();
         });
+        //console.log(_block_attributes.codemirror);
         attr_attributes.on('change', function () {
             console.log('textarea change');
             // destroy and rebuild 
             update_block_attributes_editor();
         });
-
+        */
+       
         attr_editor.on('click', '.attr_add', function () {
-            console.log('add');
+            //console.log('add');
             attr_editor.find('.repeat_attrs').append(attr_editor.data('row'));
             attr_editor.find('.repeat_attrs').find('.repeat_attr:last-child').find('.component, .source').trigger('change');
         });
 
         attr_editor.on('click', '.repeat_attr .button', function () {
-            console.log('update');
+            //console.log('update');
             setTimeout(function () {
                 update_block_attributes();
             }, 100);
         });
 
         attr_editor.on('click', '.attr_toggle, .attr_name', function () {
-            console.log('toggle');
+            //console.log('toggle');
             jQuery(this).closest('.attr_ops').siblings('.attr_data').toggle();
         });
 
         attr_editor.on('click', '.attr_up', function () {
-            console.log('up');
+            //console.log('up');
             let row = jQuery(this).closest('.repeat_attr');
             if (row.eq()) {
                 row.insertBefore(row.prev());
@@ -421,7 +476,7 @@ jQuery(document).ready(function ($) {
         });
 
         attr_editor.on('click', '.attr_down', function () {
-            console.log('down');
+            //console.log('down');
             let row = jQuery(this).closest('.repeat_attr');
             if (!row.is(':last-child')) {
                 row.insertAfter(row.next());
@@ -429,7 +484,7 @@ jQuery(document).ready(function ($) {
         });
 
         attr_editor.on('click', '.attr_clone', function () {
-            console.log('clone');
+            //console.log('clone');
             let row = jQuery(this).closest('.repeat_attr');
             //row.clone().appendTo(row.parent());
             let clone = row.clone();
@@ -438,14 +493,16 @@ jQuery(document).ready(function ($) {
         });
 
         attr_editor.on('click', '.attr_remove', function () {
-            console.log('remove');
-            let row = jQuery(this).closest('.repeat_attr');
-            row.remove();
+            //console.log('remove');
+            if (confirm(wp.i18n.__("Are you sure you want to remove this attribute?", "wizard-blocks"))) {
+                let row = jQuery(this).closest('.repeat_attr');
+                row.remove();
+            }
         });
 
 
         attr_editor.on('change', '.repeat_attr input, .repeat_attr select, .repeat_attr textarea', function () {
-            console.log('update');
+            //console.log('update');
             let row = jQuery(this).closest('.repeat_attr');
             if (jQuery(this).hasClass('key') || jQuery(this).hasClass('label')) {
                 let title = row.find('.label').val();
@@ -462,7 +519,7 @@ jQuery(document).ready(function ($) {
                 } else {
                     row.find('label[for="multiple"]').hide();
                 }
-                if (['SelectControl', 'RadioControl', 'ButtonGroup', ''].includes(jQuery(this).val())) {
+                if (['SelectControl', 'RadioControl', 'ButtonGroup', 'InnerBlocks', ''].includes(jQuery(this).val())) {
                     row.find('label[for="options"]').show();
                 } else {
                     row.find('label[for="options"]').hide();

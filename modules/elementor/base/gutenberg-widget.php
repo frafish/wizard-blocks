@@ -75,7 +75,7 @@ class GutenbergWidget extends Widget_Base {
      */
     public function get_icon() {
         if (!empty($this->block->icon)) {
-            $icon = trim(strip_tags($this->block->icon));
+            $icon = trim(wp_strip_all_tags($this->block->icon));
             if ($icon) {
                 return 'dashicons dashicons-'.$icon;
             }

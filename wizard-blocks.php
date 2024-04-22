@@ -2,7 +2,7 @@
 /**
  *
  * @wordpress-plugin
- * Plugin Name:       Wizard Blocks Manager for Gutenberg 
+ * Plugin Name:       Wizard Blocks Manager 
  * Plugin URI:        https://wiz.farm
  * Description:       Easy create, edit and manage Guternberg Blocks
  * Version:           1.0.1

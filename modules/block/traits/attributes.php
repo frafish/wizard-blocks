@@ -36,8 +36,19 @@ Trait Attributes {
         return $attributes_panel;
     }
     
+    public function has_inner_blocks($args) {
+        if (!empty($args['attributes'])) {
+            foreach ($args['attributes'] as $key => $attr) {
+                if ($attr['component'] == 'InnerBlocks') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public function _edit($args = [], $wrapper = false) {
-        $key = $args['name'];
+        $key = esc_attr($args['name']);
         
         if (!empty($args['attributes'])) {
             foreach ($args['attributes'] as $id => $attr) {
@@ -68,11 +79,12 @@ if ($wrapper) { ?><script id="<?php echo $key; ?>"><?php } ?>
 <?php
 if (!empty($args['attributes'])) {
     foreach ($args['attributes'] as $id => $attr) {
+        $id = esc_attr($id);
         if (!empty($attr['api']) && is_array($attr['api']) && !empty($attr['api']['path'])) {
             // https://developer.wordpress.org/rest-api/reference/
             if (empty($attr['options']) || is_string($attr['options'])) {
                 $api = $attr['api'];
-                $var_name = empty($api['name']) ? 'wp_api' : $api['name'];
+                $var_name = empty($api['name']) ? 'wp_api' : esc_attr($api['name']);
                 if (empty($api['value'])) { $api['value'] = 'index'; }
                 $api['label'] = empty($api['label']) ? $api['value'] : $api['label'];
                 ?>
@@ -83,11 +95,11 @@ wp.apiFetch( { path: '<?php echo $api['path']; ?>' } ).then( ( data ) => {
     if (data && typeof data == 'object') {
         if (data instanceof Array) {
             data.forEach((item, index) => {
-                <?php echo $var_name; ?>['<?php echo $key; ?>']['<?php echo $id; ?>'].push({ value: <?php echo $api['value']; ?>, label: <?php echo $api['label']; ?> });
+                <?php echo $var_name; ?>['<?php echo $key; ?>']['<?php echo $id; ?>'].push({ value: <?php echo esc_html($api['value']); ?>, label: <?php echo esc_html($api['label']); ?> });
             } );
         } else {
             for (const [index, item] of Object.entries(data)) {
-                <?php echo $var_name; ?>['<?php echo $key; ?>']['<?php echo $id; ?>'].push({ value: <?php echo $api['value']; ?>, label: <?php echo $api['label']; ?> });
+                <?php echo $var_name; ?>['<?php echo $key; ?>']['<?php echo $id; ?>'].push({ value: <?php echo esc_html($api['value']); ?>, label: <?php echo esc_html($api['label']); ?> });
             }
         }
     }
@@ -203,9 +215,12 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
                     )
             );
     },
-    save() {
-        return null;
-    },
+    save() { <?php 
+        // https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
+        if ($this->has_inner_blocks($args)) { ?>
+        const innerBlocksProps = wp.blockEditor.useInnerBlocksProps.save();
+        return innerBlocksProps.children; //wp.blockEditor.InnerBlocks.Content;
+        <?php } else { ?>return null;<?php } ?> },
 });
 <?php
 if ($wrapper) { ?></script><?php }
@@ -214,7 +229,7 @@ if ($wrapper) { ?></script><?php }
    
    public function _component($id, $attr = [], $args = []) {
        
-       $label = empty($attr['label']) ? ucfirst($id) : $attr['label'];
+       $label = empty($attr['label']) ? ucfirst($id) : esc_html($attr['label']);
        $in_toolbar = !empty($attr['position']) && $attr['position'] == 'toolbar';
        
        if (!empty($attr['type']) && $attr['type'] == "object") {
@@ -255,202 +270,255 @@ if ($wrapper) { ?></script><?php }
            $component = $attr['component'];
        }
        
-       if (!empty($attr['position']) && $attr['position'] == 'toolbar') { ?>
-    wp.element.createElement(wp.components.Toolbar,{label: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>")},
-    <?php } ?>
+       if ($in_toolbar) {
+           if ($component == 'ButtonGroup') {
+               $component = 'ToolbarGroup';
+           }
+           if ($component == 'RadioControl') {
+               $component = 'ToolbarDropdownMenu';
+           }
+           
+       }
+       
+      ?>
+    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>'div'<?php } ?>,{label: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>")},
+    
        wp.element.createElement(
-            <?php echo in_array($component, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo $component; ?>,
-                {
-                    'aria-label': wp.i18n.__("<?php echo $label; ?>","<?php echo $args['textdomain']; ?>"),
-                    <?php if (!$in_toolbar) { ?>label: wp.i18n.__("<?php echo $label ?>", "<?php echo $args['textdomain']; ?>"),<?php } 
-                    // default
-                    switch($component) {
-                        case 'ButtonGroup':  break;
-                        case 'ColorPicker': 
-                            $color = '';
-                            if (!empty($attr['default'])) { 
-                                $color = $attr['default'];
-                                ?>
-                                defaultValue: "<?php echo $color ?>",
-                                <?php
-                            }
-                            if (!empty($attr['color'])) { $color = $attr['color']; } ?>
-                            color: props.attributes.<?php echo $id; ?><?php if (!empty($color)) { echo ' || "'.$color.'"'; } ?>,
+            <?php 
+            if ($component == 'InnerBlocks') {
+                $template = $attr['template'] ? $attr['template'] : '';
+                $allowedBlocks = empty($attr['allowedBlocks']) ? [] : $attr['allowedBlocks'];
+                $allowedBlocks = empty($allowedBlocks) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks;
+                $allowedBlocks = !empty($allowedBlocks) && is_array($allowedBlocks) ? "['".implode("','", $allowedBlocks)."']" : '';
+                $renderAppender = false; // a function that render a button
+                $orientation = empty($attr['orientation']) ? '' : $attr['orientation']; //$in_toolbar ? 'horizontal' : 'vertical';
+                ?>
+                wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
+                    <?php 
+                    if ($template) { ?>template: <?php echo $template; ?>,<?php }
+                    if ($allowedBlocks) { ?>allowedBlocks: <?php echo $allowedBlocks; ?>,<?php }
+                    if ($orientation) { ?>orientation: '<?php echo $orientation; ?>',<?php }
+                    if ($renderAppender) { ?>renderAppender: <?php echo $renderAppender; ?>,<?php }
+                    ?>
+                }),
+            <?php } else {
+                echo in_array($component, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo $component; ?>,
+                    {
+                        'aria-label': wp.i18n.__("<?php echo $label; ?>","<?php echo $args['textdomain']; ?>"),
+                        label: wp.i18n.__("<?php echo $label ?>", "<?php echo $args['textdomain']; ?>"),
                         <?php
-                            break;
-                        case 'DatePicker':
-                        case 'DateTimePicker':
-                        case 'TimePicker': 
-                            $date = 'new Date()';
-                            if (!empty($attr['default'])) { 
-                                $date = '"'.$attr['default'].'"';
-                            }
-                            ?>
-                            currentDate: props.attributes.<?php echo $id; ?> || <?php echo $date; ?>,
-                        <?php 
-                            break;
-                        case 'CheckboxControl':
-                        case 'ToggleControl': ?>
-                            checked: props.attributes.<?php echo $id; ?>,
-                        <?php 
-                            break;
-                        case 'RadioControl': 
-                            if (!empty($attr['selected'])) { $attr['default'] = $attr['selected']; }
-                            ?>
-                            selected: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
-                        <?php 
-                            break;
-                        case 'SelectControl': 
-                            $default = '';
-                            if (!empty($attr['default'])) {
-                                if (!empty($attr['multiple'])) { 
-                                    if (is_array($attr['default'])) {
-                                        $values = $attr['default'];
-                                    } else {
-                                        $values = array_filter(array_map('trim', explode(',', $attr['default'])));
-                                    }
-                                    $default = '[';
-                                    foreach ($values as $key => $value) {
-                                        $def = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
-                                        if ($key) $default .= ',';
-                                        $default .= $def;
-                                    }
-                                    $default .= ']';
-                                } else {
-                                    $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
-                                }
-                            }
-                            ?>
-                            value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo $default; } ?>,
-                        <?php 
-                            break;
-                        case 'RichText':
-                        case 'TextControl':
-                        default: ?>
-                            value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
-                        <?php
-                    } 
-                    switch ($component) {
-                        case 'MediaUpload': ?>
-                    onSelect: function (media ) {
-                        //console.log(media);
-                        props.setAttributes({<?php echo $id; ?>: media.id});
-                    },
-                    render: function ( open ) {
-                        return wp.element.createElement(wp.components.Button,
-                            { 
-                                text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
-                                //title: wp.i18n.__('Open Media Library', "<?php echo $args['textdomain']; ?>"),
-                                onClick: open.open,
-                                variant: 'secondary'
-                            });
-                    },
-                    <?php break;
-                        case 'Heading': ?>
-                    text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
-                    <?php break;
-                    case 'ButtonGroup':  break;
-                        default: ?>
-                    onChange: function (val) {
-                        <?php
-                        if (!empty($attr['sanitize'])) { 
-                            switch($attr['sanitize']) {
-                                case 'title': ?>
-                                    val = val.replace(/[^a-zA-Z0-9_-]/g,"");
-                                    <?php break;
-                            }
-                        }
-                        if ($attr['type'] == 'number') { 
-                        ?>
-                        val = parseInt(val);
-                        <?php } ?>
-                        //console.log(val);
-                        props.setAttributes({<?php echo $id; ?>: val});
-                    },
-                    <?php
-                    }
-                    if (!empty($attr['options']) && $component != 'ButtonGroup') { ?>
-                        options: <?php 
-                            if (is_array($attr['options'])) {
-                                echo '[';
-                                if (is_array(reset($attr['options']))) {
-                                    echo wp_json_encode($attr['options']);
-                                } else {
-                                    foreach ($attr['options'] as $value => $label) { 
-                                    if ($attr['type'] == 'string') {
-                                        $value = '"'.$label.'"';
-                                        $tmp = explode('|', $label, 2);
-                                        if (count($tmp) > 1) {
-                                            $label = reset($tmp);
-                                            $value = '"'.end($tmp).'"';
-                                        }
-                                    }
+                        // default
+                        switch($component) {
+                            case 'ToolbarGroup':  break;
+                            case 'ButtonGroup':  break;
+                            case 'ColorPicker': 
+                                $color = '';
+                                if (!empty($attr['default'])) { 
+                                    $color = esc_html($attr['default']);
                                     ?>
-                                    {value: <?php echo $value; ?>, label: "<?php echo $label; ?>"},
-                                    <?php } 
+                                    defaultValue: "<?php echo $color ?>",
+                                    <?php
                                 }
-                                echo ']';
-                            } else {    
-                                echo $attr['options'];
+                                if (!empty($attr['color'])) { $color = $attr['color']; } ?>
+                                color: props.attributes.<?php echo $id; ?><?php if (!empty($color)) { echo ' || "'.$color.'"'; } ?>,
+                            <?php
+                                break;
+                            case 'DatePicker':
+                            case 'DateTimePicker':
+                            case 'TimePicker': 
+                                $date = 'new Date()';
+                                if (!empty($attr['default'])) { 
+                                    $date = '"'.esc_html($attr['default']).'"';
+                                }
+                                ?>
+                                currentDate: props.attributes.<?php echo $id; ?> || <?php echo $date; ?>,
+                            <?php 
+                                break;
+                            case 'CheckboxControl':
+                            case 'ToggleControl': ?>
+                                checked: props.attributes.<?php echo $id; ?>,
+                            <?php 
+                                break;
+                            case 'RadioControl': 
+                                if (!empty($attr['selected'])) { $attr['default'] = $attr['selected']; }
+                                ?>
+                                selected: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
+                            <?php 
+                                break;
+                            case 'SelectControl': 
+                                $default = '';
+                                if (!empty($attr['default'])) {
+                                    if (!empty($attr['multiple'])) { 
+                                        if (is_array($attr['default'])) {
+                                            $values = $attr['default'];
+                                        } else {
+                                            $values = array_filter(array_map('trim', explode(',', $attr['default'])));
+                                        }
+                                        $default = '[';
+                                        foreach ($values as $key => $value) {
+                                            $def = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
+                                            if ($key) $default .= ',';
+                                            $default .= $def;
+                                        }
+                                        $default .= ']';
+                                    } else {
+                                        $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
+                                    }
+                                }
+                                ?>
+                                value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo $default; } ?>,
+                            <?php 
+                                break;
+                            case 'RichText':
+                            case 'TextControl':
+                            default: ?>
+                                value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
+                            <?php
+                        } 
+                        switch ($component) {
+                            case 'MediaUpload': ?>
+                        onSelect: function (media ) {
+                            //console.log(media);
+                            props.setAttributes({<?php echo $id; ?>: media.id});
+                        },
+                        render: function ( open ) {
+                            return wp.element.createElement(wp.components.Button,
+                                { 
+                                    text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
+                                    //title: wp.i18n.__('Open Media Library', "<?php echo $args['textdomain']; ?>"),
+                                    onClick: open.open,
+                                    variant: 'secondary'
+                                });
+                        },
+                        <?php break;
+                            case 'Heading': ?>
+                        text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
+                        <?php break;
+                        case 'ToolbarDropdownMenu':  break;
+                        case 'ToolbarGroup':  break;
+                        case 'ButtonGroup':  break;
+                            default: ?>
+                        onChange: function (val) {
+                            <?php
+                            if (!empty($attr['sanitize'])) { 
+                                switch($attr['sanitize']) {
+                                    case 'title': ?>
+                                        val = val.replace(/[^a-zA-Z0-9_-]/g,"");
+                                        <?php break;
+                                }
                             }
-                            ?>,
-                    <?php }
-                    if (!empty($attr['placeholder'])) { ?>
-                        placeholder: "<?php echo $attr['placeholder']; ?>",
-                    <?php }
-                    if (isset($attr['multiple'])) { ?>
-                        multiple: <?php echo $attr['multiple'] ? 'true' : 'false'; ?>,
-                    <?php }
-                    if (!empty($attr['help']) && !$in_toolbar) { ?>
-                        help: wp.i18n.__("<?php echo $attr['help']; ?>","<?php echo $args['textdomain']; ?>"),
-                    <?php }
-                    if (!empty($attr['tag'])) { ?>
-                        tag: "<?php echo $attr['tag']; ?>",
-                    <?php }
-                    if (!empty($attr['className'])) { ?>
-                        className: "<?php echo $attr['className']; ?>",
-                    <?php }
-                    if (!empty($attr['enableAlpha'])) { ?>
-                        enableAlpha: true,
-                    <?php }
-                    if (!empty($attr['rows'])) { ?>
-                        rows: <?php echo intval($attr['rows']); ?>,
-                    <?php }
-                    if (!empty($attr['indeterminate'])) { ?>
-                        indeterminate: true,
-                    <?php }
-                    if (!empty($attr['inputType'])) { ?>
-                        type: "<?php echo $attr['inputType']; ?>",
-                    <?php } ?>
-                },
-                <?php if (in_array($component, ['ButtonGroup'])) {
-                    if (empty($attr['options']) && $id == 'align') {
-                        $attr['options'] = ['left', 'center', 'right'];
-                    }
-                    if (!empty($attr['options'])) {
-                         //[10, 15, 20, 25, 30, 33, 35, 40, 50, 60, 66, 70, 75, 80, 90, 100]; 
-                        foreach ($attr['options'] as $value) { 
-                            $value = in_array($attr['type'], ['number', 'integer', 'boolean']) ? $value : '"'.$value.'"'; ?>
-                            wp.element.createElement(wp.components.Button, {
-                                value: <?php echo $value ?>,
-                                variant: (props.attributes.<?php echo $id; ?> === <?php echo $value; ?>) ? 'primary' : 'secondary',
-                                onClick: function (event) {
-                                    //console.log(event);
-                                    let btn = event.target;
-                                    jQuery(btn).addClass('is-primary').removeClass('is-secondary');
-                                    jQuery(btn).siblings('.is-primary').removeClass('is-primary');
-                                    props.setAttributes({<?php echo $id; ?>: btn.value});                                    
-                                },
-                                text: wp.i18n.__(<?php echo $value; ?>, "<?php echo $args['textdomain']; ?>")
-                            }),
+                            if ($attr['type'] == 'number') { 
+                            ?>
+                            val = parseInt(val);
+                            <?php } ?>
+                            //console.log(val);
+                            props.setAttributes({<?php echo $id; ?>: val});
+                        },
+                        <?php
+                        }
+                        if (!empty($attr['options']) && !in_array($component, ['ButtonGroup', 'ToolbarGroup'])) {
+                            if (in_array($component, ['ToolbarDropdownMenu'])) { ?>
+                            controls: [
+                                    <?php foreach ($attr['options'] as $value => $label) { 
+                                        if ($attr['type'] == 'string') {
+                                            $value = '"'.$label.'"';
+                                            $tmp = explode('|', $label, 2);
+                                            if (count($tmp) > 1) {
+                                                $label = reset($tmp);
+                                                $value = '"'.end($tmp).'"';
+                                            }
+                                        }
+                                        ?>
+                                        {title: "<?php echo $label; ?>",
+                                        onClick: function (event) {
+                                            //console.log(event);
+                                            props.setAttributes({<?php echo $id; ?>: <?php echo $value; ?>});                                    
+                                        }, },
+                                        <?php
+                                    }
+                                ?>],
+                            <?php } else { ?>
+                            options: <?php 
+                                if (is_array($attr['options'])) {
+                                    echo '[';
+                                    if (is_array(reset($attr['options']))) {
+                                        echo wp_json_encode($attr['options']);
+                                    } else {
+                                        foreach ($attr['options'] as $value => $label) { 
+                                        if ($attr['type'] == 'string') {
+                                            $value = '"'.$label.'"';
+                                            $tmp = explode('|', $label, 2);
+                                            if (count($tmp) > 1) {
+                                                $label = reset($tmp);
+                                                $value = '"'.end($tmp).'"';
+                                            }
+                                        }
+                                        ?>
+                                        {value: <?php echo $value; ?>, label: "<?php echo $label; ?>"},
+                                        <?php } 
+                                    }
+                                    echo ']';
+                                } else {    
+                                    echo $attr['options'];
+                                }
+                                ?>,
                         <?php }
-                    }       
-                } ?>
+                        }
+                        if (!empty($attr['placeholder'])) { ?>
+                            placeholder: "<?php echo $attr['placeholder']; ?>",
+                        <?php }
+                        if (isset($attr['multiple'])) { ?>
+                            multiple: <?php echo $attr['multiple'] ? 'true' : 'false'; ?>,
+                        <?php }
+                        if (!empty($attr['help']) && !$in_toolbar) { ?>
+                            help: wp.i18n.__("<?php echo $attr['help']; ?>","<?php echo $args['textdomain']; ?>"),
+                        <?php }
+                        if (!empty($attr['tag'])) { ?>
+                            tag: "<?php echo $attr['tag']; ?>",
+                        <?php }
+                        if (!empty($attr['className'])) { ?>
+                            className: "<?php echo $attr['className']; ?>",
+                        <?php }
+                        if (!empty($attr['enableAlpha'])) { ?>
+                            enableAlpha: true,
+                        <?php }
+                        if (!empty($attr['rows'])) { ?>
+                            rows: <?php echo intval($attr['rows']); ?>,
+                        <?php }
+                        if (!empty($attr['indeterminate'])) { ?>
+                            indeterminate: true,
+                        <?php }
+                        if (!empty($attr['inputType'])) { ?>
+                            type: "<?php echo $attr['inputType']; ?>",
+                        <?php } ?>
+                    },
+                    <?php if (in_array($component, ['ButtonGroup', 'ToolbarGroup'])) {
+                        if (empty($attr['options']) && $id == 'align') {
+                            $attr['options'] = ['left', 'center', 'right'];
+                        }
+                        if (!empty($attr['options'])) {
+                             //[10, 15, 20, 25, 30, 33, 35, 40, 50, 60, 66, 70, 75, 80, 90, 100]; 
+                            foreach ($attr['options'] as $value) { 
+                                $value = in_array($attr['type'], ['number', 'integer', 'boolean']) ? $value : '"'.$value.'"'; ?>
+                                wp.element.createElement(wp.components.<?php echo $in_toolbar ? 'Toolbar' : ''; ?>Button, {
+                                    value: <?php echo $value ?>,
+                                    variant: (props.attributes.<?php echo $id; ?> === <?php echo $value; ?>) ? 'primary' : 'secondary',
+                                    onClick: function (event) {
+                                        //console.log(event);
+                                        jQuery(event.target).addClass('is-primary').removeClass('is-secondary');
+                                        jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
+                                        props.setAttributes({<?php echo $id; ?>: event.target.value});                                    
+                                    },
+                                    text: wp.i18n.__(<?php echo $value; ?>, "<?php echo $args['textdomain']; ?>")
+                                }),
+                            <?php }
+                        }       
+                    } 
+            }
+            ?>
             ),
-       <?php
-    if ($in_toolbar) { ?>
         ),
-    <?php } 
+    <?php
    }
    
     public function parse_svg($svg) {

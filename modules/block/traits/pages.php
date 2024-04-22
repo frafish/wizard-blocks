@@ -40,7 +40,7 @@ trait Pages {
                 <div class="card" style="width: 100%;">
                     <h2><?php _e('IMPORT', 'wizard-blocks'); ?></h2>
                     <p><?php _e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php _e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
-                    <form action="?post_type=block&page=<?php echo $_GET['page']; ?>&action=import" method="POST" enctype="multipart/form-data">
+                    <form action="<?php echo $this->get_action_url("action=import"); ?>" method="POST" enctype="multipart/form-data">
                         <input type="file" name="zip">
                         <button class="btn button" type="submit"><?php _e('Import', 'wizard-blocks'); ?></button>
                     </form>
@@ -49,7 +49,7 @@ trait Pages {
                 <div class="card" style="width: 100%;">
                     <h2><?php _e('EXPORT', 'wizard-blocks'); ?></h2>
                     <p><?php _e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php _e('You can then  install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
-                    <a class="btn button" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=export"><?php _e('Export', 'wizard-blocks'); ?></a>
+                    <a class="btn button" href="<?php echo $this->get_action_url("action=export"); ?>"><?php _e('Export', 'wizard-blocks'); ?></a>
                 </div>
             </div>
 
@@ -69,6 +69,11 @@ trait Pages {
         </div>
         <?php
     }
+    
+    public function get_action_url($args = '') {
+        $nonce = wp_create_nonce('wizard-blocks-nonce');
+        return admin_url("edit.php?post_type=block&page=".$_GET['page']."&nonce=".$nonce.($args ? "&".$args : ''));
+    }
 
     public function wizard_blocks() {
         $this->execute_actions();
@@ -84,6 +89,15 @@ trait Pages {
                 $blocks[$name]['post'] = $block_post;
                 if ($block_dir = $this->get_blocks_dir($block_slug)) {
                     $blocks[$name]['file'] = $block_dir . DIRECTORY_SEPARATOR . $block_slug . DIRECTORY_SEPARATOR . 'block.json';
+                }
+            }
+            if (!empty($blocks[$name]['file']) && file_exists($blocks[$name]['file'])) {
+                $json = file_get_contents($blocks[$name]['file']);
+                $block_json = json_decode($json, true);
+                foreach($block_json as $key => $value) {
+                    if (!isset($blocks[$name][$key])) {
+                        $blocks[$name][$key] = $value;
+                    }
                 }
             }
         }
@@ -109,7 +123,7 @@ trait Pages {
             <ul class="subsubsub blocks-filter">
                 <li class="all"><a class="current" href="#"><?php _e('All'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
-                    | <li class><a href="#<?php echo $textdomain; ?>"><?php _e(ucfirst($textdomain)); ?> <span class="count">(<?php echo $bc; ?>)</span></a></li>
+                    | <li class><a href="#<?php echo $textdomain; ?>"><?php echo ucfirst($textdomain); ?> <span class="count">(<?php echo $bc; ?>)</span></a></li>
                 <?php } ?>
             </ul>
             <script>
@@ -127,12 +141,12 @@ trait Pages {
                 });
             </script>
             <hr style="clear: both; padding-top: 10px;">
-            <form action="?post_type=block&page=<?php echo $_GET['page']; ?>" method="POST">
+            <form action="<?php echo $this->get_action_url(); ?>" method="POST">
                 <input type="hidden" name="action" value="disable">
                 <div class="card" style="max-width: none; width: 100%; display: flex; justify-content: space-between;">
                     <input id="blocks-search" placeholder="<?php _e('Search'); ?>" type="search">
                     <span>
-                        <a class="button button-danger" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=reset"><?php _e('Reset'); ?></a> 
+                        <a class="button button-danger" href="<?php echo $this->get_action_url("action=reset"); ?>"><?php _e('Reset'); ?></a> 
                         <input class="button button-primary" type="submit" value="<?php _e('Save'); ?>">
                     </span>
                 </div>
@@ -157,6 +171,7 @@ trait Pages {
                         <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php _e('Title'); ?></span></th>
                         <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php _e('Status'); ?></th>
                         <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
+                        <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php _e('Api'); ?></th>
                         <th scope="col" id="category" class="manage-column column-category"><?php _e('Category'); ?></th>
                         <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php _e('Usage'); ?></th>
                         <th scope="col" id="plugin" class="manage-column column-plugin"><?php _e('Plugin'); ?></th>
@@ -200,6 +215,9 @@ trait Pages {
                             <td class="description column-description" data-colname="<?php _e('Description', 'wizard-blocks'); ?>">
                                 <?php echo empty($block['description']) ? '' : $block['description']; ?>
                             </td>
+                            <td class="api column-api" data-colname="<?php _e('Api Version', 'wizard-blocks'); ?>">
+                                <?php echo empty($block['apiVersion']) ? '' : $block['apiVersion']; ?>
+                            </td>
                             <td class="category column-category" data-colname="<?php _e('Category', 'wizard-blocks'); ?>">
                                 <?php
                                 if (!empty($block['category'])) {
@@ -239,17 +257,17 @@ trait Pages {
                             <td class="actions column-actions" data-colname="<?php _e('Actions', 'wizard-blocks'); ?>">
                                 <?php if ($block['textdomain'] == 'core') { ?>
                                     <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php _e('Docs', 'wizard-blocks'); ?>"></a>
-                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=clone&block=<?php echo $block_slug; ?>" title="<?php _e('Clone', 'wizard-blocks'); ?>"></a>
+                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="<?php echo $this->get_action_url("action=clone&block=".$block_slug); ?>" title="<?php _e('Clone', 'wizard-blocks'); ?>"></a>
                                 <?php } ?>
-                                <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=disable&block=<?php echo $block_slug ?>" title="<?php _e('Disable', 'wizard-blocks'); ?>"></a>
+                                <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo $this->get_action_url("action=disable&block=".$block_slug); ?>" title="<?php _e('Disable', 'wizard-blocks'); ?>"></a>
                                 <?php if (!empty($block['folder'])) { ?>
-                                    <a class="btn button dashicons-before dashicons-download" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=download&block=<?php echo $block_slug; ?>" title="<?php _e('Download', 'wizard-blocks'); ?>"></a>
+                                    <a class="btn button dashicons-before dashicons-download" href="<?php echo $this->get_action_url("action=download&block=".$block_slug); ?>" title="<?php _e('Download', 'wizard-blocks'); ?>"></a>
                                 <?php } ?>
                                 <?php
                                 if (empty($block['post'])) {
                                     if (!empty($block['folder'])) {
                                         ?>
-                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="?post_type=block&page=<?php echo $_GET['page']; ?>&action=import&block=<?php echo $block_slug; ?>" title="<?php _e('Import', 'wizard-blocks'); ?>"></a>
+                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo $this->get_action_url("action=import&block=".$block_slug); ?>" title="<?php _e('Import', 'wizard-blocks'); ?>"></a>
                                         <?php
                                     }
                                 } else {
@@ -271,6 +289,7 @@ trait Pages {
                         <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php _e('Title'); ?></span></th>
                         <th scope="col" id="status" class="manage-column column-status"><?php _e('Status'); ?></th>
                         <th scope="col" id="description" class="manage-column column-description"><?php _e('Description'); ?></th>
+                        <th scope="col" id="api" class="manage-column column-category"><?php _e('Api'); ?></th>
                         <th scope="col" id="category" class="manage-column column-category"><?php _e('Category'); ?></th>
                         <th scope="col" id="usage" class="manage-column column-usage sortable"><?php _e('Usage'); ?></th>
                         <th scope="col" id="plugin" class="manage-column column-plugin"><?php _e('Plugin'); ?></th>
@@ -412,11 +431,11 @@ trait Pages {
         return $blocks;
     }
 
-    function get_blocks_usage() {
+    private function get_blocks_usage() {
         global $wpdb;
         $block_init = '<!-- wp:';
         $block_count = [];
-        $sql = 'SELECT * FROM ' . $wpdb->posts . ' WHERE post_content LIKE "%' . $block_init . '%" AND post_status = "publish"';
+        $sql = 'SELECT * FROM ' . $wpdb->posts . ' WHERE post_content LIKE "%<!-- wp:%" AND post_status = "publish"';
         $posts = $wpdb->get_results($sql);
         foreach ($posts as $post) {
             $tmp = explode($block_init, $post->post_content);

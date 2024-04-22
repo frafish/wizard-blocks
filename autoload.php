@@ -13,7 +13,7 @@ add_action('init', function () {
             $block_json = $block . DIRECTORY_SEPARATOR . 'block.json';
             if (file_exists($block_json)) {
                 $metadata = wp_json_file_decode( $block_json, array( 'associative' => true ) );
-                if (empty($metadata['name']) || !\WP_Block_Type_Registry::get_instance()->is_registered($metadata['name'])) {
+                if (!empty($metadata['name']) && !\WP_Block_Type_Registry::get_instance()->is_registered($metadata['name'])) {
                     /**
                     * Registers the block using the metadata loaded from the `block.json` file.
                     * Behind the scenes, it registers also all assets so they can be enqueued

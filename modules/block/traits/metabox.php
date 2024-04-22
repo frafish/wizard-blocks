@@ -128,6 +128,7 @@ trait Metabox {
         'DateTimePicker' => 'DateTime',
         //'Divider' => 'Divider',
         'Dropdown' => 'Dropdown',
+        'InnerBlocks' => 'Inner Blocks',
         //'InputControl' => 'Email',
         //'Heading' => 'Heading',
         //'InputControl' => 'InputControl',
@@ -436,7 +437,7 @@ trait Metabox {
                                     <option value="true"><?php _e('True', 'wizard-blocks'); ?></option>                                
                                 </select></label>
                             <label for="options"><?php _e('Options', 'wizard-blocks'); ?>: <textarea class="options" placeholder="FF00FF|Magenta"></textarea></label>
-                            <label for="default"><?php _e('Default', 'wizard-blocks'); ?>: <input type="text" class="default"></label>
+                            <label for="default"><?php _e('Default', 'wizard-blocks'); ?>: <textarea class="default" rows="1"></textarea></label>
                             <label for="source"><?php _e('Source', 'wizard-blocks'); ?>: <select class="source">
                                     <option value=""><?php _e('No value', 'wizard-blocks'); ?></option>
                                     <?php foreach (self::$attributes_source as $type => $label) { ?>
@@ -446,6 +447,7 @@ trait Metabox {
                             <label for="selector"><?php _e('Selector', 'wizard-blocks'); ?>: <input type="text" class="selector"></label>
                             <label for="attribute"><?php _e('Attribute', 'wizard-blocks'); ?>: <input type="text" class="attribute"></label>
                             <label for="label"><?php _e('Help', 'wizard-blocks'); ?>: <input type="text" class="help"></label>
+                            <label for="className"><?php _e('Class', 'wizard-blocks'); ?>: <input type="text" class="className" placeholder="pt-5 my-spacial-control"></label>
                             <label for="extra"><?php _e('Extra', 'wizard-blocks'); ?>: <textarea class="extra" placeholder='{ "var": "value" }'></textarea></label>
                         </div>
                     </div>
