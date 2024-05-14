@@ -9,13 +9,14 @@ Trait Actions {
     function execute_actions() {
 
         if (!empty($_REQUEST['action'])) {
+            
             $blocks_dir = apply_filters('wizard/blocks/dirs', []);
             $dirs = wp_upload_dir();
             $basedir = str_replace('/', DIRECTORY_SEPARATOR, $dirs['basedir']) . DIRECTORY_SEPARATOR;
 
             if (!empty($_POST['action'])) {
-                if (!empty($_POST['nonce']) && wp_verify_nonce($_POST['nonce'], 'wizard-blocks-nonce')) {
-
+                if (!empty($_GET['nonce']) && wp_verify_nonce($_GET['nonce'], 'wizard-blocks-nonce')) {
+                    
                     switch ($_POST['action']) {
 
                         case 'disable':

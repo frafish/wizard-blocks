@@ -91,7 +91,7 @@ if (!empty($args['attributes'])) {
 var <?php echo $var_name; ?> = <?php echo $var_name; ?> || [];
 <?php echo $var_name; ?>['<?php echo $key; ?>'] = <?php echo $var_name; ?>['<?php echo $key; ?>'] || [];
 <?php echo $var_name; ?>['<?php echo $key; ?>']['<?php echo $id; ?>'] = [];
-wp.apiFetch( { path: '<?php echo $api['path']; ?>' } ).then( ( data ) => {
+wp.apiFetch( { path: '<?php echo esc_url($api['path']); ?>' } ).then( ( data ) => {
     if (data && typeof data == 'object') {
         if (data instanceof Array) {
             data.forEach((item, index) => {
@@ -230,6 +230,7 @@ if ($wrapper) { ?></script><?php }
    public function _component($id, $attr = [], $args = []) {
        
        $label = empty($attr['label']) ? ucfirst($id) : esc_html($attr['label']);
+       $textdomain = empty($attr['textdomain']) ? '' : esc_attr($args['textdomain']);
        $in_toolbar = !empty($attr['position']) && $attr['position'] == 'toolbar';
        
        if (!empty($attr['type']) && $attr['type'] == "object") {
@@ -281,12 +282,12 @@ if ($wrapper) { ?></script><?php }
        }
        
       ?>
-    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>'div'<?php } ?>,{label: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>")},
+    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>'div'<?php } ?>,{label: wp.i18n.__('<?php echo $label; ?>', "<?php echo $textdomain; ?>")},
     
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
-                $template = $attr['template'] ? $attr['template'] : '';
+                $template = empty($attr['template']) ? '' : $attr['template'];
                 $allowedBlocks = empty($attr['allowedBlocks']) ? [] : $attr['allowedBlocks'];
                 $allowedBlocks = empty($allowedBlocks) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks;
                 $allowedBlocks = !empty($allowedBlocks) && is_array($allowedBlocks) ? "['".implode("','", $allowedBlocks)."']" : '';
@@ -304,8 +305,8 @@ if ($wrapper) { ?></script><?php }
             <?php } else {
                 echo in_array($component, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo $component; ?>,
                     {
-                        'aria-label': wp.i18n.__("<?php echo $label; ?>","<?php echo $args['textdomain']; ?>"),
-                        label: wp.i18n.__("<?php echo $label ?>", "<?php echo $args['textdomain']; ?>"),
+                        'aria-label': wp.i18n.__("<?php echo $label; ?>","<?php echo $textdomain; ?>"),
+                        label: wp.i18n.__("<?php echo $label ?>", "<?php echo $textdomain; ?>"),
                         <?php
                         // default
                         switch($component) {
@@ -319,7 +320,7 @@ if ($wrapper) { ?></script><?php }
                                     defaultValue: "<?php echo $color ?>",
                                     <?php
                                 }
-                                if (!empty($attr['color'])) { $color = $attr['color']; } ?>
+                                if (!empty($attr['color'])) { $color = esc_attr($attr['color']); } ?>
                                 color: props.attributes.<?php echo $id; ?><?php if (!empty($color)) { echo ' || "'.$color.'"'; } ?>,
                             <?php
                                 break;
@@ -331,7 +332,7 @@ if ($wrapper) { ?></script><?php }
                                     $date = '"'.esc_html($attr['default']).'"';
                                 }
                                 ?>
-                                currentDate: props.attributes.<?php echo $id; ?> || <?php echo $date; ?>,
+                                currentDate: props.attributes.<?php echo $id; ?> || <?php echo esc_attr($date); ?>,
                             <?php 
                                 break;
                             case 'CheckboxControl':
@@ -342,7 +343,7 @@ if ($wrapper) { ?></script><?php }
                             case 'RadioControl': 
                                 if (!empty($attr['selected'])) { $attr['default'] = $attr['selected']; }
                                 ?>
-                                selected: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
+                                selected: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
                             <?php 
                                 break;
                             case 'SelectControl': 
@@ -372,27 +373,45 @@ if ($wrapper) { ?></script><?php }
                             case 'RichText':
                             case 'TextControl':
                             default: ?>
-                                value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default']; } ?>,
+                                value: props.attributes.<?php echo $id; ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
                             <?php
                         } 
                         switch ($component) {
                             case 'MediaUpload': ?>
-                        onSelect: function (media ) {
+                        onSelect: function (media) {
                             //console.log(media);
+                            //console.log(this);
+                            document.getElementById('media-<?php echo $id; ?>').src = media.sizes.thumbnail.url;
                             props.setAttributes({<?php echo $id; ?>: media.id});
+                            
                         },
                         render: function ( open ) {
+                            let src = '/wp-includes/images/media/default.svg';
+                            if (props.attributes.<?php echo $id; ?>) {
+                                wp.apiFetch( { path: '/wp/v2/media/'+props.attributes.<?php echo $id; ?> } ).then( ( media ) => {
+                                    //console.log(media);
+                                    src = media.media_details.sizes.thumbnail.source_url;
+                                    document.getElementById('media-<?php echo $id; ?>').src = src;
+                                } );
+                            }
                             return wp.element.createElement(wp.components.Button,
                                 { 
-                                    text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
-                                    //title: wp.i18n.__('Open Media Library', "<?php echo $args['textdomain']; ?>"),
+                                    text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $textdomain; ?>"),
+                                    //title: wp.i18n.__('Open Media Library', "<?php echo $textdomain; ?>"),
                                     onClick: open.open,
                                     variant: 'secondary'
-                                });
+                                }, 
+                                wp.element.createElement('img',
+                                        {
+                                            id: 'media-<?php echo $id; ?>',
+                                            src: src,
+                                        }
+                                    ),
+                                );
                         },
                         <?php break;
                             case 'Heading': ?>
-                        text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $args['textdomain']; ?>"),
+                        text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $textdomain; ?>"),
                         <?php break;
                         case 'ToolbarDropdownMenu':  break;
                         case 'ToolbarGroup':  break;
@@ -445,16 +464,16 @@ if ($wrapper) { ?></script><?php }
                                         echo wp_json_encode($attr['options']);
                                     } else {
                                         foreach ($attr['options'] as $value => $label) { 
-                                        if ($attr['type'] == 'string') {
-                                            $value = '"'.$label.'"';
-                                            $tmp = explode('|', $label, 2);
-                                            if (count($tmp) > 1) {
-                                                $label = reset($tmp);
-                                                $value = '"'.end($tmp).'"';
+                                            if ($attr['type'] == 'string') {
+                                                $value = '"'.$label.'"';
+                                                $tmp = explode('|', $label, 2);
+                                                if (count($tmp) > 1) {
+                                                    $label = reset($tmp);
+                                                    $value = '"'.end($tmp).'"';
+                                                }
                                             }
-                                        }
-                                        ?>
-                                        {value: <?php echo $value; ?>, label: "<?php echo $label; ?>"},
+                                            ?>
+                                            {value: <?php echo esc_attr($value); ?>, label: "<?php echo $label; ?>"},
                                         <?php } 
                                     }
                                     echo ']';
@@ -465,19 +484,19 @@ if ($wrapper) { ?></script><?php }
                         <?php }
                         }
                         if (!empty($attr['placeholder'])) { ?>
-                            placeholder: "<?php echo $attr['placeholder']; ?>",
+                            placeholder: "<?php echo esc_attr($attr['placeholder']); ?>",
                         <?php }
                         if (isset($attr['multiple'])) { ?>
                             multiple: <?php echo $attr['multiple'] ? 'true' : 'false'; ?>,
                         <?php }
                         if (!empty($attr['help']) && !$in_toolbar) { ?>
-                            help: wp.i18n.__("<?php echo $attr['help']; ?>","<?php echo $args['textdomain']; ?>"),
+                            help: wp.i18n.__("<?php echo esc_attr($attr['help']); ?>","<?php echo $textdomain; ?>"),
                         <?php }
                         if (!empty($attr['tag'])) { ?>
-                            tag: "<?php echo $attr['tag']; ?>",
+                            tag: "<?php echo esc_attr($attr['tag']); ?>",
                         <?php }
                         if (!empty($attr['className'])) { ?>
-                            className: "<?php echo $attr['className']; ?>",
+                            className: "<?php echo esc_attr($attr['className']); ?>",
                         <?php }
                         if (!empty($attr['enableAlpha'])) { ?>
                             enableAlpha: true,
@@ -489,7 +508,7 @@ if ($wrapper) { ?></script><?php }
                             indeterminate: true,
                         <?php }
                         if (!empty($attr['inputType'])) { ?>
-                            type: "<?php echo $attr['inputType']; ?>",
+                            type: "<?php echo esc_attr($attr['inputType']); ?>",
                         <?php } ?>
                     },
                     <?php if (in_array($component, ['ButtonGroup', 'ToolbarGroup'])) {
@@ -509,7 +528,7 @@ if ($wrapper) { ?></script><?php }
                                         jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
                                         props.setAttributes({<?php echo $id; ?>: event.target.value});                                    
                                     },
-                                    text: wp.i18n.__(<?php echo $value; ?>, "<?php echo $args['textdomain']; ?>")
+                                    text: wp.i18n.__(<?php echo $value; ?>, "<?php echo $textdomain; ?>")
                                 }),
                             <?php }
                         }       

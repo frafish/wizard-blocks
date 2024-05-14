@@ -106,8 +106,14 @@ trait Pages {
         $blocks_disabled = get_option(self::$blocks_disabled_key);
         //var_dump($blocks_disabled);
         
-        $block_categories = get_default_block_categories();
-        $block_categories = apply_filters('block_categories_all', $block_categories);
+        
+        
+        $block_editor_context = new \WP_Block_Editor_Context(
+                    array(
+                            'name' => 'core/customize-widgets',
+                    )
+            );
+        $block_categories = get_block_categories($block_editor_context);
         $tmp = [];
         foreach ($block_categories as $cat) {
             $tmp[$cat['slug']] = $cat['title'];
