@@ -65,8 +65,9 @@ trait Type {
         }, 10, 2);
         add_action('manage_posts_custom_column', function($column_name, $post_ID) {
             if ($column_name == 'description') {
-                $post_content = get_the_excerpt($post_ID);
-                echo $str1= substr ($post_content,0,50);
+                if ($post_content = get_the_excerpt($post_ID)) {
+                    echo esc_html(substr($post_content, 0, 50));
+                }
             }
         }, 10, 2);
  

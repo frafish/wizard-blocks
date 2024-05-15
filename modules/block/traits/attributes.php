@@ -291,7 +291,7 @@ if ($wrapper) { ?></script><?php }
                 $allowedBlocks = empty($attr['allowedBlocks']) ? [] : $attr['allowedBlocks'];
                 $allowedBlocks = empty($allowedBlocks) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks;
                 $allowedBlocks = !empty($allowedBlocks) && is_array($allowedBlocks) ? "['".implode("','", $allowedBlocks)."']" : '';
-                $renderAppender = false; // a function that render a button
+                $renderAppender = false; // TODO: a function that render a button
                 $orientation = empty($attr['orientation']) ? '' : $attr['orientation']; //$in_toolbar ? 'horizontal' : 'vertical';
                 ?>
                 wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
