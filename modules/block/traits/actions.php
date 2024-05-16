@@ -57,6 +57,14 @@ Trait Actions {
                                     $block_name = $_GET['block'];
 
                                     $block = $this->get_registered_block($block_name);
+                                    
+                                    if (!empty($block['file']) && file_exists($block['file'])) {
+                                        $block_json = file_get_contents($block['file']);
+                                        $block = array_merge($block, json_decode($block_json, true));
+                                    }
+                                    if (empty($block["\$schema"])) {
+                                        $block["\$schema"] = "https://schemas.wp.org/trunk/block.json";
+                                    }
                                     //var_dump($block); die();
                                     $block_slug = $this->get_block_slug($block);
 
@@ -68,7 +76,7 @@ Trait Actions {
                                             if (count($tmp) == 1) {
                                                 if (is_callable($block['render_callback'])) {
                                                     $block['render'] = 'file: ./render.php';
-                                                    $this->get_filesystem()->file_put_contents($dest . 'render.php', '<?php echo ' . $block['render_callback'] . '($attributes, $content, $block);');
+                                                    $this->get_filesystem()->put_contents($dest . 'render.php', '<?php echo ' . $block['render_callback'] . '($attributes, $content, $block);');
                                                     unset($block['render_callback']);
                                                 }
                                             }
@@ -81,7 +89,7 @@ Trait Actions {
 
                                         $block_json = wp_json_encode($block);
                                         //var_dump($block_json); die();
-                                        $this->get_filesystem()->file_put_contents($dest . 'block.json', $block_json);
+                                        $this->get_filesystem()->put_contents($dest . 'block.json', $block_json);
 
                                         $block_post = $this->get_block_post($block_slug);
                                         if (!$block_post) {

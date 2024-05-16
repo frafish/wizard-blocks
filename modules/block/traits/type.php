@@ -51,7 +51,7 @@ trait Type {
             'has_archive' => false,
             'hierarchical' => false,
             'menu_position' => null,
-            'supports' => array('title', 'author', 'excerpt'), // 'editor', 'page-attributes'
+            'supports' => array('title', 'author', 'excerpt', 'thumbnail'), // 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
         );
 

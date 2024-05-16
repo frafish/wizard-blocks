@@ -150,7 +150,7 @@ trait Pages {
             <form action="<?php echo $this->get_action_url(); ?>" method="POST">
                 <input type="hidden" name="action" value="disable">
                 <div class="card" style="max-width: none; width: 100%; display: flex; justify-content: space-between;">
-                    <input id="blocks-search" placeholder="<?php esc_html_e('Search'); ?>" type="search">
+                    <input id="blocks-search" placeholder="<?php esc_html_e('Search Block'); ?>" type="search">
                     <span>
                         <a class="button button-danger" href="<?php echo $this->get_action_url("action=reset"); ?>"><?php esc_html_e('Reset'); ?></a> 
                         <input class="button button-primary" type="submit" value="<?php esc_html_e('Save'); ?>">
@@ -208,8 +208,9 @@ trait Pages {
                             <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
                                 <strong>
                                     <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
-                                        <abbr class="block-title" onClick="console.log(this);navigator.clipboard.writeText(this.title);" title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?> <span class="dashicons dashicons-clipboard"></span></abbr>
+                                        <abbr title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
                                         <?php if ($block_post) { ?></a><?php } ?>
+                                        <br><small class="block-title" onClick="console.log(this);navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($name); ?> <span class="dashicons dashicons-clipboard"></span></small>
                                 </strong>
                             </td>
                             <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
@@ -239,7 +240,8 @@ trait Pages {
                             <td class="folder column-folder" data-colname="<?php esc_attr_e('Folder', 'wizard-blocks'); ?>">
                                 <?php
                                 if (!empty($block['file'])) {
-                                    echo '<a target="_blank" href="' . esc_url($block['file']) . '">';
+                                    //$block['file'] = str_replace('c:/', 'c://', $block['file']);
+                                    echo '<a target="_blank" href="' . esc_attr($block['file']) . '">';
                                     /* $tmp = explode('/plugins/', $block['file']);
                                       if (count($tmp) > 1) {
                                       list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
@@ -368,7 +370,11 @@ trait Pages {
                 border-radius: 50%;
             }
             .block-title {
+                opacity: 0.5;
                 cursor: pointer;
+            }
+            .block-title:hover {
+                opacity: 1;
             }
             .block-title span {
                 display: none;
@@ -382,11 +388,12 @@ trait Pages {
         <?php
     }
 
-    function get_registered_block($slug = '') {
-        if ($slug) {
+    function get_registered_block($name = '') {
+        if ($name) {
+            //return \WP_Block_Type_Registry::get_instance()->get_registered($slug);
             $blocks = $this->get_registered_blocks();
-            if (isset($blocks[$slug])) {
-                return $blocks[$slug];
+            if (isset($blocks[$name])) {
+                return $blocks[$name];
             }
         }
         return false;

@@ -120,6 +120,16 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
     },
     <?php } ?>
     edit(props) {
+        <?php if (!empty($args['example']['attributes']['preview'])) { ?>
+        //console.log(props.attributes.preview);
+        if ( props.attributes.preview ) {
+            return wp.element.createElement('img', {
+                width: "100%",
+                height: "auto",
+                src: '<?php echo esc_url($args['example']['attributes']['preview']); ?>'
+            });	
+	}
+        <?php } ?>
         return wp.element.createElement(
                 'div',
                 wp.blockEditor.useBlockProps(),
