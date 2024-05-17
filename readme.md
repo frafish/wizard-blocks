@@ -8,10 +8,18 @@ A full CRUD for your personal Custom Blocks
 Not Theme related and it works out of the box with any Gutenberg ready theme.
 No bloat included!
 
-## Effortlessly Build & Manage Gutenberg Blocks
+### Effortlessly Build & Manage Gutenberg Blocks
 
 This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks. 
 Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
+
+### Take control of your blocks.
+Don't reinvent the wheel, reuse your custom blocks across your sites!
+
+**Perfect for:**
+- Content creators
+- Web designers
+- Web agencies
 
 ## Features
 
@@ -30,23 +38,7 @@ Design custom blocks render content, add optional **block attributes**, and orga
 - Block Preview Image (instead of automatic preview)
 - **Disable** unused/unwanted Blocks
 
-**Perfect for:**
-- Content creators
-- Web designers
-- Web agencies
-
-**Take control of your blocks.**
-Don't reinvent the wheel, reuse your custom blocks across your sites!
-
-## Compatibility 
-
-> [!TIP]
-> **Fully compatible with WP Gutenberg Block standard!**
-> Once your blocks are generated you can **use them standalone in your theme or plugin**,
-> there is no need to use and maintain this plugin active. 
-
-
-## Coming SOON:
+## Coming soon:
 
 - Block Versioning (with Revision)
 - Add Block Examples
@@ -56,20 +48,25 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 
 ### PRO
 
-- [] **Personal Block Library** (or public shared)
-- [] Cloud sync (on Private site or Public hub)
-- [] Use custom Block Textdomain
-- [] Attributes Conditional Logic rules
+- [ ] **Personal Block Library** (or public shared)
+- [ ] Cloud sync (on Private site or Public hub)
+- [ ] Use custom Block Textdomain
+- [ ] Attributes Conditional Logic rules
 - [x] API Controls (like Roles, Custom Fields, Posts, Users, Taxonomy, Terms)
-- [] Move/Install automatically a Block into current Theme Child
+- [ ] Move/Install automatically a Block into current Theme Child
 - [x] Import 3rd part plugin blocks to create you variation
-- [] Add/Generate Block Translations
+- [ ] Add/Generate Block Translations
 - [x] Twig/Timber support
 
 
-## Frequently Asked Questions
+## Compatibility 
 
-### Is compatible with Classic Editor
+> [!TIP]
+> **Fully compatible with WP Gutenberg Block standard!**
+> Once your blocks are generated you can **use them standalone in your theme or plugin**,
+> there is no need to use and maintain this plugin active. 
+
+### Is compatible with Classic Editor?
 
 Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.
 So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.
@@ -84,4 +81,4 @@ so you can use them in any Elementor Template.
 ## Changelog
 
 - 1.0.1 - 17-05-2024
-* First release
+First release
