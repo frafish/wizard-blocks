@@ -6,16 +6,17 @@ Easy create, edit and manage Gutenberg blocks
 
 **A full CRUD for your personal Custom Blocks**  
 Not Theme related and it works out of the box with any Gutenberg ready theme.  
-No bloat included!
+No bloat included! :crossed_fingers:
 
-### Effortlessly Build & Manage Gutenberg Blocks
+### Effortlessly Build & Manage Gutenberg Blocks :mechanical_arm:
 
 This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks.  
 Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
 
 ### Take control of your blocks.
-Don't reinvent the wheel, reuse your custom blocks across your sites!
 
+Don't reinvent the wheel, reuse your custom blocks across your sites! :recycle:  
+  
 **Perfect for:**
 - Content creators
 - Web designers
@@ -46,7 +47,7 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 - Panels and Dividers
 - more...
 
-### PRO (working in progress)
+#### PRO (working in progress :construction_worker:)
 
 - [ ] **Personal Block Library** (or public shared)
 - [ ] Cloud sync (on Private site or Public hub)
@@ -69,13 +70,13 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 ### Is compatible with Classic Editor?
 
 Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.  
-So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.  
+So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes. :white_check_mark:
 
 ### Is compatible with Elementor?
 
 Yes, if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page   
 this plugin make a porting of each Gutenberg Block as Elementor Widget,  
-so you can use them in any Elementor Template.
+so you can use them in any Elementor Template. :white_check_mark:
 
 
 ## Changelog

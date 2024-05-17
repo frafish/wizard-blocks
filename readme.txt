@@ -1,6 +1,6 @@
 === Wizard Blocks Manager ===
 Contributors: frapesce
-Tags: block, editor, gutenberg, generate, create, edit, dynamic, easy
+Tags: editor, generate, create, crud, easy
 Requires at least: 6.0
 Tested up to: 6.5.4
 Stable tag: 1.0.1
