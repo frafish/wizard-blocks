@@ -4,13 +4,13 @@ Easy create, edit and manage Gutenberg blocks
 
 ## Description
 
-A full CRUD for your personal Custom Blocks
-Not Theme related and it works out of the box with any Gutenberg ready theme.
+**A full CRUD for your personal Custom Blocks**  
+Not Theme related and it works out of the box with any Gutenberg ready theme.  
 No bloat included!
 
 ### Effortlessly Build & Manage Gutenberg Blocks
 
-This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks. 
+This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks.  
 Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
 
 ### Take control of your blocks.
@@ -38,7 +38,7 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 - Block Preview Image (instead of automatic preview)
 - **Disable** unused/unwanted Blocks
 
-## Coming soon:
+### Coming soon
 
 - Block Versioning (with Revision)
 - Add Block Examples
@@ -46,7 +46,7 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 - Panels and Dividers
 - more...
 
-### PRO
+### PRO (working in progress)
 
 - [ ] **Personal Block Library** (or public shared)
 - [ ] Cloud sync (on Private site or Public hub)
@@ -68,17 +68,17 @@ Don't reinvent the wheel, reuse your custom blocks across your sites!
 
 ### Is compatible with Classic Editor?
 
-Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.
-So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.
+Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.  
+So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.  
 
 ### Is compatible with Elementor?
 
-Yes, if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page 
-this plugin make a porting of each Gutenberg Block as Elementor Widget, 
+Yes, if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page   
+this plugin make a porting of each Gutenberg Block as Elementor Widget,  
 so you can use them in any Elementor Template.
 
 
 ## Changelog
 
-- 1.0.1 - 17-05-2024
+- 1.0.1 - 17-05-2024  
 First release
