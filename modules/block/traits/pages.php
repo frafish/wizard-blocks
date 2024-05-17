@@ -26,7 +26,7 @@ trait Pages {
     }
 
     public function _notice($message, $type = 'success') {
-        echo '<div class="notice is-dismissible notice-' .esc_attr($type) . ' notice-alt"><p>' . $message . '</p></div>';
+        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . $message . '</p></div>';
     }
 
     public function wizard_tools() {
@@ -69,10 +69,10 @@ trait Pages {
         </div>
         <?php
     }
-    
+
     public function get_action_url($args = '') {
         $nonce = wp_create_nonce('wizard-blocks-nonce');
-        return esc_url(admin_url("edit.php?post_type=block&page=".$_GET['page']."&nonce=".$nonce.($args ? "&".$args : '')));
+        return esc_url(admin_url("edit.php?post_type=block&page=" . $_GET['page'] . "&nonce=" . $nonce . ($args ? "&" . $args : '')));
     }
 
     public function wizard_blocks() {
@@ -94,7 +94,7 @@ trait Pages {
             if (!empty($blocks[$name]['file']) && file_exists($blocks[$name]['file'])) {
                 $json = file_get_contents($blocks[$name]['file']);
                 $block_json = json_decode($json, true);
-                foreach($block_json as $key => $value) {
+                foreach ($block_json as $key => $value) {
                     if (!isset($blocks[$name][$key])) {
                         $blocks[$name][$key] = $value;
                     }
@@ -105,14 +105,14 @@ trait Pages {
 
         $blocks_disabled = get_option(self::$blocks_disabled_key);
         //var_dump($blocks_disabled);
-        
-        
-        
+
+
+
         $block_editor_context = new \WP_Block_Editor_Context(
-                    array(
-                            'name' => 'core/customize-widgets',
-                    )
-            );
+                array(
+            'name' => 'core/customize-widgets',
+                )
+        );
         $block_categories = get_block_categories($block_editor_context);
         $tmp = [];
         foreach ($block_categories as $cat) {
@@ -158,153 +158,153 @@ trait Pages {
                 </div>
                 <script>
                     jQuery('#blocks-search').on('change keyup', function () {
-                                jQuery('.blocks .hentry').show();
-                                let value = jQuery(this).val();
-                                //console.log(value);
-                                if (value) {
-                                    jQuery('.blocks .hentry').each(function() {
-                                       if (!jQuery(this).find('.title').text().toLowerCase().includes(value.toLowerCase())) {
-                                           jQuery(this).hide();
-                                       }
-                                    });
+                        jQuery('.blocks .hentry').show();
+                        let value = jQuery(this).val();
+                        //console.log(value);
+                        if (value) {
+                            jQuery('.blocks .hentry').each(function () {
+                                if (!jQuery(this).find('.title').text().toLowerCase().includes(value.toLowerCase())) {
+                                    jQuery(this).hide();
                                 }
                             });
-                        </script>
-            <table class="wp-list-table widefat fixed striped table-view-list blocks">
-                <thead>
-                    <tr>
-                        <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php esc_html_e('Icon'); ?></th>
-                        <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php esc_html_e('Title'); ?></span></th>
-                        <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php esc_html_e('Status'); ?></th>
-                        <th scope="col" id="description" class="manage-column column-description"><?php esc_html_e('Description'); ?></th>
-                        <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php esc_html_e('Api'); ?></th>
-                        <th scope="col" id="category" class="manage-column column-category"><?php esc_html_e('Category'); ?></th>
-                        <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php esc_html_e('Usage'); ?></th>
-                        <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_html_e('Plugin'); ?></th>
-                        <th scope="col" id="actions" class="manage-column column-actions"><?php esc_html_e('Actions'); ?></th>
-                    </tr>
-                </thead>
-
-                <tbody id="the-list">
-                    <?php
-                    foreach ($blocks as $name => $block) {
-                        $block_post = false;
-                        $block_slug = $name;
-                        if (!empty($block['folder'])) {
-                            $block_slug = basename($block['folder']);
-                            $block['post'] = $block_post = $this->get_block_post($block_slug);
                         }
-                        $block['slug'] = $block_slug;
-                        ?>
-                        <tr id="post-<?php echo esc_attr($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php echo esc_attr($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
-                            <td class="icon column-icon" data-colname="<?php esc_attr_e('Icon', 'wizard-blocks'); ?>">
-                                <?php
-                                if (empty($block['icon'])) {
-                                    $block['icon'] = 'block-default';
-                                }
-                                echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . esc_attr($block['icon']) . '"></span> ';
-                                ?>
-                            </td>
-                            <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
-                                <strong>
-                                    <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
-                                        <abbr title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
-                                        <?php if ($block_post) { ?></a><?php } ?>
+                    });
+                </script>
+                <table class="wp-list-table widefat fixed striped table-view-list blocks">
+                    <thead>
+                        <tr>
+                            <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php esc_html_e('Icon'); ?></th>
+                            <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php esc_html_e('Title'); ?></span></th>
+                            <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php esc_html_e('Status'); ?></th>
+                            <th scope="col" id="description" class="manage-column column-description"><?php esc_html_e('Description'); ?></th>
+                            <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php esc_html_e('Api'); ?></th>
+                            <th scope="col" id="category" class="manage-column column-category"><?php esc_html_e('Category'); ?></th>
+                            <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php esc_html_e('Usage'); ?></th>
+                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_html_e('Plugin'); ?></th>
+                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_html_e('Actions'); ?></th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="the-list">
+                        <?php
+                        foreach ($blocks as $name => $block) {
+                            $block_post = false;
+                            $block_slug = $name;
+                            if (!empty($block['folder'])) {
+                                $block_slug = basename($block['folder']);
+                                $block['post'] = $block_post = $this->get_block_post($block_slug);
+                            }
+                            $block['slug'] = $block_slug;
+                            ?>
+                            <tr id="post-<?php echo esc_attr($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php echo esc_attr($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
+                                <td class="icon column-icon" data-colname="<?php esc_attr_e('Icon', 'wizard-blocks'); ?>">
+                                    <?php
+                                    if (empty($block['icon'])) {
+                                        $block['icon'] = 'block-default';
+                                    }
+                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . esc_attr($block['icon']) . '"></span> ';
+                                    ?>
+                                </td>
+                                <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
+                                    <strong>
+                                        <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
+                                            <abbr title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
+                                            <?php if ($block_post) { ?></a><?php } ?>
                                         <br><small class="block-title" onClick="console.log(this);navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($name); ?> <span class="dashicons dashicons-clipboard"></span></small>
-                                </strong>
-                            </td>
-                            <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
-                                <label class="switch">
-                                    <input type="checkbox" name="blocks_disabled[<?php echo esc_attr($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                            </td>
-                            <td class="description column-description" data-colname="<?php esc_attr_e('Description', 'wizard-blocks'); ?>">
-                                <?php echo esc_html(empty($block['description']) ? '' : $block['description']); ?>
-                            </td>
-                            <td class="api column-api" data-colname="<?php esc_attr_e('Api Version', 'wizard-blocks'); ?>">
-                                <?php echo esc_html(empty($block['apiVersion']) ? '' : $block['apiVersion']); ?>
-                            </td>
-                            <td class="category column-category" data-colname="<?php esc_html_e('Category', 'wizard-blocks'); ?>">
-                                <?php
-                                if (!empty($block['category'])) {
-                                    echo '<abbr title="' . esc_attr($block['category']) . '">';
-                                    echo esc_html(empty($block_categories[$block['category']]) ? ucfirst($block['category']) : $block_categories[$block['category']]);
-                                    echo '</abbr>';
-                                }
-                                ?>
-                            </td>
-                            <td class="usage column-usage" data-colname="<?php esc_attr_e('Usage', 'wizard-blocks'); ?>">
-                                <?php echo esc_html(empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]); ?>
-                            </td>
-                            <td class="folder column-folder" data-colname="<?php esc_attr_e('Folder', 'wizard-blocks'); ?>">
-                                <?php
-                                if (!empty($block['file'])) {
-                                    //$block['file'] = str_replace('c:/', 'c://', $block['file']);
-                                    echo '<a target="_blank" href="' . esc_attr($block['file']) . '">';
-                                    /* $tmp = explode('/plugins/', $block['file']);
-                                      if (count($tmp) > 1) {
-                                      list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
-                                      echo $plugin_slug;
-                                      } */
-                                }
-                                echo esc_html($block['textdomain']);
-                                if (!empty($block['file'])) {
-                                    echo '</a>';
-                                }
-                                if (!empty($block['render_callback'])) {
-                                    if (is_string($block['render_callback'])) {
-                                        if (str_starts_with($block['render_callback'], 'render_block_core_')) {
-                                            //echo _('core');
+                                    </strong>
+                                </td>
+                                <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
+                                    <label class="switch">
+                                        <input type="checkbox" name="blocks_disabled[<?php echo esc_attr($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </td>
+                                <td class="description column-description" data-colname="<?php esc_attr_e('Description', 'wizard-blocks'); ?>">
+                                    <?php echo esc_html(empty($block['description']) ? '' : $block['description']); ?>
+                                </td>
+                                <td class="api column-api" data-colname="<?php esc_attr_e('Api Version', 'wizard-blocks'); ?>">
+                                    <?php echo esc_html(empty($block['apiVersion']) ? '' : $block['apiVersion']); ?>
+                                </td>
+                                <td class="category column-category" data-colname="<?php esc_html_e('Category', 'wizard-blocks'); ?>">
+                                    <?php
+                                    if (!empty($block['category'])) {
+                                        echo '<abbr title="' . esc_attr($block['category']) . '">';
+                                        echo esc_html(empty($block_categories[$block['category']]) ? ucfirst($block['category']) : $block_categories[$block['category']]);
+                                        echo '</abbr>';
+                                    }
+                                    ?>
+                                </td>
+                                <td class="usage column-usage" data-colname="<?php esc_attr_e('Usage', 'wizard-blocks'); ?>">
+                                    <?php echo esc_html(empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]); ?>
+                                </td>
+                                <td class="folder column-folder" data-colname="<?php esc_attr_e('Folder', 'wizard-blocks'); ?>">
+                                    <?php
+                                    if (!empty($block['file'])) {
+                                        //$block['file'] = str_replace('c:/', 'c://', $block['file']);
+                                        echo '<a target="_blank" href="' . esc_attr($block['file']) . '">';
+                                        /* $tmp = explode('/plugins/', $block['file']);
+                                          if (count($tmp) > 1) {
+                                          list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
+                                          echo $plugin_slug;
+                                          } */
+                                    }
+                                    echo esc_html($block['textdomain']);
+                                    if (!empty($block['file'])) {
+                                        echo '</a>';
+                                    }
+                                    if (!empty($block['render_callback'])) {
+                                        if (is_string($block['render_callback'])) {
+                                            if (str_starts_with($block['render_callback'], 'render_block_core_')) {
+                                                //echo _('core');
+                                            }
                                         }
                                     }
-                                }
-                                ?>
-                            </td>	
-
-                            <td class="actions column-actions" data-colname="<?php esc_attr_e('Actions', 'wizard-blocks'); ?>">
-                                <?php if ($block['textdomain'] == 'core') { ?>
-                                    <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php esc_attr_e('Docs', 'wizard-blocks'); ?>"></a>
-                                    <a class="btn button button-primary dashicons-before dashicons-migrate" href="<?php echo $this->get_action_url("action=clone&block=".$block_slug); ?>" title="<?php esc_attr_e('Clone', 'wizard-blocks'); ?>"></a>
-                                <?php } ?>
-                                <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo $this->get_action_url("action=disable&block=".$block_slug); ?>" title="<?php esc_attr_e('Disable', 'wizard-blocks'); ?>"></a>
-                                <?php if (!empty($block['folder'])) { ?>
-                                    <a class="btn button dashicons-before dashicons-download" href="<?php echo $this->get_action_url("action=download&block=".$block_slug); ?>" title="<?php esc_attr_e('Download', 'wizard-blocks'); ?>"></a>
-                                <?php } ?>
-                                <?php
-                                if (empty($block['post'])) {
-                                    if (!empty($block['folder'])) {
-                                        ?>
-                                        <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo $this->get_action_url("action=import&block=".$block_slug); ?>" title="<?php esc_attr_e('Import', 'wizard-blocks'); ?>"></a>
-                                        <?php
-                                    }
-                                } else {
                                     ?>
-                                    <a class="btn button button-primary dashicons-before dashicons-edit" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" title="<?php esc_attr_e('Edit', 'wizard-blocks'); ?>"></a>
-                                <?php }
-                                ?>
-                                <?php do_action('wizard/blocks/action/btn', $block, $this); ?>
-                            </td>		
+                                </td>	
+
+                                <td class="actions column-actions" data-colname="<?php esc_attr_e('Actions', 'wizard-blocks'); ?>">
+                                    <?php if ($block['textdomain'] == 'core') { ?>
+                                        <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php esc_attr_e('Docs', 'wizard-blocks'); ?>"></a>
+                                        <a class="btn button button-primary dashicons-before dashicons-migrate" href="<?php echo $this->get_action_url("action=clone&block=" . $block_slug); ?>" title="<?php esc_attr_e('Clone', 'wizard-blocks'); ?>"></a>
+                                    <?php } ?>
+                                    <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo $this->get_action_url("action=disable&block=" . $block_slug); ?>" title="<?php esc_attr_e('Disable', 'wizard-blocks'); ?>"></a>
+                                    <?php if (!empty($block['folder'])) { ?>
+                                        <a class="btn button dashicons-before dashicons-download" href="<?php echo $this->get_action_url("action=download&block=" . $block_slug); ?>" title="<?php esc_attr_e('Download', 'wizard-blocks'); ?>"></a>
+                                    <?php } ?>
+                                    <?php
+                                    if (empty($block['post'])) {
+                                        if (!empty($block['folder'])) {
+                                            ?>
+                                            <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo $this->get_action_url("action=import&block=" . $block_slug); ?>" title="<?php esc_attr_e('Import', 'wizard-blocks'); ?>"></a>
+                                            <?php
+                                        }
+                                    } else {
+                                        ?>
+                                        <a class="btn button button-primary dashicons-before dashicons-edit" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" title="<?php esc_attr_e('Edit', 'wizard-blocks'); ?>"></a>
+                                    <?php }
+                                    ?>
+                                    <?php do_action('wizard/blocks/action/btn', $block, $this); ?>
+                                </td>		
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <th scope="col" id="icon" class="manage-column column-icon"><?php esc_attr_e('Icon'); ?></th>
+                            <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php esc_attr_e('Title'); ?></span></th>
+                            <th scope="col" id="status" class="manage-column column-status"><?php esc_attr_e('Status'); ?></th>
+                            <th scope="col" id="description" class="manage-column column-description"><?php esc_attr_e('Description'); ?></th>
+                            <th scope="col" id="api" class="manage-column column-category"><?php esc_attr_e('Api'); ?></th>
+                            <th scope="col" id="category" class="manage-column column-category"><?php esc_attr_e('Category'); ?></th>
+                            <th scope="col" id="usage" class="manage-column column-usage sortable"><?php esc_attr_e('Usage'); ?></th>
+                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_attr_e('Plugin'); ?></th>
+                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_attr_e('Actions'); ?></th>
                         </tr>
-                        <?php
-                    }
-                    ?>
-                </tbody>
-                
-                <tfoot>
-                    <tr>
-                        <th scope="col" id="icon" class="manage-column column-icon"><?php esc_attr_e('Icon'); ?></th>
-                        <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php esc_attr_e('Title'); ?></span></th>
-                        <th scope="col" id="status" class="manage-column column-status"><?php esc_attr_e('Status'); ?></th>
-                        <th scope="col" id="description" class="manage-column column-description"><?php esc_attr_e('Description'); ?></th>
-                        <th scope="col" id="api" class="manage-column column-category"><?php esc_attr_e('Api'); ?></th>
-                        <th scope="col" id="category" class="manage-column column-category"><?php esc_attr_e('Category'); ?></th>
-                        <th scope="col" id="usage" class="manage-column column-usage sortable"><?php esc_attr_e('Usage'); ?></th>
-                        <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_attr_e('Plugin'); ?></th>
-                        <th scope="col" id="actions" class="manage-column column-actions"><?php esc_attr_e('Actions'); ?></th>
-                    </tr>
-                </tfoot>
-            </table>
+                    </tfoot>
+                </table>
             </form>
         </div>
         <style>
@@ -319,7 +319,7 @@ trait Pages {
                 height: auto;
                 width: 20px;
             }
-            
+
             .switch {
                 position: relative;
                 display: inline-block;

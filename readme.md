@@ -1,29 +1,19 @@
-=== Wizard Blocks Manager ===
-Contributors: frapesce
-Tags: block, editor, gutenberg, generate, create, edit, dynamic, easy
-Requires at least: 6.0
-Tested up to: 6.5.4
-Stable tag: 1.0.1
-Requires PHP: 7.4
-License: GPLv3
-License URI: https://www.gnu.org/licenses/gpl-3.0.html
+# Wizard Blocks Manager
 
 Easy create, edit and manage Gutenberg blocks
 
-== Description ==
+## Description
 
 A full CRUD for your personal Custom Blocks
 Not Theme related and it works out of the box with any Gutenberg ready theme.
 No bloat included!
 
-**Follow us on [GITHUB](https://github.com/frafish/wizard-blocks)!**
-
-= Effortlessly Build & Manage Gutenberg Blocks =
+## Effortlessly Build & Manage Gutenberg Blocks
 
 This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks. 
 Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
 
-= Features =
+## Features
 
 - **Build** and Edit Custom blocks
 - **Wizard editing** for all block options
@@ -40,8 +30,7 @@ Design custom blocks render content, add optional **block attributes**, and orga
 - Block Preview Image (instead of automatic preview)
 - **Disable** unused/unwanted Blocks
 
-Perfect for:
-
+**Perfect for:**
 - Content creators
 - Web designers
 - Web agencies
@@ -49,14 +38,15 @@ Perfect for:
 **Take control of your blocks.**
 Don't reinvent the wheel, reuse your custom blocks across your sites!
 
-= Compatibility =
+## Compatibility 
 
-Fully compatible with WP Gutenberg Block standard!
-Once your blocks are generated you can **use them standalone in your theme or plugin**,
-there is no need to use and maintain this plugin active. 
+> [!TIP]
+> **Fully compatible with WP Gutenberg Block standard!**
+> Once your blocks are generated you can **use them standalone in your theme or plugin**,
+> there is no need to use and maintain this plugin active. 
 
 
-== Coming SOON: ==
+## Coming SOON:
 
 - Block Versioning (with Revision)
 - Add Block Examples
@@ -64,48 +54,34 @@ there is no need to use and maintain this plugin active.
 - Panels and Dividers
 - more...
 
-= PRO = 
+### PRO
 
-- **Personal Block Library** (or public shared)
-- Cloud sync (on Private site or Public hub)
-- Use custom Block Textdomain
-- Attributes Conditional Logic rules
-- API Controls (like Roles, Custom Fields, Posts, Users, Taxonomy, Terms)
-- Move/Install automatically a Block into current Theme Child
-- Import 3rd part plugin blocks to create you variation
-- Add/Generate Block Translations
-- Twig/Timber support
+- [] **Personal Block Library** (or public shared)
+- [] Cloud sync (on Private site or Public hub)
+- [] Use custom Block Textdomain
+- [] Attributes Conditional Logic rules
+- [x] API Controls (like Roles, Custom Fields, Posts, Users, Taxonomy, Terms)
+- [] Move/Install automatically a Block into current Theme Child
+- [x] Import 3rd part plugin blocks to create you variation
+- [] Add/Generate Block Translations
+- [x] Twig/Timber support
 
-== Installation ==
 
-= Minimum Requirements =
+## Frequently Asked Questions
 
-* WordPress 6.0 or greater
-* PHP version 7.4 or greater
-* MySQL version 5.0 or greater
-* WordPress Memory limit of 128 MB
-
-= We recommend your host supports: =
-
-* PHP version 8.0 or greater
-* MySQL version 8.0 or greater
-* WordPress Memory limit of 256 MB or higher is preferred
-
-== Frequently Asked Questions ==
-
-= Is compatible with Classic Editor? =
+### Is compatible with Classic Editor
 
 Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.
 So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.
 
-= Is compatible with Elementor? =
+### Is compatible with Elementor?
 
 Yes, if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page 
 this plugin make a porting of each Gutenberg Block as Elementor Widget, 
 so you can use them in any Elementor Template.
 
 
-== Changelog ==
+## Changelog
 
-= 1.0.1 - 17-05-2024 =
+- 1.0.1 - 17-05-2024
 * First release

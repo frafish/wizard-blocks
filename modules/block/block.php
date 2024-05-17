@@ -587,7 +587,9 @@ class Block extends Module_Base {
                     }
                 }
             } else {
-                $asset_file = $asset_files;
+                if (strpos('file:./', $asset_files) !== false) {
+                    $asset_file = $asset_files;
+                }
             }
             if ($type != 'php') {
                 $unmin = str_replace('.min.js', '.js', $asset_file);
