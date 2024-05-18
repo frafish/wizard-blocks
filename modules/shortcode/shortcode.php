@@ -11,6 +11,8 @@ if (!defined('ABSPATH')) {
 
 class Shortcode extends Module_Base {
 
+    //TODO: add Contextual Menu item "Copy Shortcode" in Block Toolbar
+    
     public function __construct() {
         add_shortcode('block', [$this, 'render_block']);
 
@@ -65,12 +67,10 @@ class Shortcode extends Module_Base {
             'name' => 'core/paragraph', // required
             'attributes' => '',
             'content' => '',
-                ), $atts, 'block');
-        //var_dump($attr);
+        ), $atts, 'block');
         $block_content = '';
         if ($attr['name']) {
             $block = \WP_Block_Type_Registry::get_instance()->get_registered($attr['name']);
-            //var_dump($block);
             if ($block && $block->is_dynamic()) {
                 $content = $attr['content'];
                 $attributes = json_decode($attr['attributes'], true);
@@ -78,7 +78,7 @@ class Shortcode extends Module_Base {
                 ob_start();
                 $render = $block->render_callback;
                 echo $render($attributes, $content, $block);
-                //$block->render($attributes, $content);
+                //$block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
                 $block_content = ob_get_clean();
 
                 $this->enqueue_block_assets($block);
@@ -88,36 +88,29 @@ class Shortcode extends Module_Base {
     }
 
     public function enqueue_block_assets($block) {
+        //var_dump($block);
         // frontend assets
-        if (!empty($block->style)) {
-            $styles = is_array($block->style) ? $block->style : [$block->style];
-            foreach ($styles as $style) {
-                wp_enqueue_style($style);
-            }
+        $styles = [];
+        if (!empty($block->style)) { $styles = array_merge($styles, is_array($block->style) ? $block->style : [$block->style]); }
+        if (!empty($block->style_handles)) { $styles = array_merge($styles, is_array($block->style_handles) ? $block->style_handles : [$block->style_handles]); }
+        if (!empty($block->viewStyle)) { $styles = array_merge($styles, is_array($block->viewStyle) ? $block->viewStyle : [$block->viewStyle]); }
+        if (!empty($block->view_style_handles)) { $styles = array_merge($styles, is_array($block->view_style_handles) ? $block->view_style_handles : [$block->view_style_handles]); }
+        //var_dump($styles);
+        foreach ($styles as $style) {
+            wp_enqueue_style($style);
         }
-        if (!empty($block->viewStyle)) {
-            $styles = is_array($block->viewStyle) ? $block->viewStyle : [$block->viewStyle];
-            foreach ($styles as $style) {
-                wp_enqueue_style($style);
-            }
+        
+        $scripts = [];
+        if (!empty($block->script)) { $scripts = array_merge($scripts, is_array($block->script) ? $block->script : [$block->script]); }
+        if (!empty($block->script_handles)) { $scripts = array_merge($scripts, is_array($block->script_handles) ? $block->script_handles : [$block->script_handles]); }
+        if (!empty($block->viewScript)) { $scripts = array_merge($scripts, is_array($block->viewScript) ? $block->viewScript : [$block->viewScript]); }
+        if (!empty($block->view_script_handles)) { $scripts = array_merge($scripts, is_array($block->view_script_handles) ? $block->view_script_handles : [$block->view_script_handles]); }
+        if (!empty($block->viewScriptModule)) { $scripts = array_merge($scripts, is_array($block->viewScriptModule) ? $block->viewScriptModule : [$block->viewScriptModule]); }
+        if (!empty($block->view_script_module_ids)) { $scripts = array_merge($scripts, is_array($block->view_script_module_ids) ? $block->view_script_module_ids : [$block->view_script_module_ids]); }
+        //var_dump($scripts);
+        foreach ($scripts as $script) {
+            wp_enqueue_script($script);
         }
-        if (!empty($block->script)) {
-            $scripts = is_array($block->script) ? $block->script : [$block->script];
-            foreach ($scripts as $script) {
-                wp_enqueue_script($script);
-            }
-        }
-        if (!empty($block->viewScript)) {
-            $scripts = is_array($block->viewScript) ? $block->viewScript : [$block->viewScript];
-            foreach ($scripts as $script) {
-                wp_enqueue_script($script);
-            }
-        }
-        if (!empty($block->viewScriptModule)) {
-            $scripts = is_array($block->viewScriptModule) ? $block->viewScriptModule : [$block->viewScriptModule];
-            foreach ($scripts as $script) {
-                wp_enqueue_script($script);
-            }
-        }
+
     }
 }

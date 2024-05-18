@@ -265,7 +265,6 @@ trait Pages {
                                 <td class="actions column-actions" data-colname="<?php esc_attr_e('Actions', 'wizard-blocks'); ?>">
                                     <?php if ($block['textdomain'] == 'core') { ?>
                                         <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php esc_attr_e('Docs', 'wizard-blocks'); ?>"></a>
-                                        <a class="btn button button-primary dashicons-before dashicons-migrate" href="<?php echo $this->get_action_url("action=clone&block=" . $block_slug); ?>" title="<?php esc_attr_e('Clone', 'wizard-blocks'); ?>"></a>
                                     <?php } ?>
                                     <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo $this->get_action_url("action=disable&block=" . $block_slug); ?>" title="<?php esc_attr_e('Disable', 'wizard-blocks'); ?>"></a>
                                     <?php if (!empty($block['folder'])) { ?>
