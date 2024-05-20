@@ -24,55 +24,74 @@ class Shortcode extends Module_Base {
             <?php
             }
         }, 10, 2);
-        add_action('wizard/blocks/action', function ($wblocks) {
-            switch ($_GET['action']) {
-                case 'shortcode':
-                    if (!empty($_GET['block'])) {
-                        $block_name = $_GET['block'];
-
-                        //$block = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
-                        $block = $wblocks->get_registered_block($block_name);
-                        $attributes = [];
-                        if ($block && !empty($block['attributes'])) {
-                            $attributes_keys = array_keys($block['attributes']);
-                            foreach ($attributes_keys as $attr) {
-                                if (!empty($block['example']['attributes'][$attr])) {
-                                    $attributes[$attr] = $block['example']['attributes'][$attr];
-                                } else {
-                                    switch ($block['attributes'][$attr]['type']) {
-                                        case 'string':
-                                            $attributes[$attr] = '';
-                                            break;
-                                        case 'boolean':
-                                            $attributes[$attr] = false;
-                                            break;
-                                    }
-                                }
-                            }
-                            $attributes = wp_json_encode($attributes);
-                        }
-                        $shortcode = '[block name="' . $block_name . '"' . ($attributes ? ' attributes=\'' . esc_attr($attributes) . '\'' : '') . ']';
-
-                        $message = __('Here the Block Shortcode:', 'wizard-blocks') . '<br>';
-                        $message .= $shortcode;
-                        $wblocks->_notice($message);
+        add_action('wizard/blocks/action', [$this, 'exec_actions']);
+    }
+    
+    public function get_default_attributes($block) {
+        $attributes = [];
+        if ($block && !empty($block['attributes'])) {
+            $attributes_keys = array_keys($block['attributes']);
+            foreach ($attributes_keys as $attr) {
+                if (!empty($block['example']['attributes'][$attr])) {
+                    $attributes[$attr] = $block['example']['attributes'][$attr];
+                } else {
+                    switch ($block['attributes'][$attr]['type']) {
+                        case 'string':
+                            $attributes[$attr] = '';
+                            break;
+                        case 'boolean':
+                            $attributes[$attr] = false;
+                            break;
                     }
-                    break;
+                }
             }
-        });
+            $attributes = wp_json_encode($attributes);
+        }
+        return $attributes;
+    }
+    
+    public function generate_shortcode($block_name, $wblocks) {
+        $block = $wblocks->get_registered_block($block_name);
+        //var_dump($block); die();
+        $attributes = $this->get_default_attributes($block);
+        $shortcode = '[block name="' . $block_name . '"' . ($attributes ? ' attributes=\'' . esc_attr($attributes) . '\'' : '') . ']';
+        if (!empty($block['allowed_blocks'])) {
+            foreach ($block['allowed_blocks'] as $sublock_name) {
+                $sublock = $wblocks->get_registered_block($sublock_name);
+                $shortcode .= $this->generate_shortcode($sublock, $wblocks);
+            }
+            $shortcode .= '[/block]';
+        }
+        return $shortcode;
+    }
+    
+    public function exec_actions($wblocks) {
+        switch ($_GET['action']) {
+            case 'shortcode':
+                if (!empty($_GET['block'])) {
+                    $block_name = $_GET['block'];
+
+                    //$block = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
+                    $shortcode = $this->generate_shortcode($block_name, $wblocks);
+
+                    $message = __('Here the Block Shortcode:', 'wizard-blocks') . '<br>';
+                    $message .= $shortcode;
+                    $wblocks->_notice($message);
+                }
+                break;
+        }
     }
 
-    public function render_block($atts) {
+    public function render_block($atts, $content = '') {
         $attr = shortcode_atts(array(
             'name' => 'core/paragraph', // required
             'attributes' => '',
-            'content' => '',
         ), $atts, 'block');
         $block_content = '';
         if ($attr['name']) {
             $block = \WP_Block_Type_Registry::get_instance()->get_registered($attr['name']);
             if ($block && $block->is_dynamic()) {
-                $content = $attr['content'];
+                $content = do_shortcode($content);
                 $attributes = json_decode($attr['attributes'], true);
                 $attributes = $attributes ? $attributes : [];
                 ob_start();
