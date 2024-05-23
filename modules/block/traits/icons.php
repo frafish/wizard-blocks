@@ -69,11 +69,13 @@ Trait Icons {
             if ($key) {
                 $tmp2 = explode('// ', $value, 2);
 
-                $tmp3 = explode('/* harmony default export */ var ', reset($tmp2), 2);
+                $tmp3 = explode('/* harmony default export */', reset($tmp2), 2);
 
                 $tmp5 = explode(' = (', end($tmp3), 2);
                 if (count($tmp5) == 2) {
-                    list ($name, $more) = $tmp5;
+                    list($tmp9, $more) = $tmp5;
+                    $tmpname = explode(' ', $tmp9);
+                    $name = end($tmpname);
                     list($name2, $more2) = explode(');', $more, 2);
                     //echo $name.'-'.$name2.'<br>';
 
@@ -100,6 +102,10 @@ Trait Icons {
                 $jsons = str_replace('cy:', '"cy":', $jsons);
                 $jsons = str_replace('r:', '"r":', $jsons);
                 $svg_objs = explode(', (0,external_wp_element_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
+                if (count($svg_objs) == 1) {
+                    //6.6
+                    $svg_objs = explode(', (0,external_React_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
+                }
                 if (count($svg_objs) > 1) {
                     $svg_wrap_json = array_shift($svg_objs);
                     $svg_wrap = json_decode($svg_wrap_json, true);
@@ -131,8 +137,9 @@ Trait Icons {
                 }
             }
         }
-        //var_dump($icons_block);
+        
         $icons_core['blocks'] = $icons_block;
+        //var_dump($icons_core);
         //die();
         // ICONS: \wp-includes\js\dist\block-library.js
         //<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 5V18.5911L12 13.8473L18 18.5911V5H6Z"></path></svg>

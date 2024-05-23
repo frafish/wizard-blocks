@@ -210,7 +210,7 @@ trait Pages {
                                         <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
                                             <abbr title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
                                             <?php if ($block_post) { ?></a><?php } ?>
-                                        <br><small class="block-title" onClick="console.log(this);navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($name); ?> <span class="dashicons dashicons-clipboard"></span></small>
+                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($name); ?> <span class="dashicons dashicons-clipboard"></span></small>
                                     </strong>
                                 </td>
                                 <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
@@ -381,6 +381,16 @@ trait Pages {
                 vertical-align: baseline;
             }
             .block-title:hover span {
+                display: inline;
+            }
+            .block-shortcode {
+                cursor: pointer;
+            }
+            .block-shortcode:before {
+                margin-right: 10px;
+                display: none;
+            }
+            .block-shortcode:hover:before {
                 display: inline;
             }
         </style>

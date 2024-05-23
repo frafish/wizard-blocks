@@ -49,7 +49,7 @@ Trait Attributes {
     
     public function _edit($args = [], $wrapper = false) {
         $key = esc_attr($args['name']);
-        
+        $textdomain = $this->get_block_textdomain($args);
         if (!empty($args['attributes'])) {
             foreach ($args['attributes'] as $id => $attr) {
                 if (!empty($attr['position'])) {
@@ -121,7 +121,6 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
     <?php } ?>
     edit(props) {
         <?php if (!empty($args['example']['attributes']['preview'])) { ?>
-        //console.log(props.attributes.preview);
         if ( props.attributes.preview ) {
             return wp.element.createElement('img', {
                 width: "100%",
@@ -135,11 +134,13 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
                 wp.blockEditor.useBlockProps(),
                 <?php 
                 if (!empty($args['attributes'])) {
+                    
                     foreach ($args['attributes'] as $id => $attr) {
                         if (!empty($attr['panel']) && $attr['panel'] == 'inline') {
                             $this->_component($id, $attr, $args);
                         }
                     }
+                    
                     $settings = $this->get_attributes($args['attributes']);
                     if (!empty($settings)) {
                     ?>
@@ -149,7 +150,7 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
                             wp.element.createElement(
                                     wp.components.PanelBody,
                                     {
-                                        title: wp.i18n.__("Settings", "proto-block")
+                                        title: wp.i18n.__("Settings", "<?php echo $textdomain; ?>")
                                     },
                                     <?php 
                                     foreach ($settings as $id => $attr) {
@@ -170,7 +171,7 @@ wp.blocks.registerBlockType("<?php echo $key; ?>", {
                             wp.element.createElement(
                                     wp.components.PanelBody,
                                     {
-                                        title: wp.i18n.__("Style", "proto-block")
+                                        title: wp.i18n.__("Style", "<?php echo $textdomain; ?>")
                                     },
                                     <?php 
                                     foreach ($styles as $id => $attr) {
@@ -240,7 +241,7 @@ if ($wrapper) { ?></script><?php }
    public function _component($id, $attr = [], $args = []) {
        
        $label = empty($attr['label']) ? ucfirst($id) : esc_html($attr['label']);
-       $textdomain = empty($attr['textdomain']) ? '' : esc_attr($args['textdomain']);
+       $textdomain = empty($attr['textdomain']) ? $this->get_block_textdomain($args) : esc_attr($attr['textdomain']);
        $in_toolbar = !empty($attr['position']) && $attr['position'] == 'toolbar';
        
        if (!empty($attr['type']) && $attr['type'] == "object") {
@@ -288,12 +289,19 @@ if ($wrapper) { ?></script><?php }
            if ($component == 'RadioControl') {
                $component = 'ToolbarDropdownMenu';
            }
+           if ($component == 'MediaUpload') {
+               //$component = 'HStack';
+           }
+           
            
        }
        
       ?>
-    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>'div'<?php } ?>,{label: wp.i18n.__('<?php echo $label; ?>', "<?php echo $textdomain; ?>")},
-    
+    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{<?php if (!empty($attr['className'])) { ?>className: "<?php echo esc_attr($attr['className']); ?>", <?php }  if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
+        <?php 
+        if (!$in_toolbar && !in_array($component, ['SelectControl', 'ToggleControl']) && $label) { ?>
+            wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo $id; ?>", style: {display: "block"}}, wp.i18n.__("<?php echo $label ?>", "<?php echo $textdomain; ?>")),
+        <?php } ?>
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
@@ -317,6 +325,7 @@ if ($wrapper) { ?></script><?php }
                     {
                         'aria-label': wp.i18n.__("<?php echo $label; ?>","<?php echo $textdomain; ?>"),
                         label: wp.i18n.__("<?php echo $label ?>", "<?php echo $textdomain; ?>"),
+                        id: "inspector-control-<?php echo $id; ?>",
                         <?php
                         // default
                         switch($component) {
@@ -389,35 +398,33 @@ if ($wrapper) { ?></script><?php }
                         switch ($component) {
                             case 'MediaUpload': ?>
                         onSelect: function (media) {
-                            //console.log(media);
-                            //console.log(this);
                             document.getElementById('media-<?php echo $id; ?>').src = media.sizes.thumbnail.url;
                             props.setAttributes({<?php echo $id; ?>: media.id});
-                            
                         },
                         render: function ( open ) {
                             let src = '/wp-includes/images/media/default.svg';
                             if (props.attributes.<?php echo $id; ?>) {
                                 wp.apiFetch( { path: '/wp/v2/media/'+props.attributes.<?php echo $id; ?> } ).then( ( media ) => {
-                                    //console.log(media);
                                     src = media.media_details.sizes.thumbnail.source_url;
                                     document.getElementById('media-<?php echo $id; ?>').src = src;
                                 } );
                             }
-                            return wp.element.createElement(wp.components.Button,
+                            return wp.element.createElement("div", {},
+                                wp.element.createElement(wp.components.Button,
                                 { 
-                                    text: wp.i18n.__('<?php echo $label; ?>', "<?php echo $textdomain; ?>"),
-                                    //title: wp.i18n.__('Open Media Library', "<?php echo $textdomain; ?>"),
+                                    text: wp.i18n.__("<?php echo $label; ?>", "<?php echo $textdomain; ?>"),
+                                    //title: wp.i18n.__("Open Media Library", "<?php echo $textdomain; ?>"),
                                     onClick: open.open,
-                                    variant: 'secondary'
-                                }, 
-                                wp.element.createElement('img',
-                                        {
-                                            id: 'media-<?php echo $id; ?>',
-                                            src: src,
-                                        }
-                                    ),
-                                );
+                                    variant: "secondary",
+                                    style: {width: "100%"},
+                                }), 
+                                wp.element.createElement("img",
+                                    {
+                                        id: "media-<?php echo $id; ?>",
+                                        src: src,
+                                    }
+                                ),
+                            );
                         },
                         <?php break;
                             case 'Heading': ?>
@@ -440,7 +447,6 @@ if ($wrapper) { ?></script><?php }
                             ?>
                             val = parseInt(val);
                             <?php } ?>
-                            //console.log(val);
                             props.setAttributes({<?php echo $id; ?>: val});
                         },
                         <?php
@@ -460,7 +466,6 @@ if ($wrapper) { ?></script><?php }
                                         ?>
                                         {title: "<?php echo $label; ?>",
                                         onClick: function (event) {
-                                            //console.log(event);
                                             props.setAttributes({<?php echo $id; ?>: <?php echo $value; ?>});                                    
                                         }, },
                                         <?php
@@ -468,6 +473,7 @@ if ($wrapper) { ?></script><?php }
                                 ?>],
                             <?php } else { ?>
                             options: <?php 
+                                //var_dump($attr['options']);
                                 if (is_array($attr['options'])) {
                                     echo '[';
                                     if (is_array(reset($attr['options']))) {
@@ -483,7 +489,7 @@ if ($wrapper) { ?></script><?php }
                                                 }
                                             }
                                             ?>
-                                            {value: <?php echo esc_attr($value); ?>, label: "<?php echo $label; ?>"},
+                                            {value: <?php echo $value; ?>, label: "<?php echo esc_attr($label); ?>"},
                                         <?php } 
                                     }
                                     echo ']';
@@ -505,9 +511,9 @@ if ($wrapper) { ?></script><?php }
                         if (!empty($attr['tag'])) { ?>
                             tag: "<?php echo esc_attr($attr['tag']); ?>",
                         <?php }
-                        if (!empty($attr['className'])) { ?>
+                        /*if (!empty($attr['className'])) { ?>
                             className: "<?php echo esc_attr($attr['className']); ?>",
-                        <?php }
+                        <?php } */
                         if (!empty($attr['enableAlpha'])) { ?>
                             enableAlpha: true,
                         <?php }
@@ -523,17 +529,15 @@ if ($wrapper) { ?></script><?php }
                     },
                     <?php if (in_array($component, ['ButtonGroup', 'ToolbarGroup'])) {
                         if (empty($attr['options']) && $id == 'align') {
-                            $attr['options'] = ['left', 'center', 'right'];
+                            $attr['options'] = ['left', 'center', 'right', 'justify'];
                         }
                         if (!empty($attr['options'])) {
-                             //[10, 15, 20, 25, 30, 33, 35, 40, 50, 60, 66, 70, 75, 80, 90, 100]; 
                             foreach ($attr['options'] as $value) { 
                                 $value = in_array($attr['type'], ['number', 'integer', 'boolean']) ? $value : '"'.$value.'"'; ?>
                                 wp.element.createElement(wp.components.<?php echo $in_toolbar ? 'Toolbar' : ''; ?>Button, {
                                     value: <?php echo $value ?>,
                                     variant: (props.attributes.<?php echo $id; ?> === <?php echo $value; ?>) ? 'primary' : 'secondary',
                                     onClick: function (event) {
-                                        //console.log(event);
                                         jQuery(event.target).addClass('is-primary').removeClass('is-secondary');
                                         jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
                                         props.setAttributes({<?php echo $id; ?>: event.target.value});                                    

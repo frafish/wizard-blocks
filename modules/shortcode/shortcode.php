@@ -75,7 +75,7 @@ class Shortcode extends Module_Base {
                     $shortcode = $this->generate_shortcode($block_name, $wblocks);
 
                     $message = __('Here the Block Shortcode:', 'wizard-blocks') . '<br>';
-                    $message .= $shortcode;
+                    $message .= '<b class="block-shortcode dashicons-before dashicons-clipboard" onClick="navigator.clipboard.writeText(this.innerText);">'.$shortcode.'</b>';
                     $wblocks->_notice($message);
                 }
                 break;
@@ -97,10 +97,14 @@ class Shortcode extends Module_Base {
                 ob_start();
                 $render = $block->render_callback;
                 echo $render($attributes, $content, $block);
-                //$block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
+                //$reflection = new \ReflectionFunction($closure);
+                //$arguments  = $reflection->getParameters();
+                //var_dump(get_class($block));
+                //var_dump($arguments);
+                //echo $block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
                 $block_content = ob_get_clean();
 
-                $this->enqueue_block_assets($block);
+                //$this->enqueue_block_assets($block);
             }
         }
         return $block_content;

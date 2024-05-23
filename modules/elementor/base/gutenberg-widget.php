@@ -245,8 +245,9 @@ class GutenbergWidget extends Widget_Base {
             \WP_Block_Supports::$block_to_render = json_decode(wp_json_encode($block), true);
         }
         
-        //$block->render($attributes, $content);
+        //echo $block->render($attributes, $content);
         //var_dump($block->render_callback);
+        
         if (is_object($block->render_callback)) {
             $render = $block->render_callback;
             echo $render($attributes, $content, $block);

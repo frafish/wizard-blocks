@@ -642,11 +642,6 @@ class Block extends Module_Base {
         /**
          * Blocks upload file path.
          *
-         * Filters the path to a file uploaded using Elementor forms.
-         *
-         * By default Elementor forms defines a path to uploaded file. This
-         * hook allows developers to alter this path.
-         *
          * @since 1.0.0
          *
          * @param string $path Path to uploaded files.
@@ -702,11 +697,7 @@ class Block extends Module_Base {
 
     public function dir_delete($dir) {
         if (is_dir($dir)) {
-            global $wp_filesystem;
-            // Make sure that the above variable is properly setup.
-            require_once ABSPATH . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'file.php';
-            WP_Filesystem();
-            return $wp_filesystem->delete($dir, true);
+            return $this->get_filesystem->delete($dir, true);
         }
         return false;
     }
@@ -739,15 +730,6 @@ class Block extends Module_Base {
             $context = apply_filters('request_filesystem_credentials_context', false);
             $creds = request_filesystem_credentials(site_url(), '', false, $context, null);
             \WP_Filesystem($creds, $context);
-        }
-
-        // Set the permission constants if not already set.
-        if (!defined('FS_CHMOD_DIR')) {
-            define('FS_CHMOD_DIR', 0755);
-        }
-
-        if (!defined('FS_CHMOD_FILE')) {
-            define('FS_CHMOD_FILE', 0644);
         }
 
         return $wp_filesystem;
