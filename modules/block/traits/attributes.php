@@ -299,7 +299,7 @@ if ($wrapper) { ?></script><?php }
       ?>
     wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{<?php if (!empty($attr['className'])) { ?>className: "<?php echo esc_attr($attr['className']); ?>", <?php }  if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
-        if (!$in_toolbar && !in_array($component, ['SelectControl', 'ToggleControl']) && $label) { ?>
+        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'RadioControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo $id; ?>", style: {display: "block"}}, wp.i18n.__("<?php echo $label ?>", "<?php echo $textdomain; ?>")),
         <?php } ?>
        wp.element.createElement(

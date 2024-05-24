@@ -129,21 +129,116 @@ trait Metabox {
         //'Divider' => 'Divider',
         'Dropdown' => 'Dropdown',
         'InnerBlocks' => 'Inner Blocks',
-        //'InputControl' => 'Email',
+        //'InputControl' => 'Email', //experimental
         //'Heading' => 'Heading',
-        //'InputControl' => 'InputControl',
+        //'InputControl' => 'InputControl', //experimental
         'MediaUpload' => 'Media',
-        'NumberControl' => 'Number',
+        //'NumberControl' => 'Number', //experimental
         'RadioControl' => 'Radio',
-        'RadioGroup' => 'RadioGroup',
-        'RichText' => 'RichText',
+        //'RadioGroup' => 'RadioGroup', //experimental
+        //'RichText' => 'RichText', //replaced by InnerBlocks, TODO
         'SelectControl' => 'Select',
-        //'InputControl' => 'Tel',
+        //'InputControl' => 'Tel', //experimental
         'TextareaControl' => 'TextArea',
         'TextControl' => 'Text',
+        
         'TimePicker' => 'Time',
         'ToggleControl' => 'Toggle',
-        //'InputControl' => 'URL',
+        //'InputControl' => 'URL', //experimental
+        
+        /*
+         * TODO - wp.components
+        Animate:         ​
+        Autocomplete: 
+        BaseControl: 
+        BlockQuotation: 
+        ​Button: 
+        ​Card: 
+        ​CardBody: 
+        ​CardDivider: 
+        ​CardFooter: 
+        ​CardHeader: 
+        ​CardMedia: 
+        ​Circle: 
+        ​ClipboardButton: 
+        ​ColorIndicator: 
+        ​ColorPalette: 
+        ​ComboboxControl: 
+        ​CustomGradientPicker: 
+        ​CustomSelectControl: 
+        ​Dashicon: 
+        Disabled: 
+        ​Draggable: 
+        ​DropZone: 
+        ​DropZoneProvider:  
+        ​DropdownMenu: 
+        ​DuotonePicker: 
+        ​DuotoneSwatch: 
+        ​ExternalLink: 
+        ​Fill: 
+        ​Flex: 
+        ​FlexBlock: 
+        ​FlexItem: 
+        ​FocalPointPicker: 
+        ​FocusReturnProvider: 
+        ​FocusableIframe: 
+        ​FontSizePicker: 
+        ​FormFileUpload: 
+        ​FormToggle: 
+        ​FormTokenField: 
+        ​G: 
+        ​GradientPicker: 
+        ​Guide: 
+        ​GuidePage: 
+        ​HorizontalRule: 
+        ​Icon: 
+        ​IconButton: 
+        ​IsolatedEventContainer: 
+        ​KeyboardShortcuts: 
+        ​Line: 
+        ​MenuGroup: 
+        ​MenuItem: 
+        ​MenuItemsChoice: 
+        ​Modal: 
+        ​NavigableMenu: 
+        ​Notice: 
+        ​NoticeList: 
+        ​Panel: 
+        ​PanelBody: 
+        ​PanelHeader: 
+        ​PanelRow: 
+        ​Path: 
+        ​Placeholder: 
+        ​Polygon: 
+        ​Popover: 
+        ​QueryControls: 
+        ​RangeControl: 
+        ​Rect: 
+        ​ResizableBox: 
+        ​ResponsiveWrapper: 
+        ​SVG: 
+        ​SandBox: 
+        ​ScrollLock: 
+        ​SearchControl: 
+        ​Slot: 
+        ​SlotFillProvider: 
+        ​Snackbar: 
+        ​SnackbarList: 
+        ​Spinner: 
+        ​TabPanel: 
+        ​TabbableContainer: 
+        ​TextHighlight: 
+        ​Tip: 
+        ​ToggleControl: 
+        ​Toolbar: 
+        ​ToolbarButton:
+        ​ToolbarGroup: 
+        ​ToolbarItem: 
+        ​Tooltip: 
+        TreeSelect: 
+        VisuallyHidden
+         */
+        
     ];
     //https://www.w3schools.com/html/html_form_input_types.asp
     public static $attributes_input_type = [

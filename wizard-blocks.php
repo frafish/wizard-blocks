@@ -3,10 +3,9 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Wizard Blocks Manager 
- * Plugin URI:        https://wiz.farm
- * Description:       Easy create, edit and manage Guternberg Blocks
+ * Description:       Easy create, edit and manage Gutenberg Blocks
  * Version:           1.0.1
- * Author:            FraFish
+ * Author:            frapesce
  * Text Domain:       wizard-blocks
  * License:           GPL-3.0
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
