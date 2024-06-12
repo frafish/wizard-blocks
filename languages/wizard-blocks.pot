@@ -1,0 +1,576 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Wizard Blocks Manager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-12 07:37+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.10; wp-6.6-beta2-58392\n"
+"X-Domain: wizard-blocks"
+
+#: modules/block/traits/pages.php:266
+msgid "Actions"
+msgstr ""
+
+#: modules/block/traits/metabox.php:503
+msgid "Add an attribute KEY"
+msgstr ""
+
+#: modules/block/traits/type.php:20
+msgid "Add New"
+msgstr ""
+
+#: modules/block/traits/type.php:21
+msgid "Add New Block"
+msgstr ""
+
+#: modules/block/traits/pages.php:126
+msgid "Add new Block"
+msgstr ""
+
+#: modules/block/traits/type.php:19
+msgctxt "Add New on Toolbar"
+msgid "Block"
+msgstr ""
+
+#: modules/block/traits/pages.php:42
+msgid "Add your Custom Blocks importing the block zip."
+msgstr ""
+
+#: modules/block/traits/type.php:18
+msgctxt "Admin Menu text"
+msgid "Wizard Blocks"
+msgstr ""
+
+#: modules/block/traits/pages.php:125
+msgid "All Registered Blocks"
+msgstr ""
+
+#: modules/block/traits/metabox.php:674
+msgid "Allowed Blocks"
+msgstr ""
+
+#: modules/block/traits/metabox.php:667
+msgid "Ancestor"
+msgstr ""
+
+#: modules/block/traits/pages.php:226
+msgid "Api Version"
+msgstr ""
+
+#: modules/block/traits/metabox.php:591
+msgid "apiVersion"
+msgstr ""
+
+#: modules/block/traits/metabox.php:549
+msgid "Attribute"
+msgstr ""
+
+#: modules/block/traits/metabox.php:302 modules/block/traits/metabox.php:496
+msgid "Attributes"
+msgstr ""
+
+#: modules/block/traits/metabox.php:520
+msgid "Auto"
+msgstr ""
+
+#: modules/block/traits/actions.php:52
+msgid "Block disabled settings has been resetted!"
+msgstr ""
+
+#: modules/block/traits/actions.php:46
+msgid "Block disabled!"
+msgstr ""
+
+#: modules/block/traits/actions.php:198
+msgid "Block exported!"
+msgstr ""
+
+#: modules/block/traits/actions.php:108
+msgid "Block imported!"
+msgstr ""
+
+#: modules/block/traits/metabox.php:437
+msgid ""
+"Block type editor scripts definition. They will only be enqueued in the "
+"context of the editor."
+msgstr ""
+
+#: modules/block/traits/metabox.php:408
+msgid ""
+"Block type editor styles definition. They will only be enqueued in the "
+"context of the editor."
+msgstr ""
+
+#: modules/block/traits/metabox.php:447
+msgid ""
+"Block type frontend and editor scripts definition. They will be enqueued "
+"both in the editor and when viewing the content on the front of the site."
+msgstr ""
+
+#: modules/block/traits/metabox.php:389
+msgid ""
+"Block type frontend and editor styles definition. They will be enqueued both "
+"in the editor and when viewing the content on the front of the site."
+msgstr ""
+
+#: modules/block/traits/metabox.php:467
+msgid ""
+"Block type frontend script module definition. They will be enqueued only "
+"when viewing the content on the front of the site."
+msgstr ""
+
+#: modules/block/traits/metabox.php:457
+msgid ""
+"Block type frontend scripts definition. They will be enqueued only when "
+"viewing the content on the front of the site."
+msgstr ""
+
+#: modules/block/traits/metabox.php:398
+msgid ""
+"Block type frontend styles definition. They will be enqueued only when "
+"viewing the content on the front of the site."
+msgstr ""
+
+#: modules/block/traits/pages.php:128
+msgid "blocks"
+msgstr ""
+
+#: modules/block/traits/actions.php:27
+msgid "Blocks disabled settings has been saved!"
+msgstr ""
+
+#: modules/block/traits/actions.php:149
+msgid "Blocks exported!"
+msgstr ""
+
+#: modules/block/traits/actions.php:93
+msgid "Blocks imported!"
+msgstr ""
+
+#: modules/block/traits/metabox.php:645 modules/block/traits/pages.php:229
+msgid "Category"
+msgstr ""
+
+#: modules/block/traits/metabox.php:551
+msgid "Class"
+msgstr ""
+
+#: modules/block/traits/metabox.php:507
+msgid "Clone"
+msgstr ""
+
+#: modules/block/traits/metabox.php:518
+msgid "Component"
+msgstr ""
+
+#: modules/block/traits/metabox.php:281
+msgid "Content"
+msgstr ""
+
+#: modules/block/traits/pages.php:66
+msgid ""
+"Copy these lines of PHP code into your Theme (or Child theme) at the end of "
+"the functions.php file. After that you could switch off this plugin."
+msgstr ""
+
+#: modules/block/traits/metabox.php:290
+msgid "CSS Assets"
+msgstr ""
+
+#: modules/block/traits/metabox.php:629
+msgid "Current"
+msgstr ""
+
+#: modules/block/traits/metabox.php:613
+msgid "Custom"
+msgstr ""
+
+#: modules/block/traits/metabox.php:541
+msgid "Default"
+msgstr ""
+
+#: modules/block/traits/pages.php:223
+msgid "Description"
+msgstr ""
+
+#: modules/block/traits/pages.php:270
+msgid "Disable"
+msgstr ""
+
+#: modules/block/traits/pages.php:268
+msgid "Docs"
+msgstr ""
+
+#: modules/block/traits/metabox.php:506
+msgid "Down"
+msgstr ""
+
+#: modules/block/traits/pages.php:272
+msgid "Download"
+msgstr ""
+
+#: modules/block/traits/pages.php:51
+msgid "Download all your Custom Blocks for a quick backup."
+msgstr ""
+
+#. Description of the plugin
+msgid "Easy create, edit and manage Gutenberg Blocks"
+msgstr ""
+
+#: modules/block/traits/pages.php:283
+msgid "Edit"
+msgstr ""
+
+#: modules/block/traits/type.php:23
+msgid "Edit Block"
+msgstr ""
+
+#: modules/block/traits/metabox.php:436
+msgid "Editor Script"
+msgstr ""
+
+#: modules/block/traits/metabox.php:407
+msgid "Editor Style"
+msgstr ""
+
+#: modules/block/traits/pages.php:50
+msgid "EXPORT"
+msgstr ""
+
+#: modules/block/traits/metabox.php:327 modules/block/traits/pages.php:52
+msgid "Export"
+msgstr ""
+
+#: modules/block/traits/metabox.php:552 modules/block/traits/metabox.php:813
+msgid "Extra"
+msgstr ""
+
+#: modules/block/traits/metabox.php:537
+msgid "False"
+msgstr ""
+
+#: modules/block/traits/pages.php:241
+msgid "Folder"
+msgstr ""
+
+#. Author of the plugin
+msgid "frapesce"
+msgstr ""
+
+#: modules/block/traits/pages.php:65
+msgid "Get code"
+msgstr ""
+
+#: modules/block/traits/metabox.php:550
+msgid "Help"
+msgstr ""
+
+#: modules/shortcode/shortcode.php:77
+msgid "Here the Block Shortcode:"
+msgstr ""
+
+#: modules/block/traits/metabox.php:681
+msgid "Hooks"
+msgstr ""
+
+#: modules/block/traits/metabox.php:612 modules/block/traits/pages.php:201
+msgid "Icon"
+msgstr ""
+
+#: modules/block/traits/pages.php:41
+msgid "IMPORT"
+msgstr ""
+
+#: modules/block/traits/pages.php:45 modules/block/traits/pages.php:278
+msgid "Import"
+msgstr ""
+
+#: modules/block/traits/metabox.php:308
+msgid "Info"
+msgstr ""
+
+#: modules/block/traits/metabox.php:525
+msgid "Input Type"
+msgstr ""
+
+#: modules/block/traits/metabox.php:296
+msgid "JS Assets"
+msgstr ""
+
+#: modules/block/traits/metabox.php:510
+msgid "Key"
+msgstr ""
+
+#: modules/block/traits/metabox.php:653
+msgid "Keywords"
+msgstr ""
+
+#: modules/block/traits/metabox.php:511
+msgid "Label"
+msgstr ""
+
+#: modules/block/traits/metabox.php:536
+msgid "Multiple"
+msgstr ""
+
+#: modules/block/traits/type.php:25
+msgid "My Blocks"
+msgstr ""
+
+#: modules/block/traits/metabox.php:602
+msgid "Name"
+msgstr ""
+
+#: modules/block/traits/type.php:22
+msgid "New Block"
+msgstr ""
+
+#: modules/block/traits/type.php:29
+msgid "No Blocks found in Trash."
+msgstr ""
+
+#: modules/block/traits/type.php:28
+msgid "No Blocks found."
+msgstr ""
+
+#: modules/block/traits/metabox.php:543
+msgid "No value"
+msgstr ""
+
+#: modules/block/traits/metabox.php:540
+msgid "Options"
+msgstr ""
+
+#: modules/block/traits/type.php:30
+msgctxt ""
+"Overrides the “Featured Image” phrase for this post type. Added in 4.3"
+msgid "Blocks Cover Image"
+msgstr ""
+
+#: modules/block/traits/type.php:35
+msgctxt ""
+"Overrides the “Insert into post”/”Insert into page” phrase (used when "
+"inserting media into a post). Added in 4.4"
+msgid "Insert into Block"
+msgstr ""
+
+#: modules/block/traits/type.php:32
+msgctxt ""
+"Overrides the “Remove featured image” phrase for this post type. Added in 4.3"
+msgid "Remove cover image"
+msgstr ""
+
+#: modules/block/traits/type.php:31
+msgctxt ""
+"Overrides the “Set featured image” phrase for this post type. Added in 4.3"
+msgid "Set cover image"
+msgstr ""
+
+#: modules/block/traits/type.php:36
+msgctxt ""
+"Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used "
+"when viewing media attached to a post). Added in 4.4"
+msgid "Uploaded to this Block"
+msgstr ""
+
+#: modules/block/traits/type.php:33
+msgctxt ""
+"Overrides the “Use as featured image” phrase for this post type. Added in 4.3"
+msgid "Use as cover image"
+msgstr ""
+
+#: modules/block/traits/metabox.php:660
+msgid "Parent"
+msgstr ""
+
+#: modules/block/traits/type.php:27
+msgid "Parent Blocks:"
+msgstr ""
+
+#: modules/block/traits/metabox.php:359
+msgid ""
+"PHP file to use when rendering the block type on the server to show on the "
+"front end."
+msgstr ""
+
+#: modules/block/traits/metabox.php:531
+msgid "Position"
+msgstr ""
+
+#: modules/block/traits/type.php:16
+msgctxt "Post type general name"
+msgid "Wizard Blocks"
+msgstr ""
+
+#: modules/block/traits/type.php:17
+msgctxt "Post type singular name"
+msgid "Block"
+msgstr ""
+
+#: modules/block/traits/metabox.php:688
+msgid "providesContext"
+msgstr ""
+
+#: modules/block/traits/metabox.php:504
+msgid "Remove"
+msgstr ""
+
+#: modules/block/traits/metabox.php:358
+msgid "Render"
+msgstr ""
+
+#: modules/block/traits/type.php:37
+msgctxt ""
+"Screen reader text for the filter links heading on the post type listing "
+"screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4"
+msgid "Filter Blocks list"
+msgstr ""
+
+#: modules/block/traits/type.php:39
+msgctxt ""
+"Screen reader text for the items list heading on the post type listing "
+"screen. Default “Posts list”/”Pages list”. Added in 4.4"
+msgid "Blocks list"
+msgstr ""
+
+#: modules/block/traits/type.php:38
+msgctxt ""
+"Screen reader text for the pagination heading on the post type listing "
+"screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4"
+msgid "Blocks list navigation"
+msgstr ""
+
+#: modules/block/traits/metabox.php:446
+msgid "Script"
+msgstr ""
+
+#: modules/block/traits/type.php:26
+msgid "Search Blocks"
+msgstr ""
+
+#: modules/block/traits/actions.php:213
+msgid "Security nonce not valid!"
+msgstr ""
+
+#: modules/block/traits/metabox.php:548
+msgid "Selector"
+msgstr ""
+
+#: modules/shortcode/shortcode.php:23
+msgid "Shortcode"
+msgstr ""
+
+#: modules/block/traits/metabox.php:542
+msgid "Source"
+msgstr ""
+
+#: modules/block/traits/pages.php:217
+msgid "Status"
+msgstr ""
+
+#: modules/block/traits/metabox.php:388
+msgid "Style"
+msgstr ""
+
+#: modules/block/traits/metabox.php:702
+msgid "Supports"
+msgstr ""
+
+#: modules/block/traits/metabox.php:788
+msgid "Supports custom values"
+msgstr ""
+
+#: modules/block/traits/metabox.php:364
+msgid "The array of attributes for this block."
+msgstr ""
+
+#: modules/block/traits/metabox.php:362
+msgid "The following variables are exposed to the file:"
+msgstr ""
+
+#: modules/block/traits/metabox.php:366
+msgid ""
+"The instance of the WP_Block class that represents the block being rendered."
+msgstr ""
+
+#: modules/block/traits/type.php:34
+msgctxt ""
+"The post type archive label used in nav menus. Default “Post Archives”. "
+"Added in 4.4"
+msgid "Block archives"
+msgstr ""
+
+#: modules/block/traits/metabox.php:365
+msgid ""
+"The rendered block default output. ie. <code>&lt;InnerBlocks.Content /&gt;"
+"</code>."
+msgstr ""
+
+#: modules/block/traits/pages.php:209
+msgid "Title"
+msgstr ""
+
+#: modules/block/traits/metabox.php:538
+msgid "True"
+msgstr ""
+
+#: modules/block/traits/pages.php:42
+msgid "Try to download and import some official Block examples:"
+msgstr ""
+
+#: modules/block/traits/metabox.php:512
+msgid "Type"
+msgstr ""
+
+#: modules/block/traits/metabox.php:505
+msgid "Up"
+msgstr ""
+
+#: modules/block/traits/pages.php:238
+msgid "Usage"
+msgstr ""
+
+#: modules/block/traits/metabox.php:695
+msgid "usesContext"
+msgstr ""
+
+#: modules/block/traits/metabox.php:606
+msgid "Version"
+msgstr ""
+
+#: modules/block/traits/type.php:24
+msgid "View Block"
+msgstr ""
+
+#: modules/block/traits/metabox.php:456
+msgid "View Script"
+msgstr ""
+
+#: modules/block/traits/metabox.php:466
+msgid "View Script Module"
+msgstr ""
+
+#: modules/block/traits/metabox.php:397
+msgid "View Style"
+msgstr ""
+
+#. Name of the plugin
+msgid "Wizard Blocks Manager"
+msgstr ""
+
+#: modules/block/traits/pages.php:37
+msgid "Wizard Tools"
+msgstr ""
+
+#: modules/block/traits/pages.php:51
+msgid "You can then install them as native blocks."
+msgstr ""

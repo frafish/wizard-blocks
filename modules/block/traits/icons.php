@@ -90,49 +90,63 @@ Trait Icons {
                         }
                     }
                 }
-                list($jsons, $tmp4) = explode('));', reset($tmp2), 2);
-                $jsons = str_replace('width:', '"width":', $jsons);
-                $jsons = str_replace('height:', '"height":', $jsons);
-                $jsons = str_replace('xmlns:', '"xmlns":', $jsons);
-                $jsons = str_replace('viewBox:', '"viewBox":', $jsons);
-                $jsons = str_replace('fillRule:', '"fill-rule":', $jsons);
-                $jsons = str_replace('clipRule:', '"clip-rule":', $jsons);
-                $jsons = str_replace('d:', '"d":', $jsons);
-                $jsons = str_replace('cx:', '"cx":', $jsons);
-                $jsons = str_replace('cy:', '"cy":', $jsons);
-                $jsons = str_replace('r:', '"r":', $jsons);
-                $svg_objs = explode(', (0,external_wp_element_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
-                if (count($svg_objs) == 1) {
-                    //6.6
-                    $svg_objs = explode(', (0,external_React_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
+                $tmp8 = explode('));', reset($tmp2), 2);
+                if (count($tmp8) < 2) {
+                    //var_dump(reset($tmp2)); die();
+                    $tmp8 = explode(');', reset($tmp2), 2);
+                    //echo count($tmp8);
                 }
-                if (count($svg_objs) > 1) {
-                    $svg_wrap_json = array_shift($svg_objs);
-                    $svg_wrap = json_decode($svg_wrap_json, true);
-                    if ($svg_wrap) {
-                        $svg = '<svg';
-                        if (empty($svg_wrap['width']))
-                            $svg_wrap['width'] = 24;
-                        if (empty($svg_wrap['height']))
-                            $svg_wrap['height'] = 24;
-                        foreach ($svg_wrap as $key => $value) {
-                            $svg .= ' ' . $key . '="' . $value . '"';
-                        }
-                        $svg .= ' aria-hidden="true" focusable="false">';
-                        foreach ($svg_objs as $svg_obj) {
-                            list($type, $svg_inner_json) = explode(',', $svg_obj, 2);
-                            $svg_inner_json = str_replace(')', '', $svg_inner_json);
-                            $svg_inner = json_decode($svg_inner_json, true);
-                            if ($svg_inner) {
-                                $svg .= '<' . strtolower($type);
-                                foreach ($svg_inner as $key => $value) {
-                                    $svg .= ' ' . $key . '="' . $value . '"';
-                                }
-                                $svg .= '></' . strtolower($type) . '>';
+                if (count($tmp8) > 1) {
+                    list($jsons, $tmp4) = $tmp8;
+                    $jsons = str_replace('width:', '"width":', $jsons);
+                    $jsons = str_replace('height:', '"height":', $jsons);
+                    $jsons = str_replace('xmlns:', '"xmlns":', $jsons);
+                    $jsons = str_replace('viewBox:', '"viewBox":', $jsons);
+                    $jsons = str_replace('fillRule:', '"fill-rule":', $jsons);
+                    $jsons = str_replace('clipRule:', '"clip-rule":', $jsons);
+                    $jsons = str_replace('d:', '"d":', $jsons);
+                    $jsons = str_replace('cx:', '"cx":', $jsons);
+                    $jsons = str_replace('cy:', '"cy":', $jsons);
+                    $jsons = str_replace('r:', '"r":', $jsons);
+                    $svg_objs = explode(', (0,external_wp_element_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
+                    if (count($svg_objs) == 1) {
+                        //6.6 beta
+                        $svg_objs = explode(', (0,external_React_namespaceObject.createElement)(external_wp_primitives_namespaceObject.', $jsons);
+                    }
+                    if (count($svg_objs) == 1) {
+                        //6.6
+                        $svg_objs = explode('children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.', $jsons);
+                        //var_dump($jsons); die();
+                        //echo count($svg_objs);
+                    }
+                    if (count($svg_objs) > 1) {
+                        $svg_wrap_json = array_shift($svg_objs);
+                        $svg_wrap = json_decode($svg_wrap_json, true);
+                        if ($svg_wrap) {
+                            $svg = '<svg';
+                            if (empty($svg_wrap['width']))
+                                $svg_wrap['width'] = 24;
+                            if (empty($svg_wrap['height']))
+                                $svg_wrap['height'] = 24;
+                            foreach ($svg_wrap as $key => $value) {
+                                $svg .= ' ' . $key . '="' . $value . '"';
                             }
+                            $svg .= ' aria-hidden="true" focusable="false">';
+                            foreach ($svg_objs as $svg_obj) {
+                                list($type, $svg_inner_json) = explode(',', $svg_obj, 2);
+                                $svg_inner_json = str_replace(')', '', $svg_inner_json);
+                                $svg_inner = json_decode($svg_inner_json, true);
+                                if ($svg_inner) {
+                                    $svg .= '<' . strtolower($type);
+                                    foreach ($svg_inner as $key => $value) {
+                                        $svg .= ' ' . $key . '="' . $value . '"';
+                                    }
+                                    $svg .= '></' . strtolower($type) . '>';
+                                }
+                            }
+                            $svg .= '</svg>';
+                            $icons_core[$name] = $svg;
                         }
-                        $svg .= '</svg>';
-                        $icons_core[$name] = $svg;
                     }
                 }
             }

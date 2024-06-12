@@ -322,7 +322,13 @@ trait Metabox {
             wp_enqueue_script('wp-theme-plugin-editor');
             wp_enqueue_style('wp-codemirror');
             wp_enqueue_media();
+            
+            add_action( 'post_submitbox_start', function($post) {
+                echo '<div id="export-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" target="_blank" href="'.$this->get_action_url('action=download&block='.$post->post_name).'">'.(esc_html__('Export', 'wizard-blocks')).'</a></div>';
+            });
         }
+        
+        
     }
 
     public function meta_fields_build_render_callback($post, $metabox) {

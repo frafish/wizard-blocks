@@ -171,7 +171,7 @@ Trait Actions {
                                     $block_slug = $_GET['block'];
                                     $block_json = $this->get_json_data($block_slug);
                                     // Set the system path for our zip file
-                                    $filename = 'block_' . $block_slug . '_' . $block_json['version'] . '.zip';
+                                    $filename = 'block_' . $block_slug . (empty($block_json['version']) ? '' : '_' . $block_json['version']) . '.zip';
                                     $filepath = $basedir . $filename;
 
                                     // Remove any existing file with that filename

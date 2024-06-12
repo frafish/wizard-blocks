@@ -48,7 +48,7 @@ trait Pages {
 
                 <div class="card" style="width: 100%;">
                     <h2><?php esc_html_e('EXPORT', 'wizard-blocks'); ?></h2>
-                    <p><?php esc_html_e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php esc_html_e('You can then  install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
+                    <p><?php esc_html_e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php esc_html_e('You can then install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
                     <a class="btn button" href="<?php echo $this->get_action_url("action=export"); ?>"><?php esc_html_e('Export', 'wizard-blocks'); ?></a>
                 </div>
             </div>
@@ -72,7 +72,8 @@ trait Pages {
 
     public function get_action_url($args = '') {
         $nonce = wp_create_nonce('wizard-blocks-nonce');
-        return esc_url(admin_url("edit.php?post_type=block&page=" . $_GET['page'] . "&nonce=" . $nonce . ($args ? "&" . $args : '')));
+        $page = isset($_GET['page']) ? $_GET['page'] : 'wblocks';
+        return esc_url(admin_url("edit.php?post_type=block&page=" . $page . "&nonce=" . $nonce . ($args ? "&" . $args : '')));
     }
 
     public function wizard_blocks() {
