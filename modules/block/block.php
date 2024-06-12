@@ -338,6 +338,14 @@ class Block extends Module_Base {
             //var_dump($attributes); die();
         }
         
+        $apiVersion = end(self::$apiVersions);
+        if (!empty($_POST['_block_apiVersion'])) {
+            $apiVersion = intval($_POST['_block_apiVersion']);
+            if (!in_array($apiVersion, self::$apiVersions)) {
+                // something wrong...
+            }
+        }
+        
         $version = ""; //1.0.1";
         if (!empty($_POST['_block_version'])) {
             $version = sanitize_text_field($_POST['_block_version']);
@@ -451,7 +459,7 @@ class Block extends Module_Base {
         // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
         $json = [
             "\$schema" => "https://schemas.wp.org/trunk/block.json",
-            "apiVersion" => 3,
+            "apiVersion" => $apiVersion,
             "name" => $textdomain . "/" . $post_slug,
             "title" => get_the_title($post_id),
             "category" => $category,
