@@ -208,7 +208,8 @@ class Block extends Module_Base {
         $blocks = [];
         foreach ($blocks_dirs as $dir) {
             if (is_dir($dir)) {
-                $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
+                $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
+                //var_dump($blocks);
             }
         }
         $blocks = apply_filters('wizard/blocks', $blocks);
@@ -222,7 +223,7 @@ class Block extends Module_Base {
             return ucfirst($title);
         }
         if (!empty($block_post)) return $block_post->post_title;
-        return __('Unknown');
+        return __('Unknown', 'wizard-blocks');
     }
     
     public function get_block_slug($block) {
@@ -289,37 +290,49 @@ class Block extends Module_Base {
     public function meta_fields_save_meta_box_data($post_id, $post, $update) {
         if (!isset($_POST['meta_fields_meta_box_nonce']))
             return;
-        if (!wp_verify_nonce($_POST['meta_fields_meta_box_nonce'], 'meta_fields_save_meta_box_data'))
+        if (!wp_verify_nonce(sanitize_key(wp_unslash($_POST['meta_fields_meta_box_nonce'])), 'meta_fields_save_meta_box_data'))
             return;
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
             return;
         if (!current_user_can('edit_post', $post_id))
             return;
-
-        // if changed slug delete old dir
+        
         $post_slug = get_post_field('post_name', $post_id);
+        $block_slug = $post_slug;
         if (!empty($_POST['_block_name'])) {
-            $slug = sanitize_title($_POST['_block_name']);
-            if ($post_slug != $slug) {
-                wp_update_post( ['ID' => $post_id, 'post_name' => $slug] );
+            $block_slug = sanitize_key(wp_unslash($_POST['_block_name']));
+        }
+        
+        $block_textdomain = $this->get_plugin_textdomain();
+        if (!empty($_POST['_block_textdomain'])) {
+            $block_textdomain = sanitize_key(wp_unslash($_POST['_block_textdomain']));
+        }
+
+        if ($update) {
+            $json_old = $this->get_json_data($post_slug);    
+            $textdomain_old = $this->get_block_textdomain($json_old);
+            if ($block_textdomain != $textdomain_old) {
                 // delete old dir
-                $old_dir = $this->get_ensure_blocks_dir($post_slug);
+                $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                 $this->dir_delete($old_dir);
-                $post_slug = $slug;
+            }
+            
+            // if changed slug delete old dir
+            if ($post_slug != $block_slug) {
+                wp_update_post( ['ID' => $post_id, 'post_name' => $block_slug] );
+                // delete old dir
+                $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
+                $this->dir_delete($old_dir);
+                $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
             }
         }
         
-        $basepath = $this->get_ensure_blocks_dir($post_slug);
-        
+        $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
         $post_excerpt = get_post_field('post_excerpt', $post_id);
-        
-        $json_old = $this->get_json_data($post_slug);
-        
-        $textdomain = $this->get_block_textdomain($json_old);
         
         $attributes = [];
         if (!empty($_POST['_block_attributes'])) {
-            $attributes = trim($_POST['_block_attributes']);
+            $attributes = sanitize_textarea_field(wp_unslash($_POST['_block_attributes']));
             if (substr($attributes, 0, 1) != '{') {
                 $attributes = '{' . $attributes;
             }
@@ -348,22 +361,22 @@ class Block extends Module_Base {
         
         $version = ""; //1.0.1";
         if (!empty($_POST['_block_version'])) {
-            $version = sanitize_text_field($_POST['_block_version']);
+            $version = sanitize_text_field(wp_unslash($_POST['_block_version']));
         }
 
         $keywords = [];
         if (!empty($_POST['_block_keywords'])) {
-            $keywords = array_filter(array_map('trim', explode(',', $_POST['_block_keywords'])));
+            $keywords = array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($_POST['_block_keywords'])))));
         }
 
         $usesContext = [];
         if (!empty($_POST['_block_usesContext'])) {
-            $usesContext = array_filter(array_map('trim', explode(',', $_POST['_block_usesContext'])));
+            $usesContext = array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($_POST['_block_usesContext'])))));
         }
 
         $providesContext = [];
         if (!empty($_POST['_block_providesContext'])) {
-            $providesContext = trim($_POST['_block_providesContext']);
+            $providesContext = sanitize_textarea_field(wp_unslash($_POST['_block_providesContext']));
             if (substr($providesContext, 0, 1) != '{') {
                 $providesContext = '{' . $providesContext . '}';
             }
@@ -373,7 +386,7 @@ class Block extends Module_Base {
         
         $blockHooks = [];
         if (!empty($_POST['_block_blockHooks'])) {
-            $blockHooks = trim($_POST['_block_blockHooks']);
+            $blockHooks = sanitize_textarea_field(wp_unslash($_POST['_block_blockHooks']));
             if (substr($blockHooks, 0, 1) != '{') {
                 $blockHooks = '{' . $blockHooks . '}';
             }
@@ -383,23 +396,24 @@ class Block extends Module_Base {
 
         $parent = [];
         if (!empty($_POST['_block_parent'])) {
-            $parent = array_filter(array_map('trim', explode(',', $_POST['_block_parent'])));
+            $parent = array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($_POST['_block_parent'])))));
         }
         
         $allowedBlocks = [];
         if (!empty($_POST['_block_allowedBlocks'])) {
-            $allowedBlocks = array_filter(array_map('trim', explode(',', $_POST['_block_allowedBlocks'])));
+            $allowedBlocks = array_filter(array_map('trim',explode(',', sanitize_text_field(wp_unslash($_POST['_block_allowedBlocks'])))));
         }
 
         $ancestors = [];
         if (!empty($_POST['_block_ancestor'])) {
-            $ancestors = array_filter(array_map('trim', explode(',', $_POST['_block_ancestor'])));
+            $ancestors = array_filter(array_map('trim',explode(',', sanitize_text_field(wp_unslash($_POST['_block_ancestor'])))));
         }
 
         $supports = [];
         if (!empty($_POST['_block_supports'])) {
             //$keys = array_keys($_POST['_block_supports']);
-            foreach ($_POST['_block_supports'] as $sup => $value) {
+            $_block_supports = array_map('sanitize_text_field', wp_unslash($_POST['_block_supports']));
+            foreach ($_block_supports as $sup => $value) {
                 //var_dump($value); die();
                 $value = $value == 'true' ? true : false;
                 $default = self::$supports[$sup]; 
@@ -414,7 +428,7 @@ class Block extends Module_Base {
             }
         }
         if (!empty($_POST['_block_supports_custom'])) {            
-            $custom_json = $this->unescape($_POST['_block_supports_custom'], '"');
+            $custom_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_supports_custom'], '"')));
             $custom = json_decode($custom_json, true); 
             if ($custom == NULL) {
                 update_post_meta($post_id, '_transient_block_supports_custom', $custom_json);
@@ -427,10 +441,10 @@ class Block extends Module_Base {
         
         $icon = '';
         if (!empty($_POST['_block_icon'])) {
-            $icon = $_POST['_block_icon'];
+            $icon = sanitize_key(wp_unslash($_POST['_block_icon']));
         } else {
             if (!empty($_POST['_block_icon_svg'])) {
-                $icon = trim($_POST['_block_icon_svg']);
+                $icon = sanitize_textarea_field(wp_unslash($_POST['_block_icon_svg']));
                 $icon = str_replace(PHP_EOL, "", $icon);
                 $icon = str_replace('"', "'", $icon);
                 $icon = str_replace("\'", "'", $icon);
@@ -438,7 +452,10 @@ class Block extends Module_Base {
             }
         }
         
-        $category = $_POST['_block_category'];
+        $category = '';
+        if (!empty($_POST['_block_category'])) {
+            $category = sanitize_title(wp_unslash($_POST['_block_category']));
+        }
         
         $example = false;
         $preview = get_post_meta($post_id, '_thumbnail_id', true);
@@ -460,7 +477,7 @@ class Block extends Module_Base {
         $json = [
             "\$schema" => "https://schemas.wp.org/trunk/block.json",
             "apiVersion" => $apiVersion,
-            "name" => $textdomain . "/" . $post_slug,
+            "name" => $block_textdomain . "/" . $block_slug,
             "title" => get_the_title($post_id),
             "category" => $category,
             "parent" => $parent,
@@ -470,7 +487,7 @@ class Block extends Module_Base {
             "description" => $post_excerpt,
             "keywords" => $keywords,
             "version" => $version,
-            "textdomain" => $textdomain,
+            "textdomain" => $block_textdomain,
             "attributes" => $attributes,
             "blockHooks" => $blockHooks,
             "providesContext" => $providesContext,
@@ -487,10 +504,11 @@ class Block extends Module_Base {
             $json[$asset] = [];
             $code = '';
             $path = $this->get_asset_file($json_old, $asset, $basepath);
+            //var_dump($basepath); die();
             $file = basename($path);
             $file_name = basename($file, '.'.$type);
             if (!empty($_POST['_block_' . $asset.'_file'])) {
-                $code = trim($_POST['_block_' . $asset.'_file']);
+                $code = sanitize_textarea_field(wp_unslash($_POST['_block_' . $asset.'_file']));
                 $code = $this->unescape($code);
                 if ($asset == 'render') {
                     $abspath_check = "<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>";
@@ -513,12 +531,12 @@ class Block extends Module_Base {
                 }
                 if ($code) {
                     $min = '.min.';
-                    $path_min = $this->get_ensure_blocks_dir($post_slug) . $file_name . $min . $type;
+                    $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;
                     $minifier = new \MatthiasMullie\Minify\JS($code);
                     // save minified file to disk
                     $minifier->minify($path_min);
                     $json[$asset] = [ "file:./" . $file_name . (SCRIPT_DEBUG ? '.' : $min) . $type ];
-                    $path = $this->get_ensure_blocks_dir($post_slug) . $file_name . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
+                    $path = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
                     $code = "<?php return array('dependencies'=>[], 'version'=>'".gmdate('U')."');";
                     if (!file_exists($path)) {
                         $this->get_filesystem()->put_contents($path, $code);
@@ -529,7 +547,8 @@ class Block extends Module_Base {
         
         foreach (self::$assets as $asset => $type) {
             if (!empty($_POST['_block_' . $asset])) {
-                $files = Utils::explode($_POST['_block_' . $asset]);
+                $_block_asset = sanitize_text_field(wp_unslash($_POST['_block_' . $asset]));
+                $files = Utils::explode($_block_asset);
                 foreach ($files as $file) {
                     if (substr($file, 0, 5) != 'file:') {
                         // if local file copy into block folder
@@ -564,7 +583,7 @@ class Block extends Module_Base {
         $json = array_filter($json);
         
         if (!empty($_POST['_block_extra'])) {            
-            $extra_json = $this->unescape($_POST['_block_extra'], '"');
+            $extra_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_extra'], '"')));
             $extra = json_decode($extra_json, true); 
             
             if ($extra == NULL) {
@@ -583,8 +602,8 @@ class Block extends Module_Base {
         $this->get_filesystem()->put_contents($path, $code);
     }
 
-    public function get_json_data($post_slug) {
-        $path = $this->get_ensure_blocks_dir($post_slug) . 'block.json';
+    public function get_json_data($post_slug, $textdomain = '*') {
+        $path = $this->get_blocks_dir($post_slug, $textdomain) . DIRECTORY_SEPARATOR . 'block.json';
         if (file_exists($path)) {
             $content = file_get_contents($path);
             return json_decode($content, true);
@@ -653,16 +672,24 @@ class Block extends Module_Base {
      *
      * @return string
      */
-    private function get_blocks_dir($slug = '') {
+    private function get_blocks_dir($slug = '', $textdomain = '*') {
         $wp_upload_dir = wp_upload_dir();
         $path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'blocks';
         $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
 
-        $blocks_dirs = ['uploads' => $path];
-        $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
-        foreach ($blocks_dirs as $dir) {
-            if (is_dir($dir . DIRECTORY_SEPARATOR . $slug)) {
-                $path = $dir;
+        if ($slug) {
+            $path = false;
+            $blocks_dirs = ['uploads' => $path];
+            $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
+            foreach ($blocks_dirs as $dir) {
+                /*if (is_dir($dir . DIRECTORY_SEPARATOR . $slug)) {
+                    $path = $dir;
+                }*/
+                $paths = glob($dir.DIRECTORY_SEPARATOR.$textdomain.DIRECTORY_SEPARATOR.$slug); // TODO: any textdomain?!
+                //var_dump($paths);
+                if (!empty($paths)) {
+                    $path = reset($paths);
+                }
             }
         }
 
@@ -683,48 +710,52 @@ class Block extends Module_Base {
      * it is created and has protection files
      * @return string
      */
-    private function get_ensure_blocks_dir($slug = '') {
-        $path = $this->get_blocks_dir($slug);
-        if (!file_exists($path . DIRECTORY_SEPARATOR . 'index.php')) {
-
+    private function get_ensure_blocks_dir($slug = '', $textdomain = '*') {
+        $path = $this->get_blocks_dir($slug, $textdomain);
+        if ($slug) {
+            // generate block folder textdomain/slug
+            $textdomain = $textdomain == '*' ? $this->get_plugin_textdomain() : $textdomain;
+            $path = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . $textdomain . DIRECTORY_SEPARATOR . $slug . DIRECTORY_SEPARATOR;
             wp_mkdir_p($path);
-
-            $files = [
-                [
-                    'file' => 'index.php',
-                    'content' => [
-                        '<?php',
-                        '// Silence is golden.',
+        } else {
+            // init blocks folder
+            if (!file_exists($path . DIRECTORY_SEPARATOR . 'index.php')) {
+                wp_mkdir_p($path);
+                $files = [
+                    [
+                        'file' => 'index.php',
+                        'content' => [
+                            '<?php',
+                            '// Silence is golden.',
+                        ],
                     ],
-                ],
-                [
-                    'file' => '.htaccess',
-                    'content' => [
-                        'Options -Indexes',
-                        '<ifModule mod_headers.c>',
-                        '	<Files *.*>',
-                        '       Header set Content-Disposition attachment',
-                        '	</Files>',
-                        '</IfModule>',
+                    [
+                        'file' => '.htaccess',
+                        'content' => [
+                            'Options -Indexes',
+                            '<ifModule mod_headers.c>',
+                            '	<Files *.*>',
+                            '       Header set Content-Disposition attachment',
+                            '	</Files>',
+                            '</IfModule>',
+                        ],
                     ],
-                ],
-            ];
-
-            foreach ($files as $file) {
-                if (!file_exists(trailingslashit($path) . $file['file'])) {
-                    $content = implode(PHP_EOL, $file['content']);
-                    @ $this->get_filesystem()->put_contents(trailingslashit($path) . $file['file'], $content);
+                ];
+                foreach ($files as $file) {
+                    if (!file_exists(trailingslashit($path) . $file['file'])) {
+                        $content = implode(PHP_EOL, $file['content']);
+                        @ $this->get_filesystem()->put_contents(trailingslashit($path) . $file['file'], $content);
+                    }
                 }
             }
         }
-
-        wp_mkdir_p($path . DIRECTORY_SEPARATOR . $slug);
-        return $path . DIRECTORY_SEPARATOR . $slug . DIRECTORY_SEPARATOR;
+        
+        return $path;
     }
 
     public function dir_delete($dir) {
-        if (is_dir($dir)) {
-            return $this->get_filesystem->delete($dir, true);
+        if ($dir && is_dir($dir)) {
+            return $this->get_filesystem()->delete($dir, true);
         }
         return false;
     }

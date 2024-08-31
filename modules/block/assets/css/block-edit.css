@@ -42,6 +42,12 @@
   align-items: center;
 }
 
+#_block_attributes_editor .attr_add {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 #_block_attributes_editor .repeat_attr {
     border: 1px solid;
     margin-bottom: 15px;

@@ -20,7 +20,7 @@ class Shortcode extends Module_Base {
             //var_dump($block); die();
             if (!empty($block['render']) || !empty($block['render_callback'])) {
                 ?>
-                <a class="btn button dashicons-before dashicons-shortcode" href="<?php echo $wblocks->get_action_url('action=shortcode&block=' . $block['name']); ?>" title="<?php esc_attr_e('Shortcode', 'wizard-blocks'); ?>"></a>
+                <a class="btn button dashicons-before dashicons-shortcode" href="<?php echo esc_url($wblocks->get_action_url('action=shortcode&block=' . $block['name'])); ?>" title="<?php esc_attr_e('Shortcode', 'wizard-blocks'); ?>"></a>
             <?php
             }
         }, 10, 2);
@@ -45,6 +45,9 @@ class Shortcode extends Module_Base {
                     }
                 }
             }
+            if (isset($attributes['preview'])) {
+                unset($attributes['preview']);
+            }
             $attributes = wp_json_encode($attributes);
         }
         return $attributes;
@@ -66,19 +69,20 @@ class Shortcode extends Module_Base {
     }
     
     public function exec_actions($wblocks) {
-        switch ($_GET['action']) {
-            case 'shortcode':
-                if (!empty($_GET['block'])) {
-                    $block_name = $_GET['block'];
+        if (!empty($_GET['action'])) {
+            switch ($_GET['action']) {
+                case 'shortcode':
+                    if (!empty($_GET['block'])) {
+                        $block_name = sanitize_text_field(wp_unslash($_GET['block']));
+                        //$block = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
+                        $shortcode = $this->generate_shortcode($block_name, $wblocks);
 
-                    //$block = \WP_Block_Type_Registry::get_instance()->get_registered($block_name);
-                    $shortcode = $this->generate_shortcode($block_name, $wblocks);
-
-                    $message = __('Here the Block Shortcode:', 'wizard-blocks') . '<br>';
-                    $message .= '<b class="block-shortcode dashicons-before dashicons-clipboard" onClick="navigator.clipboard.writeText(this.innerText);">'.$shortcode.'</b>';
-                    $wblocks->_notice($message);
-                }
-                break;
+                        $message = __('Here the Block Shortcode:', 'wizard-blocks') . '<br>';
+                        $message .= '<b class="block-shortcode dashicons-before dashicons-clipboard" onClick="navigator.clipboard.writeText(this.innerText);">'.$shortcode.'</b>';
+                        $wblocks->_notice($message);
+                    }
+                    break;
+            }
         }
     }
 
@@ -96,7 +100,7 @@ class Shortcode extends Module_Base {
                 $attributes = $attributes ? $attributes : [];
                 ob_start();
                 $render = $block->render_callback;
-                echo $render($attributes, $content, $block);
+                echo esc_html($render($attributes, $content, $block));
                 //$reflection = new \ReflectionFunction($closure);
                 //$arguments  = $reflection->getParameters();
                 //var_dump(get_class($block));
@@ -104,7 +108,7 @@ class Shortcode extends Module_Base {
                 //echo $block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
                 $block_content = ob_get_clean();
 
-                //$this->enqueue_block_assets($block);
+                $this->enqueue_block_assets($block);
             }
         }
         return $block_content;

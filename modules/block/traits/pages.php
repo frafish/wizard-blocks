@@ -8,8 +8,8 @@ trait Pages {
 
         add_submenu_page(
                 'edit.php?post_type=block',
-                __('All Blocks'),
-                __('All Blocks'),
+                __('All Blocks', 'wizard-blocks'),
+                __('All Blocks', 'wizard-blocks'),
                 'manage_options',
                 'wblocks',
                 [$this, 'wizard_blocks'] //callback function
@@ -17,8 +17,8 @@ trait Pages {
 
         add_submenu_page(
                 'edit.php?post_type=block',
-                __('Tools'),
-                __('Tools'),
+                __('Tools', 'wizard-blocks'),
+                __('Tools', 'wizard-blocks'),
                 'manage_options',
                 'wtools',
                 [$this, 'wizard_tools'] //callback function
@@ -26,7 +26,7 @@ trait Pages {
     }
 
     public function _notice($message, $type = 'success') {
-        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . $message . '</p></div>';
+        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . wp_kses($message, 'post') . '</p></div>';
     }
 
     public function wizard_tools() {
@@ -40,7 +40,7 @@ trait Pages {
                 <div class="card" style="width: 100%;">
                     <h2><?php esc_html_e('IMPORT', 'wizard-blocks'); ?></h2>
                     <p><?php esc_html_e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php esc_html_e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
-                    <form action="<?php echo $this->get_action_url("action=import"); ?>" method="POST" enctype="multipart/form-data">
+                    <form action="<?php echo esc_url($this->get_action_url("action=import")); ?>" method="POST" enctype="multipart/form-data">
                         <input type="file" name="zip">
                         <button class="btn button" type="submit"><?php esc_html_e('Import', 'wizard-blocks'); ?></button>
                     </form>
@@ -49,7 +49,7 @@ trait Pages {
                 <div class="card" style="width: 100%;">
                     <h2><?php esc_html_e('EXPORT', 'wizard-blocks'); ?></h2>
                     <p><?php esc_html_e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php esc_html_e('You can then install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
-                    <a class="btn button" href="<?php echo $this->get_action_url("action=export"); ?>"><?php esc_html_e('Export', 'wizard-blocks'); ?></a>
+                    <a class="btn button" href="<?php echo esc_url($this->get_action_url("action=export")); ?>"><?php esc_html_e('Export', 'wizard-blocks'); ?></a>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@ trait Pages {
 
     public function get_action_url($args = '') {
         $nonce = wp_create_nonce('wizard-blocks-nonce');
-        $page = isset($_GET['page']) ? $_GET['page'] : 'wblocks';
+        $page = isset($_GET['page']) ? sanitize_title(wp_unslash($_GET['page'])) : 'wblocks';
         return esc_url(admin_url("edit.php?post_type=block&page=" . $page . "&nonce=" . $nonce . ($args ? "&" . $args : '')));
     }
 
@@ -128,69 +128,42 @@ trait Pages {
             <div class="displaying-num" style="margin-top: 12px; float: right;"><?php echo count($blocks); ?> <?php esc_html_e('blocks', 'wizard-blocks'); ?></div>
 
             <ul class="subsubsub blocks-filter">
-                <li class="all"><a class="current" href="#"><?php esc_html_e('All'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
+                <li class="all"><a class="current" href="#"><?php esc_html_e('All', 'wizard-blocks'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
                     | <li class><a href="#<?php echo esc_attr($textdomain); ?>"><?php echo esc_html(ucfirst($textdomain)); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
                 <?php } ?>
             </ul>
-            <script>
-                jQuery('.blocks-filter a').on('click', function () {
-                    jQuery('.blocks-filter a.current').removeClass('current');
-                    jQuery(this).addClass('current');
-                    jQuery('.blocks .hentry').show();
-                    let filter = jQuery(this).attr('href').replace('#', '');
-                    if (filter) {
-                        //console.log(filter);
-                        jQuery('.blocks .hentry').hide();
-                        jQuery('.blocks .hentry.block-' + filter).show();
-                    }
-                    return false;
-                });
-            </script>
             <hr style="clear: both; padding-top: 10px;">
-            <form action="<?php echo $this->get_action_url(); ?>" method="POST">
+            <form action="<?php echo esc_url($this->get_action_url()); ?>" method="POST">
                 <input type="hidden" name="action" value="disable">
                 <div class="card" style="max-width: none; width: 100%; display: flex; justify-content: space-between;">
-                    <input id="blocks-search" placeholder="<?php esc_html_e('Search Block'); ?>" type="search">
+                    <input id="blocks-search" placeholder="<?php esc_html_e('Search Block', 'wizard-blocks'); ?>" type="search">
                     <span>
-                        <a class="button button-danger" href="<?php echo $this->get_action_url("action=reset"); ?>"><?php esc_html_e('Reset'); ?></a> 
-                        <input class="button button-primary" type="submit" value="<?php esc_html_e('Save'); ?>">
+                        <a class="button button-danger" href="<?php echo esc_url($this->get_action_url("action=reset")); ?>"><?php esc_html_e('Reset', 'wizard-blocks'); ?></a> 
+                        <input class="button button-primary" type="submit" value="<?php esc_html_e('Save', 'wizard-blocks'); ?>">
                     </span>
                 </div>
-                <script>
-                    jQuery('#blocks-search').on('change keyup', function () {
-                        jQuery('.blocks .hentry').show();
-                        let value = jQuery(this).val();
-                        //console.log(value);
-                        if (value) {
-                            jQuery('.blocks .hentry').each(function () {
-                                if (!jQuery(this).find('.title').text().toLowerCase().includes(value.toLowerCase())) {
-                                    jQuery(this).hide();
-                                }
-                            });
-                        }
-                    });
-                </script>
+
                 <table class="wp-list-table widefat fixed striped table-view-list blocks">
                     <thead>
                         <tr>
-                            <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php esc_html_e('Icon'); ?></th>
-                            <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php esc_html_e('Title'); ?></span></th>
-                            <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php esc_html_e('Status'); ?></th>
-                            <th scope="col" id="description" class="manage-column column-description"><?php esc_html_e('Description'); ?></th>
-                            <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php esc_html_e('Api'); ?></th>
-                            <th scope="col" id="category" class="manage-column column-category"><?php esc_html_e('Category'); ?></th>
-                            <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php esc_html_e('Usage'); ?></th>
-                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_html_e('Plugin'); ?></th>
-                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_html_e('Actions'); ?></th>
+                            <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php esc_html_e('Icon', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php esc_html_e('Title', 'wizard-blocks'); ?></span></th>
+                            <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php esc_html_e('Status', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="description" class="manage-column column-description"><?php esc_html_e('Description', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php esc_html_e('Api', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="category" class="manage-column column-category"><?php esc_html_e('Category', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php esc_html_e('Usage', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_html_e('Plugin', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_html_e('Actions', 'wizard-blocks'); ?></th>
                         </tr>
                     </thead>
 
                     <tbody id="the-list">
                         <?php
-                        foreach ($blocks as $name => $block) {
+                        foreach ($blocks as $block_name => $block) {
                             $block_post = false;
-                            $block_slug = $name;
+                            $block_slug = $block_name;
                             if (!empty($block['folder'])) {
                                 $block_slug = basename($block['folder']);
                                 $block['post'] = $block_post = $this->get_block_post($block_slug);
@@ -203,15 +176,17 @@ trait Pages {
                                     if (empty($block['icon'])) {
                                         $block['icon'] = 'block-default';
                                     }
-                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block['icon'] : '<span class="dashicons dashicons-' . esc_attr($block['icon']) . '"></span> ';
+                                    // PHPCS - The SVG file content is being read from a strict file path structure.
+                                    $block_icon_safe = $block['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block_icon_safe : '<span class="dashicons dashicons-' . esc_attr($block['icon']) . '"></span> ';
                                     ?>
                                 </td>
                                 <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
                                     <strong>
                                         <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
-                                            <abbr title="<?php echo esc_attr($name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
+                                            <abbr title="<?php echo esc_attr($block_name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
                                             <?php if ($block_post) { ?></a><?php } ?>
-                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($name); ?> <span class="dashicons dashicons-clipboard"></span></small>
+                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($block_name); ?> <span class="dashicons dashicons-clipboard"></span></small>
                                     </strong>
                                 </td>
                                 <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
@@ -242,7 +217,7 @@ trait Pages {
                                     <?php
                                     if (!empty($block['file'])) {
                                         //$block['file'] = str_replace('c:/', 'c://', $block['file']);
-                                        echo '<a target="_blank" href="' . esc_attr($block['file']) . '">';
+                                        echo '<a target="_blank" title="' . esc_attr($block['file']) . '" href="' . esc_attr(\WizardBlocks\Core\Helper::path_to_url($block['file'])) . '">';
                                         /* $tmp = explode('/plugins/', $block['file']);
                                           if (count($tmp) > 1) {
                                           list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);
@@ -267,15 +242,15 @@ trait Pages {
                                     <?php if ($block['textdomain'] == 'core') { ?>
                                         <a class="btn button dashicons-before dashicons-welcome-view-site" href="https://wordpress.org/documentation/article/blocks-list/" target="_blank" title="<?php esc_attr_e('Docs', 'wizard-blocks'); ?>"></a>
                                     <?php } ?>
-                                    <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo $this->get_action_url("action=disable&block=" . $block_slug); ?>" title="<?php esc_attr_e('Disable', 'wizard-blocks'); ?>"></a>
+                                    <a class="d-none hidden btn button button-secondary dashicons-before dashicons-dismiss" href="<?php echo esc_url($this->get_action_url("action=disable&block=" . $block_name)); ?>" title="<?php esc_attr_e('Disable', 'wizard-blocks'); ?>"></a>
                                     <?php if (!empty($block['folder'])) { ?>
-                                        <a class="btn button dashicons-before dashicons-download" href="<?php echo $this->get_action_url("action=download&block=" . $block_slug); ?>" title="<?php esc_attr_e('Download', 'wizard-blocks'); ?>"></a>
+                                        <a class="btn button dashicons-before dashicons-download" href="<?php echo esc_url($this->get_action_url("action=download&block=" . $block_name)); ?>" title="<?php esc_attr_e('Download', 'wizard-blocks'); ?>"></a>
                                     <?php } ?>
                                     <?php
                                     if (empty($block['post'])) {
                                         if (!empty($block['folder'])) {
                                             ?>
-                                            <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo $this->get_action_url("action=import&block=" . $block_slug); ?>" title="<?php esc_attr_e('Import', 'wizard-blocks'); ?>"></a>
+                                            <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo esc_url($this->get_action_url("action=import&block=" . $block_name)); ?>" title="<?php esc_attr_e('Import', 'wizard-blocks'); ?>"></a>
                                             <?php
                                         }
                                     } else {
@@ -293,109 +268,23 @@ trait Pages {
 
                     <tfoot>
                         <tr>
-                            <th scope="col" id="icon" class="manage-column column-icon"><?php esc_attr_e('Icon'); ?></th>
-                            <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php esc_attr_e('Title'); ?></span></th>
-                            <th scope="col" id="status" class="manage-column column-status"><?php esc_attr_e('Status'); ?></th>
-                            <th scope="col" id="description" class="manage-column column-description"><?php esc_attr_e('Description'); ?></th>
-                            <th scope="col" id="api" class="manage-column column-category"><?php esc_attr_e('Api'); ?></th>
-                            <th scope="col" id="category" class="manage-column column-category"><?php esc_attr_e('Category'); ?></th>
-                            <th scope="col" id="usage" class="manage-column column-usage sortable"><?php esc_attr_e('Usage'); ?></th>
-                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_attr_e('Plugin'); ?></th>
-                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_attr_e('Actions'); ?></th>
+                            <th scope="col" id="icon" class="manage-column column-icon"><?php esc_attr_e('Icon', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="title" class="manage-column column-title column-primary"><span><?php esc_attr_e('Title', 'wizard-blocks'); ?></span></th>
+                            <th scope="col" id="status" class="manage-column column-status"><?php esc_attr_e('Status', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="description" class="manage-column column-description"><?php esc_attr_e('Description', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="api" class="manage-column column-category"><?php esc_attr_e('Api', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="category" class="manage-column column-category"><?php esc_attr_e('Category', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="usage" class="manage-column column-usage sortable"><?php esc_attr_e('Usage', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_attr_e('Plugin', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="actions" class="manage-column column-actions"><?php esc_attr_e('Actions', 'wizard-blocks'); ?></th>
                         </tr>
                     </tfoot>
                 </table>
             </form>
         </div>
-        <style>
-            .page-title-action.dashicons-before:before,
-            .button.dashicons-before:before {
-                margin-right: 4px;
-                vertical-align: middle;
-                margin-top: -4px;
-            }
-            .icon svg {
-                max-width: 100%;
-                height: auto;
-                width: 20px;
-            }
-
-            .switch {
-                position: relative;
-                display: inline-block;
-                width: 40px;
-                height: 20px;
-            }
-            .switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-            .slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #135e96;
-                -webkit-transition: .4s;
-                transition: .4s;
-            }
-            .slider:before {
-                position: absolute;
-                content: "";
-                height: 18px;
-                width: 18px;
-                right: 21px;
-                top: 1px;
-                background-color: white;
-                -webkit-transition: .4s;
-                transition: .4s;
-            }
-            input:checked + .slider {
-                background-color: #ccc;
-            }
-            input:focus + .slider {
-                box-shadow: 0 0 1px #ccc;
-            }
-            input:checked + .slider:before {
-                transform: translateX(20px);
-            }
-            /* Rounded sliders */
-            .slider.round {
-                border-radius: 20px;
-            }
-            .slider.round:before {
-                border-radius: 50%;
-            }
-            .block-title {
-                opacity: 0.5;
-                cursor: pointer;
-            }
-            .block-title:hover {
-                opacity: 1;
-            }
-            .block-title span {
-                display: none;
-                font-size: 10px;
-                vertical-align: baseline;
-            }
-            .block-title:hover span {
-                display: inline;
-            }
-            .block-shortcode {
-                cursor: pointer;
-            }
-            .block-shortcode:before {
-                margin-right: 10px;
-                display: none;
-            }
-            .block-shortcode:hover:before {
-                display: inline;
-            }
-        </style>
         <?php
+        wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/css/all-blocks.css', [], '1.0.1');
+        wp_enqueue_script('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/js/all-blocks.js', [], '1.0.1', true);
     }
 
     function get_registered_block($name = '') {
@@ -458,8 +347,13 @@ trait Pages {
             $block_slug = basename($ablock);
             $block = $this->get_json_data($block_slug);
             $block['folder'] = $ablock;
-            $blocks[$block['name']] = $block;
-            $blocks[$block['name']]['file'] = $ablock . DIRECTORY_SEPARATOR . 'block.json';
+            if (!empty($block['name'])) {
+                $blocks[$block['name']] = $block;
+                $blocks[$block['name']]['file'] = $ablock . DIRECTORY_SEPARATOR . 'block.json';
+            } else {
+                // TODO: no name?!
+                //var_dump($block);
+            }
         }
 
         return $blocks;
@@ -469,7 +363,7 @@ trait Pages {
         global $wpdb;
         $block_init = '<!-- wp:';
         $block_count = [];
-        $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE "%<!-- wp:%" AND post_status = "publish"', $wpdb->posts));
+        $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE %s AND post_status = "publish"', $wpdb->posts, '%<!-- wp:%'));
         foreach ($posts as $post) {
             $tmp = explode($block_init, $post->post_content);
             foreach ($tmp as $key => $block) {

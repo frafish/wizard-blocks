@@ -204,7 +204,7 @@ class GutenbergWidget extends Widget_Base {
                 $this->start_controls_section(
                     'content_section',
                     [
-                        'label' => esc_html__('Content', 'elementor'),
+                        'label' => esc_html__('Content', 'wizard-blocks'),
                         'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
                     ]
                 );
@@ -250,12 +250,12 @@ class GutenbergWidget extends Widget_Base {
         
         if (is_object($block->render_callback)) {
             $render = $block->render_callback;
-            echo $render($attributes, $content, $block);
+            echo esc_html($render($attributes, $content, $block));
         }
         if (is_string($block->render_callback)) {
             if (is_callable($block->render_callback)) {
                 //var_dump($block->render_callback);
-                echo call_user_func($block->render_callback, $attributes, $content, $block);
+                echo esc_html(call_user_func($block->render_callback, $attributes, $content, $block));
             }
         }
         

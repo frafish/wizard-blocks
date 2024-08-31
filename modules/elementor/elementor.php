@@ -24,8 +24,8 @@ class Elementor extends Module_Base {
     public function elementor_features($features) {
         $features->add_feature([
             'name' => 'gutenberg',
-            'title' => '<i class="dashicons dashicons-block-default"></i> ' . esc_html__('Gutenberg Block Widgets', 'elementor'),
-            'description' => esc_html__('Use all rendered Gutenberg Block inside Elementor Editor as Widgets', 'elementor'),
+            'title' => '<i class="dashicons dashicons-block-default"></i> ' . esc_html__('Gutenberg Block Widgets', 'wizard-blocks'),
+            'description' => esc_html__('Use all rendered Gutenberg Block inside Elementor Editor as Widgets', 'wizard-blocks'),
             'release_status' => $features::RELEASE_STATUS_STABLE,
             'default' => false,
         ]);
@@ -35,7 +35,7 @@ class Elementor extends Module_Base {
         $elements_manager->add_category(
                 'gutenberg',
                 [
-                    'title' => esc_html__('Gutenberg', 'textdomain'),
+                    'title' => esc_html__('Gutenberg', 'wizard-blocks'),
                     'icon' => 'eicon-wordpress',
                 ]
         );

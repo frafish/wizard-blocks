@@ -59,7 +59,7 @@ trait Type {
         
         add_filter( 'manage_posts_columns', function($posts_columns, $post_type ) {
             if ($post_type == self::$cpt_name) {
-                return $this->array_insert_after($posts_columns, 'title', ['description' => __('Description')]);
+                return $this->array_insert_after($posts_columns, 'title', ['description' => __('Description', 'wizard-blocks')]);
             }
             return $posts_columns;
         }, 10, 2);

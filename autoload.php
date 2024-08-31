@@ -1,10 +1,12 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 add_action('init', function () {
     $blocks_dirs = apply_filters('wizard/blocks/dirs', []); //'self' => __DIR__
     $blocks = [];
     foreach ($blocks_dirs as $dir) {
         if (is_dir($dir)) {
             $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
+            $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
         }
     }
     $blocks = apply_filters('wizard/blocks', $blocks);
