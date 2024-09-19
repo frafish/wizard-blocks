@@ -39,7 +39,7 @@ Trait Attributes {
     public function has_inner_blocks($args) {
         if (!empty($args['attributes'])) {
             foreach ($args['attributes'] as $key => $attr) {
-                if ($attr['component'] == 'InnerBlocks') {
+                if (!empty($attr['component']) && $attr['component'] == 'InnerBlocks') {
                     return true;
                 }
             }
@@ -111,6 +111,7 @@ wp.apiFetch( { path: '<?php echo esc_url($api['path']); ?>' } ).then( ( data ) =
     }
 }
 ?>
+window.onload = (event) => {
 wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     <?php
     if (!empty($args['icon']) && substr($args['icon'], 0, 5) == '<svg ') {
@@ -233,6 +234,7 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
         return innerBlocksProps.children; //wp.blockEditor.InnerBlocks.Content;
         <?php } else { ?>return null;<?php } ?> },
 });
+};
 <?php
 if ($wrapper) { ?></script><?php }
         return ob_get_clean();
@@ -299,7 +301,7 @@ if ($wrapper) { ?></script><?php }
       ?>
     wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{<?php if (!empty($attr['className'])) { ?>className: "<?php echo esc_attr($attr['className']); ?>", <?php }  if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
-        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'RadioControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
+        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo esc_attr($id); ?>", style: {display: "block"}}, wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>")),
         <?php } ?>
        wp.element.createElement(
@@ -444,7 +446,7 @@ if ($wrapper) { ?></script><?php }
                                         <?php break;
                                 }
                             }
-                            if ($attr['type'] == 'number') { 
+                            if ($attr['type'] == 'number' || $attr['type'] == 'integer') { 
                             ?>
                             val = parseInt(val);
                             <?php } ?>

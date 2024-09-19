@@ -217,7 +217,13 @@ trait Pages {
                                     <?php
                                     if (!empty($block['file'])) {
                                         //$block['file'] = str_replace('c:/', 'c://', $block['file']);
-                                        echo '<a target="_blank" title="' . esc_attr($block['file']) . '" href="' . esc_attr(\WizardBlocks\Core\Helper::path_to_url($block['file'])) . '">';
+                                        $link = \WizardBlocks\Core\Helper::path_to_url($block['file']);
+                                        $tmp = explode('/wp-includes/', $link, 2);
+                                        if (count($tmp) > 1) { $link = '/wp-includes/'.end($tmp); } // core
+                                        $tmp = explode('/wp-content/', $link, 2);
+                                        if (count($tmp) > 1) { $link = '/wp-content/'.end($tmp); } // other
+                                        echo '<a target="_blank" title="' . esc_attr($block['file']) . '" href="' . esc_attr($link) . '">';
+                                        //var_dump($block['file']);
                                         /* $tmp = explode('/plugins/', $block['file']);
                                           if (count($tmp) > 1) {
                                           list($plugin_slug, $more) = explode(DIRECTORY_SEPARATOR, $tmp[1]);

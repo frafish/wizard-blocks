@@ -13,9 +13,9 @@ trait Type {
     public function _init_type() {
 
         $labels = array(
-            'name' => _x('Wizard Blocks', 'Post type general name', 'wizard-blocks'),
+            'name' => _x('Blocks', 'Post type general name', 'wizard-blocks'),
             'singular_name' => _x('Block', 'Post type singular name', 'wizard-blocks'),
-            'menu_name' => _x('Wizard Blocks', 'Admin Menu text', 'wizard-blocks'),
+            'menu_name' => _x('Blocks', 'Admin Menu text', 'wizard-blocks'),
             'name_admin_bar' => _x('Block', 'Add New on Toolbar', 'wizard-blocks'),
             'add_new' => __('Add New', 'wizard-blocks'),
             'add_new_item' => __('Add New Block', 'wizard-blocks'),

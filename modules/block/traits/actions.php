@@ -75,11 +75,16 @@ Trait Actions {
                                         if ($zip->open($target_file) === TRUE) {
                                             $zip->extractTo($tmpdir);
                                             $zip->close();
-                                            if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
-                                                $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build'. DIRECTORY_SEPARATOR . '*.json');
-                                            } else {
-                                                $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
+                                            $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
+                                            $jsons = $this->filter_block_json($jsons);
+                                            if (empty($jsons)) {
+                                                if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
+                                                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build'. DIRECTORY_SEPARATOR . '*.json');
+                                                } else {
+                                                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
+                                                }
                                             }
+                                            $jsons = $this->filter_block_json($jsons);
                                             //var_dump($jsons); die();
                                             foreach ($jsons as $json) {
                                                 //var_dump($json);
@@ -134,6 +139,7 @@ Trait Actions {
                                 }
 
                                 break;
+                                
                             case 'export':
 
                                 // Make sure our zipping class exists
@@ -190,7 +196,7 @@ Trait Actions {
                                     list($block_textdomain, $block_slug) = explode('/', $block);
                                     $block_json = $this->get_json_data($block_slug);
                                     // Set the system path for our zip file
-                                    $filename = 'block_' . $block_slug . (empty($block_json['version']) ? '' : '_' . $block_json['version']) . '.zip';
+                                    $filename = 'block_' . $this->get_block_textdomain($block_json) . '_' . $block_slug . (empty($block_json['version']) ? '' : '_' . $block_json['version']) . '.zip';
                                     $filepath = $basedir . $filename;
 
                                     // Remove any existing file with that filename
@@ -227,5 +233,18 @@ Trait Actions {
                 }    
             }
         }
+    }
+    
+    public function filter_block_json($jsons = []) {
+        foreach ($jsons as $jkey => $json) {
+            $json_code = file_get_contents($json);
+            $args = json_decode($json_code, true);
+            if (empty($args) || empty($args['name']) || empty($args['title'])) {
+                // not valid block json
+                //var_dump($json);var_dump($jkey);
+                unset($jsons[$jkey]);
+            }
+        }
+        return $jsons;
     }
 }

@@ -508,7 +508,10 @@ class Block extends Module_Base {
             $file = basename($path);
             $file_name = basename($file, '.'.$type);
             if (!empty($_POST['_block_' . $asset.'_file'])) {
-                $code = sanitize_textarea_field(wp_unslash($_POST['_block_' . $asset.'_file']));
+                $code = wp_unslash($_POST['_block_' . $asset.'_file']);
+                if ($asset !== 'render') {
+                    $code = wp_kses_post($code);   
+                }
                 $code = $this->unescape($code);
                 if ($asset == 'render') {
                     $abspath_check = "<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>";
@@ -633,7 +636,7 @@ class Block extends Module_Base {
                     }
                 }
             } else {
-                if (strpos('file:./', $asset_files) !== false) {
+                if (strpos($asset_files, 'file:./') !== false) {
                     $asset_file = $asset_files;
                 }
             }
@@ -654,6 +657,7 @@ class Block extends Module_Base {
     
     public function get_asset_file_contents($json, $asset, $basepath) {
         $asset_file = $this->get_asset_file($json, $asset, $basepath);
+        //var_dump($asset_file);
         if (file_exists($asset_file)) {
             return file_get_contents($asset_file);
         }
@@ -711,6 +715,7 @@ class Block extends Module_Base {
      * @return string
      */
     private function get_ensure_blocks_dir($slug = '', $textdomain = '*') {
+        //var_dump($slug); var_dump($textdomain);
         $path = $this->get_blocks_dir($slug, $textdomain);
         if ($slug) {
             // generate block folder textdomain/slug
