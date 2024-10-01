@@ -111,7 +111,7 @@ wp.apiFetch( { path: '<?php echo esc_url($api['path']); ?>' } ).then( ( data ) =
     }
 }
 ?>
-window.onload = (event) => {
+window.addEventListener("load", (event) => {
 wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     <?php
     if (!empty($args['icon']) && substr($args['icon'], 0, 5) == '<svg ') {
@@ -234,7 +234,7 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
         return innerBlocksProps.children; //wp.blockEditor.InnerBlocks.Content;
         <?php } else { ?>return null;<?php } ?> },
 });
-};
+});
 <?php
 if ($wrapper) { ?></script><?php }
         return ob_get_clean();
@@ -247,7 +247,7 @@ if ($wrapper) { ?></script><?php }
        $in_toolbar = !empty($attr['position']) && $attr['position'] == 'toolbar';
        
        if (!empty($attr['type']) && $attr['type'] == "object") {
-           return;
+           //return;
            // TODO: find a way to structure value on the onchange event
        }
        
@@ -308,18 +308,18 @@ if ($wrapper) { ?></script><?php }
             <?php 
             if ($component == 'InnerBlocks') {
                 $template_safe = empty($attr['template']) ? '' : $attr['template'];
-                $allowedBlocks_safe = empty($attr['allowedBlocks']) ? [] : $attr['allowedBlocks'];
+                $allowedBlocks_safe = empty($attr['allowedBlocks']) ? [] : array_map('esc_js', $attr['allowedBlocks']);
                 $allowedBlocks_safe = empty($allowedBlocks_safe) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks_safe;
-                $allowedBlocks_safe = !empty($allowedBlocks_safe) && is_array($allowedBlocks_safe) ? "['".implode("','", $allowedBlocks_safe)."']" : '';
+                $allowedBlocks_safe = !empty($allowedBlocks_safe) && is_array($allowedBlocks_safe) ? '["'.implode('","', $allowedBlocks_safe).'"]' : '';
                 $renderAppender_safe = false; // TODO: a function that render a button
                 $orientation_safe = empty($attr['orientation']) ? '' : $attr['orientation']; //$in_toolbar ? 'horizontal' : 'vertical';
                 ?>
                 wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
                     <?php 
-                    if ($template_safe) { ?>template: <?php echo esc_js($template_safe); ?>,<?php }
-                    if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo esc_js($allowedBlocks_safe); ?>,<?php }
+                    if ($template_safe) { ?>template: <?php echo $template_safe; ?>,<?php }
+                    if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; ?>,<?php }
                     if ($orientation_safe) { ?>orientation: '<?php echo esc_js($orientation_safe); ?>',<?php }
-                    if ($renderAppender_safe) { ?>renderAppender: <?php echo esc_js($renderAppender_safe); ?>,<?php }
+                    if ($renderAppender_safe) { ?>renderAppender: <?php echo $renderAppender_safe; ?>,<?php }
                     ?>
                 }),
             <?php } else {
@@ -374,22 +374,22 @@ if ($wrapper) { ?></script><?php }
                                         if (is_array($attr['default'])) {
                                             $values = $attr['default'];
                                         } else {
-                                            $values = array_filter(array_map('trim', explode(',', $attr['default'])));
+                                            $values = array_map('esc_js', array_filter(array_map('trim', explode(',', $attr['default']))));
                                         }
                                         $default = '[';
                                         foreach ($values as $key => $value) {
-                                            $def = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
+                                            $def = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
                                             if ($key) $default .= ',';
                                             $default .= $def;
                                         }
                                         $default .= ']';
                                     } else {
-                                        $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.$attr['default'].'"' : $attr['default'];
+                                        $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
                                     }
                                 }
                                 $default_safe = $default;
                                 ?>
-                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo esc_js($default_safe); } ?>,
+                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo $default_safe; } ?>,
                             <?php 
                                 break;
                             case 'RichText':
@@ -494,13 +494,13 @@ if ($wrapper) { ?></script><?php }
                                             }
                                             $value_safe = $value;
                                             ?>
-                                            {value: <?php echo esc_js($value_safe); ?>, label: "<?php echo esc_attr($label); ?>"},
+                                            {value: <?php echo $value_safe; ?>, label: "<?php echo esc_attr($label); ?>"},
                                         <?php } 
                                     }
                                     echo ']';
                                 } else {    
                                     $attr_options_safe = $attr['options'];
-                                    echo esc_js($attr_options_safe);
+                                    echo $attr_options_safe;
                                 }
                                 ?>,
                         <?php }

@@ -235,29 +235,11 @@ class GutenbergWidget extends Widget_Base {
         $attributes = $this->get_settings_for_display();
         $content = '';
         
-        // set Context
-        if (empty($block->context)) {
-            $block->context = [];
-            $block->context['postId'] = get_the_ID();
-        }
-        if (empty($block->blockName)) {
-            $block->blockName = $block->name;
-            \WP_Block_Supports::$block_to_render = json_decode(wp_json_encode($block), true);
-        }
+        $modules = \WizardBlocks\Plugin::instance()->modules_manager;
+        $blocks = $modules->get_modules('block');
+        $block_content = $blocks->render($attributes, $content, $block);
         
-        //echo $block->render($attributes, $content);
-        //var_dump($block->render_callback);
-        
-        if (is_object($block->render_callback)) {
-            $render = $block->render_callback;
-            echo esc_html($render($attributes, $content, $block));
-        }
-        if (is_string($block->render_callback)) {
-            if (is_callable($block->render_callback)) {
-                //var_dump($block->render_callback);
-                echo esc_html(call_user_func($block->render_callback, $attributes, $content, $block));
-            }
-        }
+        echo $block_content;
         
     }
 

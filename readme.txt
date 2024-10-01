@@ -1,4 +1,4 @@
-=== Wizard Blocks Manager ===
+=== Wizard Blocks Manager for Gutenberg ===
 Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.2

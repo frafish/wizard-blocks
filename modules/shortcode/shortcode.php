@@ -98,46 +98,13 @@ class Shortcode extends Module_Base {
                 $content = do_shortcode($content);
                 $attributes = json_decode($attr['attributes'], true);
                 $attributes = $attributes ? $attributes : [];
-                ob_start();
-                $render = $block->render_callback;
-                echo esc_html($render($attributes, $content, $block));
-                //$reflection = new \ReflectionFunction($closure);
-                //$arguments  = $reflection->getParameters();
-                //var_dump(get_class($block));
-                //var_dump($arguments);
-                //echo $block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
-                $block_content = ob_get_clean();
-
-                $this->enqueue_block_assets($block);
+                
+                $modules = \WizardBlocks\Plugin::instance()->modules_manager;
+                $blocks = $modules->get_modules('block');
+                $block_content = $blocks->render($attributes, $content, $block);
             }
         }
         return $block_content;
     }
-
-    public function enqueue_block_assets($block) {
-        //var_dump($block);
-        // frontend assets
-        $styles = [];
-        if (!empty($block->style)) { $styles = array_merge($styles, is_array($block->style) ? $block->style : [$block->style]); }
-        if (!empty($block->style_handles)) { $styles = array_merge($styles, is_array($block->style_handles) ? $block->style_handles : [$block->style_handles]); }
-        if (!empty($block->viewStyle)) { $styles = array_merge($styles, is_array($block->viewStyle) ? $block->viewStyle : [$block->viewStyle]); }
-        if (!empty($block->view_style_handles)) { $styles = array_merge($styles, is_array($block->view_style_handles) ? $block->view_style_handles : [$block->view_style_handles]); }
-        //var_dump($styles);
-        foreach ($styles as $style) {
-            wp_enqueue_style($style);
-        }
-        
-        $scripts = [];
-        if (!empty($block->script)) { $scripts = array_merge($scripts, is_array($block->script) ? $block->script : [$block->script]); }
-        if (!empty($block->script_handles)) { $scripts = array_merge($scripts, is_array($block->script_handles) ? $block->script_handles : [$block->script_handles]); }
-        if (!empty($block->viewScript)) { $scripts = array_merge($scripts, is_array($block->viewScript) ? $block->viewScript : [$block->viewScript]); }
-        if (!empty($block->view_script_handles)) { $scripts = array_merge($scripts, is_array($block->view_script_handles) ? $block->view_script_handles : [$block->view_script_handles]); }
-        if (!empty($block->viewScriptModule)) { $scripts = array_merge($scripts, is_array($block->viewScriptModule) ? $block->viewScriptModule : [$block->viewScriptModule]); }
-        if (!empty($block->view_script_module_ids)) { $scripts = array_merge($scripts, is_array($block->view_script_module_ids) ? $block->view_script_module_ids : [$block->view_script_module_ids]); }
-        //var_dump($scripts);
-        foreach ($scripts as $script) {
-            wp_enqueue_script($script);
-        }
-
-    }
+    
 }

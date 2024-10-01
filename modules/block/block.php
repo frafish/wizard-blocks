@@ -45,6 +45,12 @@ class Block extends Module_Base {
         parent::__construct();
 
         add_action('init', [$this, '_init_type']);
+        add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
+        add_action( '_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
+        add_filter('wizard_blocks/before_save', [$this, 'generate_block_zip_for_revision'], 10, 3);
+        add_filter( 'wp_get_revision_ui_diff', [$this, 'get_revision_ui_diff'], 10, 3);
+        add_action( 'wp_restore_post_revision', [$this, 'restore_block_revision'], 10, 2 );
+                
         add_action('add_meta_boxes', [$this, 'meta_fields_add_meta_box']);
         add_action('save_post', [$this, 'meta_fields_save_meta_box_data'], 10, 3);
         
@@ -109,6 +115,80 @@ class Block extends Module_Base {
         //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
         add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
         
+    }
+    
+    public function render($attributes, $content, $block) {
+        
+        global $post;
+        $global_post = $post;
+        
+        // set Context
+        if (empty($block->context)) {
+            $block->context = [];
+            $block->context['postId'] = get_the_ID();
+        }
+        if (empty($block->blockName)) {
+            $block->blockName = $block->name;
+            \WP_Block_Supports::$block_to_render = json_decode(wp_json_encode($block), true);
+        }
+        
+        //echo $block->render($attributes, $content);
+        //var_dump($block->render_callback);
+        
+        ob_start();
+        if (is_object($block->render_callback)) {
+            $render = $block->render_callback;
+            echo $render($attributes, $content, $block);
+        }
+        if (is_string($block->render_callback)) {
+            if (is_callable($block->render_callback)) {
+                //var_dump($block->render_callback);
+                echo call_user_func($block->render_callback, $attributes, $content, $block);
+            }
+        }
+        //$reflection = new \ReflectionFunction($closure);
+        //$arguments  = $reflection->getParameters();
+        //var_dump(get_class($block));
+        //var_dump($arguments);
+       
+        // ////wp-includes/class-wp-block.php:433
+        //echo $block->render();
+        
+        //////wp-includes/class-wp-block-type.php:466
+        //echo $block->render($attributes, $content); // FIX: native is bugged, should pass $this as 3rd parameter
+        $block_content = ob_get_clean();
+        
+        $post = $global_post;
+
+        $this->enqueue_block_assets($block);
+        return $block_content;
+    }
+    
+    public function enqueue_block_assets($block) {
+        //var_dump($block);
+        // frontend assets
+        $styles = [];
+        if (!empty($block->style)) { $styles = array_merge($styles, is_array($block->style) ? $block->style : [$block->style]); }
+        if (!empty($block->style_handles)) { $styles = array_merge($styles, is_array($block->style_handles) ? $block->style_handles : [$block->style_handles]); }
+        if (!empty($block->viewStyle)) { $styles = array_merge($styles, is_array($block->viewStyle) ? $block->viewStyle : [$block->viewStyle]); }
+        if (!empty($block->view_style_handles)) { $styles = array_merge($styles, is_array($block->view_style_handles) ? $block->view_style_handles : [$block->view_style_handles]); }
+        //var_dump($styles);
+        foreach ($styles as $style) {
+            wp_enqueue_style($style);
+        }
+        
+        $scripts = [];
+        if (!empty($block->script)) { $scripts = array_merge($scripts, is_array($block->script) ? $block->script : [$block->script]); }
+        if (!empty($block->script_handles)) { $scripts = array_merge($scripts, is_array($block->script_handles) ? $block->script_handles : [$block->script_handles]); }
+        if (!empty($block->viewScript)) { $scripts = array_merge($scripts, is_array($block->viewScript) ? $block->viewScript : [$block->viewScript]); }
+        if (!empty($block->view_script_handles)) { $scripts = array_merge($scripts, is_array($block->view_script_handles) ? $block->view_script_handles : [$block->view_script_handles]); }
+        if (!empty($block->viewScriptModule)) { $scripts = array_merge($scripts, is_array($block->viewScriptModule) ? $block->viewScriptModule : [$block->viewScriptModule]); }
+        if (!empty($block->view_script_module_ids)) { $scripts = array_merge($scripts, is_array($block->view_script_module_ids) ? $block->view_script_module_ids : [$block->view_script_module_ids]); }
+        //var_dump($scripts);
+        foreach ($scripts as $script) {
+            wp_enqueue_script($script);
+        }
+
     }
     
     public function allowed_block_types($allowed_block_types, $block_editor_context) {
@@ -309,7 +389,9 @@ class Block extends Module_Base {
         }
 
         if ($update) {
-            $json_old = $this->get_json_data($post_slug);    
+            $json_old = $this->get_block_json($post_slug);    
+            //var_dump($json_old); die();
+            
             $textdomain_old = $this->get_block_textdomain($json_old);
             if ($block_textdomain != $textdomain_old) {
                 // delete old dir
@@ -403,6 +485,7 @@ class Block extends Module_Base {
         if (!empty($_POST['_block_allowedBlocks'])) {
             $allowedBlocks = array_filter(array_map('trim',explode(',', sanitize_text_field(wp_unslash($_POST['_block_allowedBlocks'])))));
         }
+        //var_dump($allowedBlocks);
 
         $ancestors = [];
         if (!empty($_POST['_block_ancestor'])) {
@@ -498,7 +581,7 @@ class Block extends Module_Base {
               "root": ".wp-block-my-plugin-notice"
               }, */
         ];
-
+        //var_dump($json);
         
         foreach (self::$assets as $asset => $type) {
             $json[$asset] = [];
@@ -520,18 +603,23 @@ class Block extends Module_Base {
                         $code = $abspath_check.PHP_EOL.$code;
                     }
                 }
+            }
+            if ($asset == 'editorScript') {
+                if (!$code || strpos($code, 'generated by '.$this->get_plugin_textdomain()) !== false) {
+                    // autogenerated - so update it
+                    $code = $this->_edit($json);
+                }
+            }
+            $code = apply_filters('wizard_blocks/before_asset', $code, $asset);
+            if ($code) {
+                // save asset into block folder
                 if ($this->get_filesystem()->put_contents($path, $code)) {
                     $json[$asset] = [ "file:./" . $file ];
                 }
             }
+            
+            // generate minified version
             if (in_array($asset, ['editorScript', 'viewScript'])) {
-                if ($asset == 'editorScript') {
-                    if (!$code || strpos($code, 'generated by '.$this->get_plugin_textdomain()) !== false) {
-                        // autogenerated - so update it
-                        $code = $this->_edit($json);
-                        $this->get_filesystem()->put_contents($path, $code);
-                    }
-                }
                 if ($code) {
                     $min = '.min.';
                     $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;
@@ -583,12 +671,13 @@ class Block extends Module_Base {
             }
         }
         
+        // remove empty fields
         $json = array_filter($json);
         
+        // add extra fields
         if (!empty($_POST['_block_extra'])) {            
             $extra_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_extra'], '"')));
             $extra = json_decode($extra_json, true); 
-            
             if ($extra == NULL) {
                 update_post_meta($post_id, '_transient_block_extra', $extra_json);
             } else {
@@ -597,15 +686,24 @@ class Block extends Module_Base {
             }
             
         }
-
+        
+        //var_dump($json);
+        $json = apply_filters('wizard_blocks/before_save', $json, $post, $update);
+        
         $path = $basepath . 'block.json';
         $code = wp_json_encode($json, JSON_PRETTY_PRINT);
         $code = str_replace('\/', '/', $code);
         $code = str_replace("\'", "'", $code);
-        $this->get_filesystem()->put_contents($path, $code);
+        
+        $result = $this->get_filesystem()->put_contents($path, $code);
+        //echo 'SAVE:'; var_dump($result); var_dump($path); var_dump($code); die();
+        do_action('wizard_blocks/after_save', $json, $post, $update);
     }
 
     public function get_json_data($post_slug, $textdomain = '*') {
+        return $this->get_block_json($post_slug, $textdomain);
+    }
+    public function get_block_json($post_slug, $textdomain = '*') {
         $path = $this->get_blocks_dir($post_slug, $textdomain) . DIRECTORY_SEPARATOR . 'block.json';
         if (file_exists($path)) {
             $content = file_get_contents($path);
@@ -617,21 +715,26 @@ class Block extends Module_Base {
     public function get_asset_file($json, $asset, $basepath = '') {
         $type = self::$assets[$asset];
         $asset_file = $asset.'.'.$type;
+        $asset_file_min = $asset.'.min.'.$type;
         if (!empty($json[$asset])) {
             //var_dump($json[$asset]); die();
             $asset_files = $json[$asset];
             if (is_array($asset_files)) {
                 $key = array_search('file:./' . $asset_file, $asset_files);
+                if ($key === false) {
+                    $key = array_search('file:./' . $asset_file_min, $asset_files);
+                }
                 //var_dump($style_key);
                 if ($key !== false) {
                     $asset_file = $json[$asset][$key];
                 } else {
                     foreach ($json[$asset] as $tmp) {
-                        if ($tmp == 'file:./'.$asset_file) {
+                        /*if ($tmp == 'file:./'.$asset_file) {
                             $asset_file = $tmp;
-                        }
+                        }*/
                         if (substr($tmp, 0, 5) == 'file:') {
                             $asset_file = $tmp;
+                            break; // maybe use the first one
                         }
                     }
                 }
@@ -641,8 +744,11 @@ class Block extends Module_Base {
                 }
             }
             if ($type != 'php') {
-                $unmin = str_replace('.min.js', '.js', $asset_file);
+                //$unmin = str_replace('.min.js', '.js', $asset_file);
+                $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
+                $unmin = str_replace('file:./', '', $unmin); // maybe local asset
                 $unmin_file = $basepath . $unmin;
+                $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
                 if (file_exists($unmin_file)) {
                     $asset_file = $unmin;
                 }
@@ -668,6 +774,7 @@ class Block extends Module_Base {
         $code = str_replace('\"', $quote ? $quote : '"', $code);
         $code = str_replace("\'", $quote ? $quote : "'", $code);
         $code = str_replace("\/", "/", $code);
+        $code = str_replace("=&gt;", "=>", $code);
         return $code;
     }
 
@@ -794,7 +901,7 @@ class Block extends Module_Base {
             $creds = request_filesystem_credentials(site_url(), '', false, $context, null);
             \WP_Filesystem($creds, $context);
         }
-
+        //var_dump($wp_filesystem);
         return $wp_filesystem;
     }
 }

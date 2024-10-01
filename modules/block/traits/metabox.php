@@ -16,6 +16,7 @@ trait Metabox {
         "keywords",
         "parent",
         "ancestor",
+        "allowedBlocks",
         "icon",
         "description",
         "version",
@@ -55,9 +56,15 @@ trait Metabox {
         'align' => false,
         'alignWide' => true,
         'ariaLabel' => false,
+        'background.backgroundImage' => false, // Enable background image control.
+        'background.backgroundSize' => false, // Enable background image + size control.
+        //'background.backgroundPosition' => false,
         'className' => true,
         'color.background' => true,
+        'color.button' => false,
+        'color.enableContrastChecker' => true,
         'color.gradients' => false,
+        'color.heading' => false,
         'color.link' => false,
         'color.text' => true,
         'customClassName' => false,
@@ -83,8 +90,11 @@ trait Metabox {
         'spacing.margin' => false,
         'spacing.padding' => false,
         'spacing.blockGap' => false,
+        'shadow' => false,
+        'splitting' => false,
         'typography.fontSize' => false,
-        'typography.lineHeight' => false
+        'typography.lineHeight' => false,
+        'typography.textAlign' => false
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
     public static $attributes_type = [
@@ -322,7 +332,15 @@ trait Metabox {
                 if ($post && $post->post_name) {
                     $json = $this->get_json_data($post->post_name);
                     //var_dump($json);
-                    echo '<div id="export-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" target="_blank" href="' . esc_url($this->get_action_url('action=download&block='.$this->get_block_textdomain($json).'/' . $post->post_name)) . '">' . (esc_html__('Export', 'wizard-blocks')) . '</a></div>';
+                    echo '<div id="export-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" target="_blank" href="' . esc_url($this->get_action_url('action=download&block='.$this->get_block_textdomain($json).'/' . $post->post_name)) . '">' . esc_html__('Export', 'wizard-blocks') . '</a></div>';
+                    
+                    //$revisione = $this->get_block_revision();
+                    /*$revisions_url = wp_get_post_revisions_url($post->ID);
+                    if ($revisions_url) {
+                        echo '<div id="revision-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" href="' . esc_url($revisions_url) . '">' . esc_html__('Revisions', 'wizard-blocks') . '</a></div>';
+                    }*/
+                    
+                    echo '<br style="clear:both;">';
                 }
             });
         }
@@ -562,8 +580,7 @@ trait Metabox {
     public function meta_fields_build_meta_box_side_callback($post, $metabox) {
         //wp_nonce_field('meta_fields_save_meta_box_side_data', 'meta_fields_meta_box_nonce');
 
-        $json = $post ? $this->get_json_data($post->post_name) : [];
-
+        $json = $post ? $this->get_block_json($post->post_name) : [];
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
 
         $icons = [];
@@ -605,13 +622,15 @@ trait Metabox {
                     /
                     <input style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post->post_name); ?>" /></p>
             <?php } ?>
-
+            
             <h3><label for="_block_version"><?php esc_attr_e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php
             if (!empty($json['version'])) {
                 echo esc_attr($json['version']);
             }
-            ?>" /></p>	           
+            ?>" /></p>	
+            
+            <p><label for="revision"><input type="checkbox" id="revision" name="revision"> <?php esc_attr_e('Create new revision', 'wizard-blocks'); ?></label></p>	
 
             <h3><label for="_block_icon"><?php esc_attr_e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select id="_block_icon" name="_block_icon"><option value=""><?php esc_attr_e('Custom', 'wizard-blocks'); ?></option><?php
@@ -777,6 +796,9 @@ trait Metabox {
                                            foreach ($support as $sub => $suppo) {
                                                //var_dump($sub); var_dump($sup);
                                                if (!isset($custom[$sup][$sub]) && !isset(self::$supports[$sup . '.' . $sub])) {
+                                                   if (!is_array($custom[$sup])) {
+                                                       $custom[$sup] = [];
+                                                   }
                                                    $custom[$sup][$sub] = $suppo;
                                                }
                                            }
