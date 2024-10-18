@@ -110,8 +110,9 @@ wp.apiFetch( { path: '<?php echo esc_url($api['path']); ?>' } ).then( ( data ) =
         }
     }
 }
+//window.addEventListener("load", (event) => {
 ?>
-window.addEventListener("load", (event) => {
+window.document.addEventListener("DOMContentLoaded", function(e) {
 wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     <?php
     if (!empty($args['icon']) && substr($args['icon'], 0, 5) == '<svg ') {
@@ -236,8 +237,21 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
 });
 });
 <?php
+$conditions = $this->get_attributes_condition($args);
+if (!empty($conditions)) {
+    echo '/* wb:attributes:condition '.$conditions.' */';
+    $conditions = json_decode($conditions, true);
+}
+
 if ($wrapper) { ?></script><?php }
         return ob_get_clean();
+   }
+   
+   public function get_attributes_condition($args = [], $json = false) {
+       $conditions = isset($_POST['_block_attributes_condition']) ? $_POST['_block_attributes_condition'] : wp_json_encode($this->get_block_attributes_condition($args['name'], $this->get_block_textdomain($args)));
+       $conditions = $this->unescape($conditions);
+       if ($json) $conditions = json_decode($conditions, true);
+       return $conditions;
    }
    
    public function _component($id, $attr = [], $args = []) {
@@ -298,6 +312,16 @@ if ($wrapper) { ?></script><?php }
            
        }
        
+       // if has condition
+       // example: (props.attribute.key == true) ? wp.element.createElement(...) : null
+       $conditions = $this->get_attributes_condition($args, true);
+       //var_dump($conditions); die();
+       if (!empty($conditions[$id])) {
+           $condition = $conditions[$id];
+           $condition = str_replace('attributes.', 'props.attributes.', $condition);
+           $condition = str_replace('attributes["', 'props.attributes["', $condition);
+           echo '('.$condition.') ? (';
+       }
       ?>
     wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{<?php if (!empty($attr['className'])) { ?>className: "<?php echo esc_attr($attr['className']); ?>", <?php }  if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
@@ -556,7 +580,7 @@ if ($wrapper) { ?></script><?php }
             }
             ?>
             ),
-        ),
+        )<?php if (!empty($conditions[$id])) { echo ') : null'; } ?>,
     <?php
    }
    

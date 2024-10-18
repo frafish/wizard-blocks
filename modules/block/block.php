@@ -712,6 +712,19 @@ class Block extends Module_Base {
         return [];
     }
     
+    public function get_block_attributes_condition($post_slug, $textdomain = '*') {
+        $path = $this->get_blocks_dir($post_slug, $textdomain) . DIRECTORY_SEPARATOR . 'editorScript.js';
+        if (file_exists($path)) {
+            $content = file_get_contents($path);
+            $tmp = explode('/* wb:attributes:condition ', $content, 2);
+            if (count($tmp) > 1) {
+                list($conditions, $more) = explode(' */', end($tmp), 2);
+                return json_decode($conditions, true);
+            }
+        }
+        return [];
+    }
+    
     public function get_asset_file($json, $asset, $basepath = '') {
         $type = self::$assets[$asset];
         $asset_file = $asset.'.'.$type;

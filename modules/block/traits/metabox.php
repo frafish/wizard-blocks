@@ -381,9 +381,22 @@ trait Metabox {
                 <ul>
                     <li><b>$attributes</b> (array): <?php esc_attr_e('The array of attributes for this block.', 'wizard-blocks'); ?></li>
                     <li><b>$content</b> (string): <?php esc_attr_e('The rendered block default output. ie. <code>&lt;InnerBlocks.Content /&gt;</code>.', 'wizard-blocks'); ?></li>
-                    <li><b>$block</b> (WP_Block): <?php esc_attr_e('The instance of the WP_Block class that represents the block being rendered.', 'wizard-blocks'); ?></li>
+                    <li><b>$block</b> (<a href="https://developer.wordpress.org/reference/classes/wp_block/" target="_blank">WP_Block</a>): <?php esc_attr_e('The instance of the WP_Block class that represents the block being rendered.', 'wizard-blocks'); ?></li>
                 </ul>
+            <?php
+            $example = "&lt;p &lt;?php echo <a href='https://developer.wordpress.org/reference/functions/get_block_wrapper_attributes/' target='_blank'>get_block_wrapper_attributes</a>(); ?&gt&gt;<br> &lt;?php<br> echo <b>\$attributes</b>['acme']; <br> echo <b>\$content</b>; <br> echo <b>\$block</b>->blockName;<br>?&gt;<br>&lt;/p&gt;";
+            //echo '<p ' . get_block_wrapper_attributes() . '><?php (empty($attributes['acme'])) ? '' : $content) . '</p>' 
+            ?>
+            <details>
+                <summary class="cursor-pointer"><u><?php esc_attr_e('Render PHP code example', 'wizard-blocks'); ?>:</u></summary>
+                <div>
+                    <q style="padding: 10px; display: block; background-color: #dedede;"><i><?php echo $example; ?></i></q>
+                    <span class="dashicons dashicons-welcome-learn-more"></span> <a href="https://github.com/WordPress/block-development-examples" target="_blank"><?php esc_attr_e('Find out more examples', 'wizard-blocks'); ?> &gt;&gt;</a>
+                </div>
+            </details>    
+                
             </div>
+            
         </div>
         <?php
     }
@@ -496,7 +509,7 @@ trait Metabox {
     public function meta_fields_build_attributes_callback($post, $metabox) {
         //wp_nonce_field('meta_fields_save_meta_box_side_data', 'meta_fields_meta_box_nonce');
 
-        $json = $post ? $this->get_json_data($post->post_name) : [];
+        $json = $post ? $this->get_block_json($post->post_name) : [];
 
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
         $attributes = '';
@@ -514,6 +527,12 @@ trait Metabox {
             <h3 id="attributes"><label for="_block_attributes"><?php esc_attr_e('Attributes', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><textarea id="_block_attributes" name="_block_attributes"><?php echo esc_textarea(empty($json['attributes']) ? $attributes : wp_json_encode($json['attributes'], JSON_PRETTY_PRINT)); ?></textarea></p>	
 
+            <?php $attributes_condition = $post ? $this->get_block_attributes_condition($post->post_name) : []; ?>
+            <div class="d-none">
+                <h4 id="attributes_condition"><label for="_block_attributes_condition"><?php esc_attr_e('Attributes Condition', 'wizard-blocks'); ?></label></h4>
+                <p><textarea id="_block_attributes_condition" name="_block_attributes_condition"><?php echo esc_textarea(empty($attributes_condition) ? '' : wp_json_encode($attributes_condition, JSON_PRETTY_PRINT)); ?></textarea></p>	
+            </div>
+            
             <div id="_block_attributes_editor">
                 <div class="repeat_attrs">
                     <div class="repeat_attr">
@@ -526,12 +545,12 @@ trait Metabox {
                         </div>
                         <div class="attr_data">
                             <label for="key"><?php esc_attr_e('Key', 'wizard-blocks'); ?>*: <input type="text" class="key"></label>
-                            <label for="label"><?php esc_attr_e('Label', 'wizard-blocks'); ?>: <input type="text" class="label"></label>
+                            <label for="label"><?php esc_attr_e('Label', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://wordpress.github.io/gutenberg/?path=/docs/components-textcontrol--docs" target="_blank"></a>: <input type="text" class="label"></label>
                             <label for="type"><?php esc_attr_e('Type', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation" target="_blank"></a>: 
                                 <select class="type">
-        <?php foreach (self::$attributes_type as $type => $label) { ?>
+                                    <?php foreach (self::$attributes_type as $type => $label) { ?>
                                         <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($label); ?></option>
-        <?php } ?>
+                                    <?php } ?>
                                 </select></label>
                             <label for="component"><?php esc_attr_e('Component', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/reference-guides/components/" target="_blank"></a>: 
                                 <select class="component">
@@ -547,7 +566,7 @@ trait Metabox {
                                     <?php } ?>
                                 </select></label>
                             <label for="position"><?php esc_attr_e('Position', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/block-in-the-editor/#block-controls-block-toolbar-and-settings-sidebar" target="_blank"></a>: <select class="position">
-        <?php foreach (self::$attributes_position as $postion => $label) { ?>
+                                    <?php foreach (self::$attributes_position as $postion => $label) { ?>
                                         <option value="<?php echo esc_attr($postion); ?>"><?php echo esc_html($label); ?></option>
                                     <?php } ?>
                                 </select></label>
@@ -556,18 +575,19 @@ trait Metabox {
                                     <option value="true"><?php esc_attr_e('True', 'wizard-blocks'); ?></option>                                
                                 </select></label>
                             <label for="options"><?php esc_attr_e('Options', 'wizard-blocks'); ?>: <textarea class="options" placeholder="FF00FF|Magenta"></textarea></label>
-                            <label for="default"><?php esc_attr_e('Default', 'wizard-blocks'); ?>: <textarea class="default" rows="1"></textarea></label>
+                            <label for="default"><?php esc_attr_e('Default value', 'wizard-blocks'); ?>: <textarea class="default" rows="1"></textarea></label>
                             <label for="source"><?php esc_attr_e('Source', 'wizard-blocks'); ?>: <select class="source">
                                     <option value=""><?php esc_attr_e('No value', 'wizard-blocks'); ?></option>
-        <?php foreach (self::$attributes_source as $type => $label) { ?>
+                                    <?php foreach (self::$attributes_source as $type => $label) { ?>
                                         <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($label); ?></option>
-        <?php } ?>
+                                    <?php } ?>
                                 </select></label>
                             <label for="selector"><?php esc_attr_e('Selector', 'wizard-blocks'); ?>: <input type="text" class="selector"></label>
                             <label for="attribute"><?php esc_attr_e('Attribute', 'wizard-blocks'); ?>: <input type="text" class="attribute"></label>
-                            <label for="label"><?php esc_attr_e('Help', 'wizard-blocks'); ?>: <input type="text" class="help"></label>
-                            <label for="className"><?php esc_attr_e('Class', 'wizard-blocks'); ?>: <input type="text" class="className" placeholder="pt-5 my-spacial-control"></label>
+                            <label for="help"><?php esc_attr_e('Help', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://wordpress.github.io/gutenberg/?path=/docs/components-textcontrol--docs" target="_blank"></a>: <input type="text" class="help"></label>
+                            <label for="className"><?php esc_attr_e('Wrapper Class', 'wizard-blocks'); ?>: <input type="text" class="className" placeholder="pt-5 my-spacial-control"></label>
                             <label for="extra"><?php esc_attr_e('Extra', 'wizard-blocks'); ?>: <textarea class="extra" placeholder='{ "var": "value" }'></textarea></label>
+                            <label for="condition"><?php esc_attr_e('Condition', 'wizard-blocks'); ?>: <textarea class="condition" placeholder="attributes.fieldKey == true && attributes['field-key'] == 'blue'"></textarea></label>
                         </div>
                     </div>
                 </div>

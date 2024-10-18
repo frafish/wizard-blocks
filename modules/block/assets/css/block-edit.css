@@ -34,6 +34,13 @@
     height: auto;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.d-none {
+    display: none;
+}
 .d-flex {
     display: flex;
 }
