@@ -3,7 +3,7 @@ Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.2
 Tested up to: 6.7
-Stable tag: 1.0.2
+Stable tag: 1.1
 Requires PHP: 8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -114,10 +114,14 @@ so you can use them in any Elementor Template.
 
 == Changelog ==
 
-= 1.0.1 - 17-05-2024 =
-* First release
+= 1.1 - 25-12-2024 =
+* Stability fixes
 
 = 1.0.2 - 22-10-2024 =
 * Added Revisions
 * Added Attributes Condition
 * Stability fixes
+
+= 1.0.1 - 17-05-2024 =
+* First release
+

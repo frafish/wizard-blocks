@@ -387,7 +387,9 @@ class Block extends Module_Base {
         if (!empty($_POST['_block_textdomain'])) {
             $block_textdomain = sanitize_key(wp_unslash($_POST['_block_textdomain']));
         }
-
+        
+        //var_dump($update); die();
+        $json_old = [];
         if ($update) {
             $json_old = $this->get_block_json($post_slug);    
             //var_dump($json_old); die();
@@ -583,6 +585,7 @@ class Block extends Module_Base {
         ];
         //var_dump($json);
         
+        // SAVING ASSETS FILES
         foreach (self::$assets as $asset => $type) {
             $json[$asset] = [];
             $code = '';
@@ -590,10 +593,15 @@ class Block extends Module_Base {
             //var_dump($basepath); die();
             $file = basename($path);
             $file_name = basename($file, '.'.$type);
+            $min = '.min.';
+            $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;
+            
             if (!empty($_POST['_block_' . $asset.'_file'])) {
+                
                 $code = wp_unslash($_POST['_block_' . $asset.'_file']);
+                
                 if ($asset !== 'render') {
-                    $code = wp_kses_post($code);   
+                    //$code = wp_kses_post($code);   
                 }
                 $code = $this->unescape($code);
                 if ($asset == 'render') {
@@ -614,15 +622,11 @@ class Block extends Module_Base {
             if ($code) {
                 // save asset into block folder
                 if ($this->get_filesystem()->put_contents($path, $code)) {
+                //if (file_put_contents($path, $code)) {
                     $json[$asset] = [ "file:./" . $file ];
                 }
-            }
-            
-            // generate minified version
-            if (in_array($asset, ['editorScript', 'viewScript'])) {
-                if ($code) {
-                    $min = '.min.';
-                    $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;
+                // generate minified version
+                if (in_array($asset, ['editorScript', 'viewScript', 'script'])) {
                     $minifier = new \MatthiasMullie\Minify\JS($code);
                     // save minified file to disk
                     $minifier->minify($path_min);
@@ -630,12 +634,23 @@ class Block extends Module_Base {
                     $path = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
                     $code = "<?php return array('dependencies'=>[], 'version'=>'".gmdate('U')."');";
                     if (!file_exists($path)) {
+                        //file_put_contents($path, $code);
                         $this->get_filesystem()->put_contents($path, $code);
                     }
                 }
+            } else {
+                // delete old assets files?!
+                if (file_exists($path)) {
+                    $this->get_filesystem()->delete($path);
+                }
+                if (file_exists($path_min)) {
+                    $this->get_filesystem()->delete($path_min);
+                }
             }
+            
         }
         
+        // SET ASSETS IN JSON
         foreach (self::$assets as $asset => $type) {
             if (!empty($_POST['_block_' . $asset])) {
                 $_block_asset = sanitize_text_field(wp_unslash($_POST['_block_' . $asset]));
@@ -664,7 +679,7 @@ class Block extends Module_Base {
             }
         }
         
-        // from array to string in case of single asset
+        // OPTIMIZATION: from array to string in case of single asset
         foreach (self::$assets as $asset => $type) {
             if (is_array($json[$asset]) && count($json[$asset]) == 1) {
                 $json[$asset] = reset($json[$asset]);
@@ -776,7 +791,6 @@ class Block extends Module_Base {
     
     public function get_asset_file_contents($json, $asset, $basepath) {
         $asset_file = $this->get_asset_file($json, $asset, $basepath);
-        //var_dump($asset_file);
         if (file_exists($asset_file)) {
             return file_get_contents($asset_file);
         }

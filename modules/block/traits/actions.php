@@ -80,7 +80,7 @@ Trait Actions {
                                 }
                                 if (!empty($_GET['block'])) {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
-                                    list($domain, $slug) = explode('/', $args['name'], 2);
+                                    list($domain, $slug) = explode('/', $_GET['block'], 2);
                                     $block_post = $this->get_block_post($slug);
                                     if (!$block_post) {
                                         $args = $this->get_json_data($slug);
@@ -223,6 +223,7 @@ Trait Actions {
     
     public function extract_block_zip($target_file) {
         $tmpdir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
+        //unzip_file($target_file, $tmpdir);
         $zip = new \ZipArchive;
         if ($zip->open($target_file) === TRUE) {
             $zip->extractTo($tmpdir);

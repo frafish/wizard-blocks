@@ -12,15 +12,32 @@ if (!defined('ABSPATH')) {
 class Elementor extends Module_Base {
 
     public function __construct() {
-        add_action('elementor/experiments/default-features-registered', [$this, 'elementor_features']);        
+        add_action('elementor/experiments/default-features-registered', [$this, 'elementor_features']);
         $module_active = get_option("elementor_experiment-gutenberg");
         if (in_array($module_active, ['active'])) {
             add_action('elementor/widgets/register', [$this, 'register_gutenberg_blocks']);
             //add_action( 'elementor/init', 'add_gutenberg_blocks' );
             add_action('elementor/elements/categories_registered', [$this, 'add_elementor_widget_categories']);
         }
-    }   
-    
+
+        add_filter('elementor/widget/render_content', [$this, 'parse_blocks'], 10, 2);
+    }
+
+    /**
+     * Filters heading widgets and change their content.
+     *
+     * @since 1.0.0
+     * @param string $widget_content The widget HTML output.
+     * @param \Elementor\Widget_Base $widget         The widget instance.
+     * @return string The changed widget content.
+     */
+    public function parse_blocks($widget_content, $widget) {
+        if (in_array($widget->get_name(), ['html', 'shortcode'])) { //'text-editor'
+            $widget_content = do_blocks($widget_content);
+        }
+        return $widget_content;
+    }
+
     public function elementor_features($features) {
         $features->add_feature([
             'name' => 'gutenberg',
@@ -30,7 +47,7 @@ class Elementor extends Module_Base {
             'default' => false,
         ]);
     }
-    
+
     function add_elementor_widget_categories($elements_manager) {
         $elements_manager->add_category(
                 'gutenberg',

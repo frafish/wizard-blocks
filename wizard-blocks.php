@@ -4,7 +4,7 @@
  * @wordpress-plugin
  * Plugin Name:       Wizard Blocks Manager for Gutenberg
  * Description:       Easy create, edit and manage Gutenberg Blocks
- * Version:           1.0.2
+ * Version:           1.1
  * Author:            frapesce
  * Text Domain:       wizard-blocks
  * Domain Path:       /languages
