@@ -400,6 +400,60 @@ trait Metabox {
         </div>
         <?php
     }
+    
+    public function assets_merge($assets, $default) {
+        
+        // add default
+        if (!in_array($default, $assets)) {
+            array_unshift($assets, $default);
+        }
+        
+        // remove minified version
+        $pieces = explode('.', $default);
+        $min = array_pop($pieces);
+        $min = implode('.', $pieces) . '.min.' . $min;
+        //var_dump($min);
+        if ($key = array_search($min, $assets)) {
+            unset($assets[$key]);
+        }
+        //var_dump($assets);
+        return $assets;
+    }
+    
+    public function asset_form($json, $asset_file, $basepath, $post) {
+        $default = $this->get_asset_default_file($json, $asset_file, $basepath); 
+        $assets = $this->get_asset_files($json, $asset_file, $basepath);
+        //var_dump($assets);
+        if (count($assets) > 1 || (count($assets) == 1 && reset($assets) != $default)) { ?> 
+        <nav class="nav-tab-wrapper wb-nav-tab-wrapper">
+            <?php
+            $assets = $this->assets_merge($assets, $default);
+            foreach($assets as $key => $asset) { ?>
+                <a href="#wb-<?php echo sanitize_title($asset); ?>" class="nav-tab wb-nav-tab<?php echo $key ? '' : ' nav-tab-active'; ?>"><?php echo basename($asset); ?></a>
+            <?php }?>
+        </nav>
+        <?php } ?>
+
+        <div class="wb-files">
+            <?php
+            $assets = $this->assets_merge($assets, $default);
+            foreach ($assets as $key => $asset) { ?>
+                <p class="wb-file<?php echo $key ? ' wb-hide' : ''; ?>" id="wb-<?php echo sanitize_title($asset); ?>">
+                    <textarea class="wb-asset-<?php echo sanitize_title(basename($asset)); ?> wb-codemirror-<?php echo self::$assets[$asset_file]; ?>" id="<?php echo ($asset == $default) ? '_block_'.$asset_file.'_file' : sanitize_title($asset); ?>" name="_block_<?php echo $asset_file; ?>_file[<?php esc_attr_e(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                </p>              
+            <?php 
+            } ?>
+        </div>
+        <?php
+        // Get WordPress' media upload URL
+        $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
+        ?>
+        <p class="d-flex assets">
+            <input type="text" id="_block_<?php echo $asset_file; ?>" name="_block_<?php echo $asset_file; ?>" value="<?php esc_attr_e(empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file])); ?>" placeholder="file:./<?php echo $asset_file; ?>.<?php echo self::$assets[$asset_file]; ?>">
+            <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
+        </p>
+        <?php
+    }
 
     // build meta box
     public function meta_fields_build_css_callback($post, $metabox) {
@@ -411,37 +465,34 @@ trait Metabox {
             $basepath = $this->get_blocks_dir($post->post_name) . DIRECTORY_SEPARATOR;
         }
 
-        // Get WordPress' media upload URL
-        $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
+        
         ?>
         <div class="inside">
 
             <h3><label for="_block_style"><?php esc_attr_e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type frontend and editor styles definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_style_file" name="_block_style_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'style', $basepath)); ?></textarea></p>	
-            <p class="d-flex assets">
-                <input type="text" id="_block_style" name="_block_style" value="<?php echo esc_attr(empty($json['style']) ? '' : Utils::implode($json['style'])); ?>" placeholder="file:./style.css">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php 
+            $asset = 'style';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
+            
             <hr>
 
             <h3><label for="_block_viewStyle"><?php esc_attr_e('View Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type frontend styles definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewStyle_file" name="_block_viewStyle_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'viewStyle', $basepath)); ?></textarea></p>
-            <p class="d-flex assets">
-                <input type="text" id="_block_viewStyle" name="_block_viewStyle" value="<?php echo esc_attr(empty($json['viewStyle']) ? '' : Utils::implode($json['viewStyle'])); ?>" placeholder="file:./viewStyle.css">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
-
+            <?php 
+            $asset = 'viewStyle';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
+            
             <hr>
 
             <h3><label for="_block_editorStyle"><?php esc_attr_e('Editor Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type editor styles definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_editorStyle_file" name="_block_editorStyle_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'editorStyle', $basepath)); ?></textarea></p>	
-            <p class="d-flex assets">
-                <input type="text" id="_block_editorStyle" name="_block_editorStyle" value="<?php echo esc_attr(empty($json['editorStyle']) ? '' : Utils::implode($json['editorStyle'])); ?>" placeholder="file:./editorStyle.css">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php 
+            $asset = 'editorStyle';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
 
         </div>
         <?php
@@ -466,41 +517,38 @@ trait Metabox {
 
             <h3><label for="_block_editorScript"><?php esc_attr_e('Editor Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type editor scripts definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-            <p><textarea<?php echo (false) ? ' style="background-color: white; cursor: not-allowed;" rows="15" readonly' : ''; ?> id="_block_editorScript_file" name="_block_editorScript_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'editorScript', $basepath)); ?></textarea></p>
-            <p class="d-flex assets">
-                <input type="text" id="_block_editorScript" name="_block_editorScript" value="<?php echo esc_attr(empty($json['editorScript']) ? '' : Utils::implode($json['editorScript'])); ?>" placeholder="file:./editorScript.js">
-                <a title="<?php esc_attr_e('Upload new asset') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php
+            // ' style="background-color: white; cursor: not-allowed;" rows="15" readonly'
+            $asset = 'editorScript';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
 
             <hr>
 
             <h3><label for="_block_script"><?php esc_attr_e('Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type frontend and editor scripts definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_script_file" name="_block_script_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'script', $basepath)); ?></textarea></p>
-            <p class="d-flex assets">
-                <input type="text" id="_block_script" name="_block_script" value="<?php echo esc_attr(empty($json['script']) ? '' : Utils::implode($json['script'])); ?>" placeholder="file:./script.js">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php 
+            $asset = 'script';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
 
             <hr>
 
             <h3><label for="_block_viewScript"><?php esc_attr_e('View Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type frontend scripts definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewScript_file" name="_block_viewScript_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'viewScript', $basepath)); ?></textarea></p>
-            <p class="d-flex assets">
-                <input type="text" id="_block_viewScript" name="_block_viewScript" value="<?php echo esc_attr(empty($json['viewScript']) ? '' : Utils::implode($json['viewScript'])); ?>" placeholder="file:./viewScript.js">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php 
+            $asset = 'viewScript';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
 
             <hr>
 
             <h3><label for="_block_viewScriptModule"><?php esc_attr_e('View Script Module', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script-module"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('Block type frontend script module definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_viewScriptModule_file" name="_block_viewScriptModule_file"><?php echo esc_textarea($this->get_asset_file_contents($json, 'viewScriptModule', $basepath)); ?></textarea></p>
-            <p class="d-flex assets">
-                <input type="text" id="_block_viewScriptModule" name="_block_viewScriptModule" value="<?php echo esc_attr(empty($json['viewScriptModule']) ? '' : Utils::implode($json['viewScriptModule'])); ?>" placeholder="file:./viewScriptModule.js">
-                <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-            </p>
+            <?php 
+            $asset = 'viewScriptModule';
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
 
         </div>
         <?php

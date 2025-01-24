@@ -37,16 +37,16 @@ trait Pages {
             <h1><?php esc_html_e('Wizard Tools', 'wizard-blocks'); ?></h1>
 
             <div class="card-row" style="display: flex;">
-                <div class="card" style="width: 100%;">
+                <div class="card upload-block" style="width: 100%;">
                     <h2><?php esc_html_e('IMPORT', 'wizard-blocks'); ?></h2>
                     <p><?php esc_html_e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php esc_html_e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
-                    <form action="<?php echo esc_url($this->get_action_url("action=import")); ?>" method="POST" enctype="multipart/form-data">
+                    <form class="wp-upload-form" action="<?php echo esc_url($this->get_action_url("action=import")); ?>" method="POST" enctype="multipart/form-data">
                         <input type="file" name="zip">
                         <button class="btn button" type="submit"><?php esc_html_e('Import', 'wizard-blocks'); ?></button>
                     </form>
                 </div>
 
-                <div class="card" style="width: 100%;">
+                <div class="card export-blocks" style="width: 100%;">
                     <h2><?php esc_html_e('EXPORT', 'wizard-blocks'); ?></h2>
                     <p><?php esc_html_e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php esc_html_e('You can then install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
                     <a class="btn button" href="<?php echo esc_url($this->get_action_url("action=export")); ?>"><?php esc_html_e('Export', 'wizard-blocks'); ?></a>
@@ -68,6 +68,7 @@ trait Pages {
 
         </div>
         <?php
+        wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/css/import.css', [], '1.2.0');
     }
 
     public function get_action_url($args = '') {

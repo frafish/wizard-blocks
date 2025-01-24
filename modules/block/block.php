@@ -586,6 +586,7 @@ class Block extends Module_Base {
         //var_dump($json);
         
         // SAVING ASSETS FILES
+        $min = '.min.';
         foreach (self::$assets as $asset => $type) {
             $json[$asset] = [];
             $code = '';
@@ -593,13 +594,17 @@ class Block extends Module_Base {
             //var_dump($basepath); die();
             $file = basename($path);
             $file_name = basename($file, '.'.$type);
-            $min = '.min.';
             $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;
             
             if (!empty($_POST['_block_' . $asset.'_file'])) {
-                
-                $code = wp_unslash($_POST['_block_' . $asset.'_file']);
-                
+                switch ($asset) {
+                    case 'render':
+                        $code = $_POST['_block_' . $asset.'_file'];
+                        break;
+                    default: // get default file
+                        $code = $_POST['_block_' . $asset.'_file'][$asset.'.'.$type];
+                }
+                $code = wp_unslash($code);
                 if ($asset !== 'render') {
                     //$code = wp_kses_post($code);   
                 }
@@ -626,7 +631,7 @@ class Block extends Module_Base {
                     $json[$asset] = [ "file:./" . $file ];
                 }
                 // generate minified version
-                if (in_array($asset, ['editorScript', 'viewScript', 'script'])) {
+                if (in_array($asset, ['editorScript', 'viewScript', 'viewScriptModule', 'script'])) {
                     $minifier = new \MatthiasMullie\Minify\JS($code);
                     // save minified file to disk
                     $minifier->minify($path_min);
@@ -647,8 +652,8 @@ class Block extends Module_Base {
                     $this->get_filesystem()->delete($path_min);
                 }
             }
-            
         }
+        //var_dump($json); die();
         
         // SET ASSETS IN JSON
         foreach (self::$assets as $asset => $type) {
@@ -656,6 +661,8 @@ class Block extends Module_Base {
                 $_block_asset = sanitize_text_field(wp_unslash($_POST['_block_' . $asset]));
                 $files = Utils::explode($_block_asset);
                 foreach ($files as $file) {
+                    $asset_file = 'file:./'.$asset.'.'.$type;
+                    $asset_min = 'file:./'.$asset.$min.$type;
                     if (substr($file, 0, 5) != 'file:') {
                         // if local file copy into block folder
                         if (filter_var($file, FILTER_VALIDATE_URL)) {
@@ -667,10 +674,38 @@ class Block extends Module_Base {
                                 }
                             }
                         }
+                    } else {
+                        // update extra css/js lib
+                        if ($file != $asset_file && $file != $asset_min) {
+                            //var_dump($file); var_dump($asset); var_dump($asset_min);
+                            $file_name = str_replace('file:./', '', $file);
+                            if (!empty($_POST['_block_' . $asset.'_file'][$file_name])) {
+                                $code = $_POST['_block_' . $asset.'_file'][$file_name];
+                                $code = wp_unslash($code);
+                                $path = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name;
+                                //if (file_exists($path)) {
+                                    //file_put_contents($path, $code);
+                                    $this->get_filesystem()->put_contents($path, $code);
+                                //}
+                            }
+                        }
                     }
                     // prevent duplicates
+                    
                     if (empty($json[$asset]) || !in_array($file, $json[$asset])) {
                         $json[$asset][] = $file;
+                    }
+                }
+                
+                $key = array_search($asset_file, $json[$asset]);
+                $key_min = array_search($asset_min, $json[$asset]);
+                if ($key !== false && $key_min !== false) {
+                    if (SCRIPT_DEBUG) {
+                        // use plain version
+                        unset($json[$asset][$key_min]);
+                    } else {
+                        // use minified version
+                        unset($json[$asset][$key]);
                     }
                 }
             }
@@ -678,6 +713,7 @@ class Block extends Module_Base {
                 // clean removed assets
             }
         }
+        //var_dump($json); die();
         
         // OPTIMIZATION: from array to string in case of single asset
         foreach (self::$assets as $asset => $type) {
@@ -740,6 +776,74 @@ class Block extends Module_Base {
         return [];
     }
     
+    public function get_asset_files($json, $asset, $basepath = '') {
+        $type = self::$assets[$asset];
+        $asset_file = $asset.'.'.$type;
+        $asset_file_min = $asset.'.min.'.$type;
+        $asset_files = [];
+        if (!empty($json[$asset])) {
+            //var_dump($json[$asset]); die();
+            $asset_files = Utils::maybe_json_decode($json[$asset]);
+            if (!is_array($asset_files)) {
+                $asset_files = [$asset_files];
+            }
+            if ($type != 'php') {
+                foreach ($asset_files as $key => $asset_file) {
+                    //$unmin = str_replace('.min.js', '.js', $asset_file);
+                    $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
+                    $unmin = str_replace('file:./', '', $unmin); // maybe local asset
+                    $unmin_file = $basepath . $unmin;
+                    $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
+                    if (file_exists($unmin_file)) {
+                        $asset_file = $unmin;
+                    }
+                    $asset_file = str_replace('file:', '', $asset_file);
+                    $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
+                    $asset_file = $basepath . $asset_file;
+                    $asset_files[$key] = $asset_file;
+                }
+            }            
+            $asset_files = array_unique($asset_files); //die();
+        }
+        return $asset_files;
+    }
+    
+    
+    public function get_asset_default_file($json, $asset, $basepath = '') {
+        $type = self::$assets[$asset];
+        $asset_file = $asset.'.'.$type;
+        $asset_file_min = $asset.'.min.'.$type;
+        if (!empty($json[$asset])) {
+            //var_dump($json[$asset]); die();
+            $asset_files = $json[$asset];
+            if (is_array($asset_files)) {
+                $key = array_search('file:./' . $asset_file, $asset_files);
+                if ($key === false) {
+                    $key = array_search('file:./' . $asset_file_min, $asset_files);
+                }
+                if ($key !== false) {
+                    $asset_file = $json[$asset][$key];
+                }
+            }
+            if ($type != 'php') {
+                //$unmin = str_replace('.min.js', '.js', $asset_file);
+                $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
+                $unmin = str_replace('file:./', '', $unmin); // maybe local asset
+                $unmin_file = $basepath . $unmin;
+                $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
+                if (file_exists($unmin_file)) {
+                    $asset_file = $unmin;
+                }
+            }
+            $asset_file = str_replace('file:', '', $asset_file);
+            $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
+            //var_dump($asset_file); die();
+        }
+        $asset_file = $basepath . $asset_file;
+        return $asset_file;
+    }
+    
+    
     public function get_asset_file($json, $asset, $basepath = '') {
         $type = self::$assets[$asset];
         $asset_file = $asset.'.'.$type;
@@ -790,7 +894,11 @@ class Block extends Module_Base {
     }
     
     public function get_asset_file_contents($json, $asset, $basepath) {
-        $asset_file = $this->get_asset_file($json, $asset, $basepath);
+        if (is_file($basepath)) {
+            $asset_file = $basepath;
+        } else {
+            $asset_file = $this->get_asset_file($json, $asset, $basepath);
+        }
         if (file_exists($asset_file)) {
             return file_get_contents($asset_file);
         }
@@ -931,4 +1039,12 @@ class Block extends Module_Base {
         //var_dump($wp_filesystem);
         return $wp_filesystem;
     }
+    
+    // https://developer.wordpress.org/block-editor/how-to-guides/internationalization/
+    public function add_translation() {
+        // create languages folder
+        // create main lang file
+        //
+    }
 }
+
