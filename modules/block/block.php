@@ -651,6 +651,8 @@ class Block extends Module_Base {
                 if (file_exists($path_min)) {
                     $this->get_filesystem()->delete($path_min);
                 }
+                // remove the asset from the json
+                $json[$asset] = [];
             }
         }
         //var_dump($json); die();
@@ -688,12 +690,16 @@ class Block extends Module_Base {
                                     $this->get_filesystem()->put_contents($path, $code);
                                 //}
                             }
+                        } else {
+                            // default asset file, already insert in json
+                            $file = false;
                         }
                     }
-                    // prevent duplicates
-                    
-                    if (empty($json[$asset]) || !in_array($file, $json[$asset])) {
-                        $json[$asset][] = $file;
+                    if ($file) {
+                        // prevent duplicates
+                        if (empty($json[$asset]) || !in_array($file, $json[$asset])) {
+                            $json[$asset][] = $file;
+                        }
                     }
                 }
                 
@@ -800,7 +806,14 @@ class Block extends Module_Base {
                     $asset_file = str_replace('file:', '', $asset_file);
                     $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
                     $asset_file = $basepath . $asset_file;
-                    $asset_files[$key] = $asset_file;
+                    
+                    if (file_exists($asset_file)) {
+                        // asset file in block folder
+                        $asset_files[$key] = $asset_file;
+                    } else {
+                        // remove external libs
+                        unset($asset_files[$key]);
+                    }
                 }
             }            
             $asset_files = array_unique($asset_files); //die();
