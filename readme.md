@@ -87,6 +87,10 @@ so you can use them in any Elementor Template. :white_check_mark:
 
 ## Changelog
 
+- 1.1 - 31-01-2025
+Stability fixes
+Edit Multiple files per assets
+
 - 1.0.1 - 17-05-2024  
 First release
 

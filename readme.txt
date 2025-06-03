@@ -112,10 +112,28 @@ this plugin make a porting of each Gutenberg Block as Elementor Widget,
 so you can use them in any Elementor Template.
 
 
+== Screenshots ==
+
+1. **Easily Create Custom Gutenberg Blocks:** A dedicated admin menu provides access to all Block creation and management features.
+2. **Seamless WordPress Integration:** Leverage native themes and core features for a smooth experience.
+3. **Secure Dynamic Content:** Build dynamic block content using plain PHP, eliminating the risk of site disruption (as writing Shortcodes in functions.php).
+4. **Automated Editor JavaScript:** The built-in wizard generates all necessary, minified, and optimized editor JavaScript (no npm required).
+5. **Flexible Scripting and Styling:** Write custom scripts and styles, and optionally upload external CSS and JS libraries.
+6. **Leverage Existing Assets:** Utilize registered assets, including libraries provided by WooCommerce or Elementor.
+7. **Intuitive Attribute Management:** Easily generate and manage block attributes, readily available for rendering.
+8. **Full Block JSON Schema Support:** Visually manage all standard block JSON fields, adhering to the official block structure.
+9. **Block Revisions:** Maintain multiple block revisions to safeguard custom code and facilitate version control.
+10. **Usage Statistics:** Track and analyze usage statistics for all blocks—custom, core, and plugin-provided.
+11. **Dedicated Shortcodes:** Generate shortcodes with a single click to render block instances anywhere on your site, including attribute value support.
+12. **Streamlined Import/Export:** Easily import and export blocks, share single block ZIP files across sites, and optionally deactivate the plugin once blocks are registered in your theme.
+13. **Elementor Compatibility:** Enable Elementor compatibility via Elementor settings to use all blocks within the native Elementor interface.
+14. **Selective Elementor Widget Integration:** Choose and enable specific imported Blocks as Elementor widgets through the native Elementor Manager.
+
 == Changelog ==
 
-= 1.1 - 25-12-2024 =
+= 1.1 - 31-01-2025 =
 * Stability fixes
+* Edit Multiple files per assets
 
 = 1.0.2 - 22-10-2024 =
 * Added Revisions

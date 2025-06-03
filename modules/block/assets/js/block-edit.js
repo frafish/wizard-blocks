@@ -618,3 +618,13 @@ jQuery(document).ready(function ($) {
         update_block_attributes_editor();
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            let saveButton = document.querySelector('#publish, #save-post');
+            saveButton.click();
+        }
+    });
+});

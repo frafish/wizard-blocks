@@ -375,7 +375,7 @@ trait Metabox {
         <div class="inside">
             <h3><label for="_block_render_file"><?php esc_attr_e('Render', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#render"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="hint"><i><?php esc_attr_e('PHP file to use when rendering the block type on the server to show on the front end.', 'wizard-blocks'); ?></i></p>
-            <p><textarea id="_block_render_file" name="_block_render_file" placeholder="Hello world!"><?php echo esc_textarea($render); ?></textarea></p>	           
+            <p><textarea id="_block_render_file" name="_block_render_file" placeholder="Hello world!" class="wp-editor-area"><?php echo esc_textarea($render); ?></textarea></p>	           
             <div class="notice inline notice-primary notice-alt" style="display: block; padding: 20px;">
                 <span class="dashicons dashicons-info"></span> <?php esc_attr_e('The following variables are exposed to the file:', 'wizard-blocks'); ?>
                 <ul>
@@ -439,7 +439,7 @@ trait Metabox {
             $assets = $this->assets_merge($assets, $default);
             foreach ($assets as $key => $asset) { ?>
                 <p class="wb-file<?php echo $key ? ' wb-hide' : ''; ?>" id="wb-<?php echo sanitize_title($asset); ?>">
-                    <textarea class="wb-asset-<?php echo sanitize_title(basename($asset)); ?> wb-codemirror-<?php echo self::$assets[$asset_file]; ?>" id="<?php echo ($asset == $default) ? '_block_'.$asset_file.'_file' : sanitize_title($asset); ?>" name="_block_<?php echo $asset_file; ?>_file[<?php esc_attr_e(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                    <textarea class="wp-editor-area wb-asset-<?php echo sanitize_title(basename($asset)); ?> wb-codemirror-<?php echo self::$assets[$asset_file]; ?>" id="<?php echo ($asset == $default) ? '_block_'.$asset_file.'_file' : sanitize_title($asset); ?>" name="_block_<?php echo $asset_file; ?>_file[<?php esc_attr_e(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
                 </p>              
             <?php 
             } ?>
@@ -573,7 +573,7 @@ trait Metabox {
         <div class="inside">
 
             <h3 id="attributes"><label for="_block_attributes"><?php esc_attr_e('Attributes', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><textarea id="_block_attributes" name="_block_attributes"><?php echo esc_textarea(empty($json['attributes']) ? $attributes : wp_json_encode($json['attributes'], JSON_PRETTY_PRINT)); ?></textarea></p>	
+            <p><textarea id="_block_attributes" name="_block_attributes" class="wp-editor-area"><?php echo esc_textarea(empty($json['attributes']) ? $attributes : wp_json_encode($json['attributes'], JSON_PRETTY_PRINT)); ?></textarea></p>	
 
             <?php $attributes_condition = $post ? $this->get_block_attributes_condition($post->post_name) : []; ?>
             <div class="d-none">

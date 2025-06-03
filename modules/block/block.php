@@ -644,7 +644,7 @@ class Block extends Module_Base {
                     }
                 }
             } else {
-                // delete old assets files?!
+                // delete old assets files?! 
                 if (file_exists($path)) {
                     $this->get_filesystem()->delete($path);
                 }
