@@ -42,9 +42,10 @@ trait Type {
         );
 
         $args = array(
+            //'label' => _x('Blocks', 'wizard-blocks'),
             'labels' => $labels,
-            'public' => false,
-            'publicly_queryable' => false,
+            'public' => true, //false
+            //'publicly_queryable' => false,
             'show_ui' => true,
             'show_in_menu' => true,
             'query_var' => true,
@@ -55,6 +56,8 @@ trait Type {
             'menu_position' => null,
             'supports' => array('title', 'author', 'excerpt', 'thumbnail', 'revisions'), // 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
+            'show_in_rest' => true,
+            //'rest_base' => self::$cpt_name.'s',
         );
 
         register_post_type(self::$cpt_name, $args);

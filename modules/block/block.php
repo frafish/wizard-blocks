@@ -311,6 +311,10 @@ class Block extends Module_Base {
             list($textdomain, $title) = explode('/', $block['name'], 2);
             return $title;
         }
+        if (is_string($block)) {
+            $tmp = explode('/', $block, 2);
+            return end($tmp);
+        }
         return 'block';
     }
     
@@ -319,6 +323,9 @@ class Block extends Module_Base {
         if (!empty($block['name'])) {
             list($textdomain, $title) = explode('/', $block['name'], 2);
             return strtolower($textdomain);
+        }
+        if ($user = wp_get_current_user()) {
+            return $user->user_nicename;
         }
         return $this->get_plugin_textdomain();
     }
@@ -384,6 +391,9 @@ class Block extends Module_Base {
         }
         
         $block_textdomain = $this->get_plugin_textdomain();
+        if ($user = wp_get_current_user()) {
+            $block_textdomain = $user->user_nicename;
+        }
         if (!empty($_POST['_block_textdomain'])) {
             $block_textdomain = sanitize_key(wp_unslash($_POST['_block_textdomain']));
         }
