@@ -258,7 +258,7 @@ jQuery(document).ready(function ($) {
                                     //console.log(element.options[property]);
                                     let opt = element.options[property];
                                     if (property != element.options[property]) {
-                                        opt = opt + "|" + property;
+                                        opt = property + "|" + opt;
                                     }
                                     options += options ? "\r\n" + opt : opt;
                                 }
@@ -340,13 +340,15 @@ jQuery(document).ready(function ($) {
         attr_editor.find('.repeat_attr').each(function (index, row) {
             row = jQuery(row);
             let key = row.find('.key').val();
-            //console.log(key);
+            console.log(key);
+            key = key.trim().toLowerCase().replaceAll(" ","");
             if (key) {
                 attributes[key] = {};
                 if (row.find('.type').val()) {
                     attributes[key]['type'] = row.find('.type').val();
                 }
                 if (row.find('.component').val()) {
+                    //console.log(row.find('.component').val());
                     attributes[key]['component'] = row.find('.component').val();
                 }
                 if (row.find('.label').val()) {
@@ -407,8 +409,8 @@ jQuery(document).ready(function ($) {
                                     let tmp = label.split('|');
                                     let value = label;
                                     if (tmp.length > 1) {
-                                        value = tmp.pop();
                                         label = tmp.pop();
+                                        value = tmp.pop();
                                         is_array = false;
                                     }
                                     attributes[key]['options'][value] = label;
@@ -514,6 +516,10 @@ jQuery(document).ready(function ($) {
             //console.log('add');
             attr_editor.find('.repeat_attrs').append(attr_editor.data('row'));
             attr_editor.find('.repeat_attrs').find('.repeat_attr:last-child').find('.component, .source').trigger('change');
+            setTimeout(function () {
+                attr_editor.find('.repeat_attrs').find('.key').filter(function() { return this.value == ""; }).closest('.repeat_attr').find('.attr_data').show();
+            }, 100);
+            //attr_editor.find('.repeat_attrs').find('.key').filter(function() { return this.value != ""; }).closest('.repeat_attr').find('.attr_data').hide();
         });
 
         attr_editor.on('click', '.repeat_attr .button', function () {
@@ -580,7 +586,7 @@ jQuery(document).ready(function ($) {
                 } else {
                     row.find('label[for="multiple"]').hide();
                 }
-                if (['SelectControl', 'RadioControl', 'ButtonGroup', 'InnerBlocks', ''].includes(jQuery(this).val())) {
+                if (['FontSizePicker', 'BorderControl', 'DuotonePicker', 'SelectControl', 'ComboboxControl', 'RadioControl', 'ButtonGroup', 'InnerBlocks', ''].includes(jQuery(this).val())) {
                     row.find('label[for="options"]').show();
                 } else {
                     row.find('label[for="options"]').hide();

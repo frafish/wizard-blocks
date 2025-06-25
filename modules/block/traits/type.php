@@ -7,6 +7,11 @@ trait Type {
     public $revision;
     public static $cpt_name = 'block';
 
+
+    public static function get_cpt_name() {
+        return apply_filters('wizard_block/cpt/name', self::$cpt_name);
+    }
+
     /**
      * Register a custom post type called "book".
      *
@@ -49,7 +54,7 @@ trait Type {
             'show_ui' => true,
             'show_in_menu' => true,
             'query_var' => true,
-            'rewrite' => array('slug' => self::$cpt_name),
+            'rewrite' => array('slug' => self::get_cpt_name()),
             'capability_type' => 'post',
             'has_archive' => false,
             'hierarchical' => false,
@@ -57,13 +62,13 @@ trait Type {
             'supports' => array('title', 'author', 'excerpt', 'thumbnail', 'revisions'), // 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
             'show_in_rest' => true,
-            //'rest_base' => self::$cpt_name.'s',
+            //'rest_base' => self::get_cpt_name().'s',
         );
 
-        register_post_type(self::$cpt_name, $args);
+        register_post_type(self::get_cpt_name(), $args);
 
         add_filter('manage_posts_columns', function ($posts_columns, $post_type) {
-            if ($post_type == self::$cpt_name) {
+            if ($post_type == self::get_cpt_name()) {
                 return $this->array_insert_after($posts_columns, 'title', ['description' => __('Description', 'wizard-blocks')]);
             }
             return $posts_columns;
@@ -110,7 +115,7 @@ trait Type {
     public function has_block_changed($post_has_changed, $latest_revision, $post) {
         // natively check only title and excerpt
         //echo 'REVISION:'; var_dump($post_has_changed); die();
-        if ($post->post_type == self::$cpt_name) {
+        if ($post->post_type == self::get_cpt_name()) {
             $post_has_changed = false; 
             $json = $this->get_block_json($post->post_name);
             //var_dump(($_POST['revision'])); die();
@@ -138,7 +143,7 @@ trait Type {
     */
     public function save_block_revision($revision_id, $post_id) {
         $post = get_post($post_id);
-        if ($post->post_type == self::$cpt_name) {
+        if ($post->post_type == self::get_cpt_name()) {
             $json = $this->get_block_json($post->post_name);
             $zip = $this->get_block_revision($json['name'], $this->revision);
             if ($zip) {

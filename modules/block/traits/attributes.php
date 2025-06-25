@@ -323,9 +323,9 @@ if ($wrapper) { ?></script><?php }
            echo '('.$condition.') ? (';
        }
       ?>
-    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{<?php if (!empty($attr['className'])) { ?>className: "<?php echo esc_attr($attr['className']); ?>", <?php }  if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
+    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{ className: "block-editor-wrapper block-editor-wrapper__<?php echo esc_attr($id); ?> components-<?php echo strtolower($component); ?><?php if (!empty($attr['className'])) { echo ' '.esc_attr($attr['className']); } ?>", <?php if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
-        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
+        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo esc_attr($id); ?>", style: {display: "block"}}, wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>")),
         <?php } ?>
        wp.element.createElement(
@@ -357,6 +357,7 @@ if ($wrapper) { ?></script><?php }
                         switch($component) {
                             case 'ToolbarGroup':  break;
                             case 'ButtonGroup':  break;
+                            case 'ExternalLink':  break;
                             case 'ColorPicker': 
                                 $color = '';
                                 if (!empty($attr['default'])) { 
@@ -374,10 +375,10 @@ if ($wrapper) { ?></script><?php }
                             case 'TimePicker': 
                                 $date = 'new Date()';
                                 if (!empty($attr['default'])) { 
-                                    $date = '"'.esc_html($attr['default']).'"';
+                                    $date = '"'.esc_attr($attr['default']).'"';
                                 }
                                 ?>
-                                currentDate: props.attributes.<?php echo esc_attr($id); ?> || <?php echo esc_attr($date); ?>,
+                                currentDate: props.attributes.<?php echo esc_attr($id); ?> || <?php echo $date; ?>,
                             <?php 
                                 break;
                             case 'CheckboxControl':
@@ -402,7 +403,7 @@ if ($wrapper) { ?></script><?php }
                                         }
                                         $default = '[';
                                         foreach ($values as $key => $value) {
-                                            $def = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
+                                            $def = (empty($attr['type']) || in_array($attr['type'], ['string','array','object'])) ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
                                             if ($key) $default .= ',';
                                             $default .= $def;
                                         }
@@ -415,6 +416,61 @@ if ($wrapper) { ?></script><?php }
                                 ?>
                                 value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo $default_safe; } ?>,
                             <?php 
+                                break;
+                            case 'FontSizePicker': 
+                                $fontSizes = [];
+                                if (!empty($attr['options'])) {
+                                    foreach ($attr['options'] as $size => $opt) {
+                                        $fontSizes[] = [
+                                            "name" => $opt,
+                                            "slug" => sanitize_title($opt),
+                                            "size" => intval($size)
+                                        ];
+                                    } 
+                                    unset($attr['options']);
+                                }
+                                ?>
+                                fontSizes: <?php echo wp_json_encode($fontSizes); ?>,<?php //[{"name":"Small","slug":"small","size":12},{"name":"Big","slug":"big","size":26}] ?>
+                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
+                            <?php
+                                break;
+                            case 'BorderBoxControl':
+                            case 'BorderControl':
+                                $colors = [];
+                                if (!empty($attr['options'])) {
+                                    foreach ($attr['options'] as $color => $opt) {
+                                        $colors[] = [
+                                            "name" => $opt,
+                                            "color" => intval($color)
+                                        ];
+                                    } 
+                                    unset($attr['options']);
+                                }
+                                if (!empty($colors)) { ?>
+                                    colors: <?php echo wp_json_encode($colors); ?>,
+                                <?php }
+                            case 'BoxControl': ?>
+                                values: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
+                            <?php
+                                break;
+                            case 'DuotonePicker':
+                                $colorPalette = [];
+                                if (!empty($attr['options'])) {
+                                    foreach ($attr['options'] as $color => $opt) {
+                                        $colorPalette[] = [
+                                            "name" => $opt,
+                                            "slug" => sanitize_title($opt),
+                                            "color" => intval($color)
+                                        ];
+                                    } 
+                                    unset($attr['options']);
+                                }
+                                ?>
+                                colorPalette: <?php echo wp_json_encode($colorPalette); ?>,
+                                duotonePalette: <?php echo wp_json_encode($attr['default']); ?>,
+                                values: props.attributes.<?php echo esc_attr($id); ?>,
+                            <?php
+                                unset($attr['default']);
                                 break;
                             case 'RichText':
                             case 'TextControl':
@@ -455,13 +511,17 @@ if ($wrapper) { ?></script><?php }
                         },
                         <?php break;
                             case 'Heading': ?>
-                        text: wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
+                            text: wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
+                        <?php break;
+                        case 'ExternalLink': ?>
+                            href: <?php echo "'". esc_attr($attr['default']) ."'";  ?>,
                         <?php break;
                         case 'ToolbarDropdownMenu':  break;
                         case 'ToolbarGroup':  break;
                         case 'ButtonGroup':  break;
                             default: ?>
                         onChange: function (val) {
+                            //console.log(val);
                             <?php
                             if (!empty($attr['sanitize'])) { 
                                 switch($attr['sanitize']) {
@@ -508,7 +568,7 @@ if ($wrapper) { ?></script><?php }
                                         echo wp_json_encode($attr['options']);
                                     } else {
                                         foreach ($attr['options'] as $value => $label) { 
-                                            if ($attr['type'] == 'string') {
+                                            if (in_array($attr['type'], ['string', 'array', 'object'])) {
                                                 $value = '"'.$label.'"';
                                                 $tmp = explode('|', $label, 2);
                                                 if (count($tmp) > 1) {
@@ -562,24 +622,39 @@ if ($wrapper) { ?></script><?php }
                             $attr['options'] = ['left', 'center', 'right', 'justify'];
                         }
                         if (!empty($attr['options'])) {
-                            foreach ($attr['options'] as $value) { 
-                                $value_escaped = in_array($attr['type'], ['number', 'integer', 'boolean']) ? esc_attr($value) : '"'.esc_attr($value).'"'; ?>
+                            foreach ($attr['options'] as $key => $value) {
+                                $label_escaped = $value_escaped = '"'.esc_attr($value).'"';
+                                if (!is_numeric($key)) {
+                                    $value_escaped = '"'.esc_attr($key).'"'; // value|Label
+                                    $label_escaped = '"'.esc_attr($value).'"'; // value|Label
+                                }
+                                if (in_array($attr['type'], ['number', 'integer', 'boolean'])) {
+                                    $value_escaped = esc_attr($value);
+                                } ?>
                                 wp.element.createElement(wp.components.<?php echo $in_toolbar ? 'Toolbar' : ''; ?>Button, {
-                                    value: <?php echo esc_js($value_escaped); ?>,
-                                    variant: (props.attributes.<?php echo esc_attr($id); ?> === <?php echo esc_js($value_escaped); ?>) ? 'primary' : 'secondary',
+                                    value: <?php echo $value_escaped; ?>,
+                                    variant: (props.attributes.<?php echo esc_attr($id); ?> === <?php echo $value_escaped; ?>) ? 'primary' : 'secondary',
                                     onClick: function (event) {
                                         jQuery(event.target).addClass('is-primary').removeClass('is-secondary');
                                         jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
                                         props.setAttributes({<?php echo esc_attr($id); ?>: event.target.value});                                    
                                     },
-                                    text: wp.i18n.__(<?php echo esc_js($value_escaped); ?>, "<?php echo esc_attr($textdomain); ?>")
+                                    text: wp.i18n.__(<?php echo $label_escaped; ?>, "<?php echo esc_attr($textdomain); ?>")
                                 }),
                             <?php }
                         }       
                     } 
             }
             ?>
+            <?php if ($component == 'ExternalLink') { ?>
+            wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
+            <?php } ?>
             ),
+
+            <?php if ($component == 'ExternalLink' && !empty($attr['help'])) { ?>
+            wp.element.createElement("p", {className:'components-base-control__help'}, wp.i18n.__("<?php echo esc_attr($attr['help']); ?>", "<?php echo esc_attr($textdomain); ?>"), ),
+            <?php } ?>
+            
         )<?php if (!empty($conditions[$id])) { echo ') : null'; } ?>,
     <?php
    }

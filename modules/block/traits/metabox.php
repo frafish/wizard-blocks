@@ -127,17 +127,29 @@ trait Metabox {
     //https://developer.wordpress.org/block-editor/reference-guides/components/
     //https://wp-gb.com/
     public static $attributes_component = [
+        'AlignmentMatrixControl' => 'Alignment Matrix',
         'AnglePickerControl' => 'Angle',
+        //'BaseControl' => 'Base',
+        //'BorderBoxControl' => 'Border Box',
+        //'BorderControl' => 'Border',
+        //'BoxControl' => 'Box',
         'ButtonGroup' => 'Buttons',
         'CheckboxControl' => 'Checkbox',
+        'ComboboxControl' => 'Combobox',
         'ColorPicker' => 'Color',
         'DatePicker' => 'Date',
         'DateTimePicker' => 'DateTime',
         //'Divider' => 'Divider',
-        'Dropdown' => 'Dropdown',
+        //'Dropdown' => 'Dropdown',
+        'DuotonePicker' => 'Duotone',
+        'ExternalLink' => 'External Link',
+        //'FocalPointPicker' => 'Focal Point',
+        'FontSizePicker' => '​Font Size',
+        //'GradientPicker' => 'Gradient',
         'InnerBlocks' => 'Inner Blocks',
         //'InputControl' => 'Email', //experimental
         //'Heading' => 'Heading',
+        'HorizontalRule' => '​Horizontal Rule',
         //'InputControl' => 'InputControl', //experimental
         'MediaUpload' => 'Media',
         //'NumberControl' => 'Number', //experimental
@@ -154,95 +166,115 @@ trait Metabox {
 
             /*
              * TODO - wp.components
-              Animate:         ​
-              Autocomplete:
-              BaseControl:
-              BlockQuotation:
-              ​Button:
-              ​Card:
-              ​CardBody:
-              ​CardDivider:
-              ​CardFooter:
-              ​CardHeader:
-              ​CardMedia:
-              ​Circle:
-              ​ClipboardButton:
-              ​ColorIndicator:
-              ​ColorPalette:
-              ​ComboboxControl:
-              ​CustomGradientPicker:
-              ​CustomSelectControl:
-              ​Dashicon:
-              Disabled:
-              ​Draggable:
-              ​DropZone:
-              ​DropZoneProvider:
-              ​DropdownMenu:
-              ​DuotonePicker:
-              ​DuotoneSwatch:
-              ​ExternalLink:
-              ​Fill:
-              ​Flex:
-              ​FlexBlock:
-              ​FlexItem:
-              ​FocalPointPicker:
-              ​FocusReturnProvider:
-              ​FocusableIframe:
-              ​FontSizePicker:
-              ​FormFileUpload:
-              ​FormToggle:
-              ​FormTokenField:
-              ​G:
-              ​GradientPicker:
-              ​Guide:
-              ​GuidePage:
-              ​HorizontalRule:
-              ​Icon:
-              ​IconButton:
-              ​IsolatedEventContainer:
-              ​KeyboardShortcuts:
-              ​Line:
-              ​MenuGroup:
-              ​MenuItem:
-              ​MenuItemsChoice:
-              ​Modal:
-              ​NavigableMenu:
-              ​Notice:
-              ​NoticeList:
-              ​Panel:
-              ​PanelBody:
-              ​PanelHeader:
-              ​PanelRow:
-              ​Path:
-              ​Placeholder:
-              ​Polygon:
-              ​Popover:
-              ​QueryControls:
-              ​RangeControl:
-              ​Rect:
-              ​ResizableBox:
-              ​ResponsiveWrapper:
-              ​SVG:
-              ​SandBox:
-              ​ScrollLock:
-              ​SearchControl:
-              ​Slot:
-              ​SlotFillProvider:
-              ​Snackbar:
-              ​SnackbarList:
-              ​Spinner:
-              ​TabPanel:
-              ​TabbableContainer:
-              ​TextHighlight:
-              ​Tip:
-              ​ToggleControl:
-              ​Toolbar:
-              ​ToolbarButton:
-              ​ToolbarGroup:
-              ​ToolbarItem:
-              ​Tooltip:
-              TreeSelect:
-              VisuallyHidden
+            AlignmentMatrixControl: 
+            AnglePickerControl: 
+            Animate: 
+            Autocomplete:
+            BaseControl: 
+            BlockQuotation:
+            BorderBoxControl:
+            BorderControl: 
+            BoxControl: 
+            Button: 
+            ButtonGroup:
+            Card: 
+            CardBody:
+            CardDivider:
+            CardFooter: 
+            CardHeader: 
+            CardMedia: 
+            CheckboxControl:
+            Circle: 
+            ClipboardButton:
+            ColorIndicator: 
+            ColorPalette: 
+            ColorPicker:
+            ComboboxControl:
+            Composite: 
+            CustomGradientPicker: 
+            CustomSelectControl: 
+            Dashicon: 
+            DatePicker:
+            DateTimePicker:
+            Disabled: 
+            Draggable:
+            DropZone: 
+            DropZoneProvider:
+            Dropdown: 
+            DropdownMenu:
+            DuotonePicker:
+            DuotoneSwatch:
+            ExternalLink: 
+            Fill: 
+            Flex: 
+            FlexBlock:
+            FlexItem: 
+            FocalPointPicker:
+            FocusReturnProvider: 
+            FocusableIframe: 
+            ​FontSizePicker: 
+            ​FormFileUpload: 
+            FormToggle: 
+            FormTokenField:
+            G: 
+            GradientPicker:
+            Guide: 
+            GuidePage: 
+            ​HorizontalRule: 
+            Icon: 
+            ​IconButton: 
+            ​IsolatedEventContainer: 
+            ​KeyboardShortcuts: 
+            ​Line: 
+            ​MenuGroup: 
+            ​MenuItem: 
+            ​MenuItemsChoice: 
+            ​Modal: 
+            ​NavigableMenu: 
+            ​Navigator: 
+            ​Notice: 
+            ​NoticeList: 
+            ​Panel: 
+            ​PanelBody: 
+            ​PanelHeader: 
+            ​PanelRow: 
+            ​Path: 
+            ​Placeholder: 
+            ​Polygon: 
+            ​Popover: 
+            ​ProgressBar: 
+            ​QueryControls: 
+            ​RadioControl: 
+            ​RangeControl: 
+            ​Rect: 
+            ​ResizableBox: 
+            ​ResponsiveWrapper: 
+            ​SVG: 
+            ​SandBox: 
+            ​ScrollLock: 
+            ​SearchControl: 
+            ​SelectControl: 
+            ​Slot: 
+            ​SlotFillProvider: 
+            Snackbar: 
+            ​SnackbarList: 
+            ​Spinner: 
+            ​TabPanel: 
+            ​TabbableContainer: 
+            ​TextControl: 
+            ​TextHighlight: 
+            ​TextareaControl: 
+            ​TimePicker: 
+            ​Tip: 
+            ​ToggleControl: 
+            ​Toolbar: 
+            ​ToolbarButton: 
+            ​ToolbarDropdownMenu: 
+            ​ToolbarGroup: 
+            ​ToolbarItem: 
+            ​Tooltip: 
+            ​TreeSelect: 
+            ​VisuallyHidden: 
              */
     ];
     //https://www.w3schools.com/html/html_form_input_types.asp
@@ -584,7 +616,7 @@ trait Metabox {
             <div id="_block_attributes_editor">
                 <div class="repeat_attrs">
                     <div class="repeat_attr">
-                        <div class="attr_ops">
+                        <div class="attr_ops d-flex">
                             <span class="attr_name dashicons-before dashicons-editor-expand"> <?php esc_attr_e('Add an attribute KEY', 'wizard-blocks'); ?></span>
                             <abbr title="<?php esc_attr_e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php esc_attr_e('Up', 'wizard-blocks'); ?>" class="button attr_up pull-right"><span class="dashicons dashicons-arrow-up-alt"></span></abbr>

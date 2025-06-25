@@ -65,7 +65,7 @@ trait Pages {
             <h2><?php esc_html_e('Get code', 'wizard-blocks'); ?></h2>
             <p><?php esc_html_e('Copy these lines of PHP code into your Theme (or Child theme) at the end of the functions.php file. After that you could switch off this plugin.', 'wizard-blocks'); ?></p>
             <textarea style="width:100%;" rows="<?php echo count($wizard_blocks) + 2; ?>"><?php echo esc_html($code); ?></textarea>
-
+            <?php do_action('wizard/blocks/tools', $this); ?>
         </div>
         <?php
         wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/css/import.css', [], '1.2.0');
