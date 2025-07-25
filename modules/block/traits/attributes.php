@@ -122,12 +122,18 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     },
     <?php } ?>
     edit(props) {
-        <?php if (!empty($args['example']['attributes']['preview'])) { ?>
+        <?php if (!empty($args['example']['attributes']['preview'])) { 
+        $image_url = $args['example']['attributes']['preview'];
+        // TODO: need to convert file:../ to current block folder via js
+        $script_id = sanitize_title($args['name']).'-editor-script-js';    
+        //document.getElementById("<?php echo $script_id; ?>").src
+        ?>
         if ( props.attributes.preview ) {
+            
             return wp.element.createElement('img', {
                 width: "100%",
                 height: "auto",
-                src: '<?php echo esc_url($args['example']['attributes']['preview']); ?>'
+                src: '<?php echo esc_url($image_url); ?>'
             });	
 	}
         <?php } ?>

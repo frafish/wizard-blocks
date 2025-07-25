@@ -93,6 +93,11 @@ jQuery(document).ready(function ($) {
     var _block_blockHooks = wp.codeEditor.initialize(jQuery('#_block_blockHooks'), editorSettings);
     var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
 
+
+    jQuery( ".CodeMirror" ).resizable({
+        handles: 'se, s' // Only allow resizing from the top and bottom
+    });
+  
     /**************************************************************************/
 
     // Set all variables to be used in scope

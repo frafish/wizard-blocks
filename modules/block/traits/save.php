@@ -59,7 +59,7 @@ trait Save {
         $post_excerpt = get_post_field('post_excerpt', $post_id);
         
         $attributes = [];
-        if (!empty($_POST['_block_attributes'])) {
+        if (!empty($_POST['_block_attributes']) && $_POST['_block_attributes'] != '{}') {
             $attributes = sanitize_textarea_field(wp_unslash($_POST['_block_attributes']));
             if (substr($attributes, 0, 1) != '{') {
                 $attributes = '{' . $attributes;
@@ -77,6 +77,8 @@ trait Save {
                 delete_post_meta($post_id, '_transient_block_attributes');
             }
             //var_dump($attributes); die();
+        } else {
+            delete_post_meta($post_id, '_transient_block_attributes');
         }
         
         $apiVersion = end(self::$apiVersions);
@@ -156,7 +158,7 @@ trait Save {
                 }
             }
         }
-        if (!empty($_POST['_block_supports_custom'])) {            
+        if (!empty($_POST['_block_supports_custom']) && $_POST['_block_supports_custom'] != '{}') {            
             $custom_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_supports_custom'], '"')));
             $custom = json_decode($custom_json, true); 
             if ($custom == NULL) {
@@ -165,6 +167,8 @@ trait Save {
                 $supports = array_merge($supports, $custom);
                 delete_post_meta($post_id, '_transient_block_supports_custom');
             }
+        } else {
+            delete_post_meta($post_id, '_transient_block_supports_custom');
         }
         //var_dump($supports); die();
         
@@ -189,6 +193,7 @@ trait Save {
         $example = false;
         $preview = get_post_meta($post_id, '_thumbnail_id', true);
         if ($preview) {
+            $image_src = wp_get_attachment_image_url($preview, 'full');
             $preview_src = wp_get_attachment_image_url($preview, 'medium');
             //var_dump($preview_src); die();
             if (empty($attributes['preview'])) {
@@ -199,6 +204,11 @@ trait Save {
             if (empty($example)) {
                 $example = [];
                 $example['attributes']['preview'] = $preview_src;
+            }
+            //copy image inside block folder  
+            $image_name = basename($image_src);
+            if (copy($image_src,$basepath.$image_name)) {
+                $example['attributes']['preview'] = "file:./".$image_name;
             }
         }
         
@@ -376,7 +386,7 @@ trait Save {
         $json = array_filter($json);
         
         // add extra fields
-        if (!empty($_POST['_block_extra'])) {            
+        if (!empty($_POST['_block_extra']) && $_POST['_block_extra'] != '{}') {            
             $extra_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_extra'], '"')));
             $extra = json_decode($extra_json, true); 
             if ($extra == NULL) {
@@ -385,7 +395,8 @@ trait Save {
                 $json = array_merge($json, $extra);
                 delete_post_meta($post_id, '_transient_block_extra');
             }
-            
+        } else {
+            delete_post_meta($post_id, '_transient_block_extra');
         }
         
         //var_dump($json);
