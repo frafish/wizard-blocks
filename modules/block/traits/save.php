@@ -39,19 +39,27 @@ trait Save {
             //var_dump($json_old); die();
             
             $textdomain_old = $this->get_block_textdomain($json_old);
-            if ($block_textdomain != $textdomain_old) {
-                // delete old dir
-                $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
-                $this->dir_delete($old_dir);
-            }
             
-            // if changed slug delete old dir
-            if ($post_slug != $block_slug) {
+            //changed block slug
+            if ($post_slug && $block_slug && $post_slug != $block_slug) {
                 wp_update_post( ['ID' => $post_id, 'post_name' => $block_slug] );
                 // delete old dir
                 $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
+                $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+                // copy all content from old dir to new dir
+                rename($old_dir, $new_dir);
                 $this->dir_delete($old_dir);
                 $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
+            } else {
+                // changed textdomain
+                if ($post_slug && $textdomain_old && $block_textdomain != $textdomain_old) {
+                    // delete old dir
+                    $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
+                    $new_dir = $this->get_ensure_blocks_dir($post_slug, $block_textdomain);
+                    // copy all content from old dir to new dir
+                    rename($old_dir, $new_dir);
+                    $this->dir_delete($old_dir);
+                }
             }
         }
         
@@ -284,7 +292,7 @@ trait Save {
                 //if (file_put_contents($path, $code)) {
                     $json[$asset] = [ "file:./" . $file ];
                 }
-                // generate minified version
+                // generate minified JS version
                 if (in_array($asset, ['editorScript', 'viewScript', 'viewScriptModule', 'script'])) {
                     $minifier = new \MatthiasMullie\Minify\JS($code);
                     // save minified file to disk
@@ -296,6 +304,13 @@ trait Save {
                         //file_put_contents($path, $code);
                         $this->get_filesystem()->put_contents($path, $code);
                     }
+                }
+                // generate CSS minified version
+                if (in_array($asset, ['editorStyle', 'viewStyle', 'style'])) {
+                    $minifier = new \MatthiasMullie\Minify\CSS($code);
+                    // save minified file to disk
+                    $minifier->minify($path_min);
+                    $json[$asset] = [ "file:./" . $file_name . (SCRIPT_DEBUG ? '.' : $min) . $type ];
                 }
             } else {
                 // delete old assets files?! 

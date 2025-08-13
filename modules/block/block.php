@@ -19,6 +19,8 @@ class Block extends Module_Base {
     use Traits\Icons;
     use Traits\Save;
     
+    public static $instance = null;
+    
     public static $assets = [
             'script' => 'js',
             'viewScript' => 'js',
@@ -37,7 +39,7 @@ class Block extends Module_Base {
     ];
     
     /**
-     * Twig constructor.
+     * Block constructor.
      *
      * @since 1.0.1
      * @param array $args
@@ -54,6 +56,10 @@ class Block extends Module_Base {
                 
         add_action('add_meta_boxes', [$this, 'meta_fields_add_meta_box']);
         add_action('save_post', [$this, 'meta_fields_save_meta_box_data'], 10, 3);
+        
+        if (is_admin() && isset($_GET['post_type']) && $_GET['post_type'] == self::$cpt_name) {
+            add_filter( 'gettext', [$this, 'gettext'], 10, 3);
+        }
         
         add_filter('block_type_metadata_settings', function($settings, $metadata) {
             if (isset($metadata['file']) && !isset($settings['file'])) {
@@ -116,6 +122,34 @@ class Block extends Module_Base {
         //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
         add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
         
+    }
+    
+    /**
+     * Instance.
+     *
+     * Ensures only one instance of the block class is loaded or can be loaded.
+     *
+     * @since 1.0.0
+     * @access public
+     * @static
+     *
+     * @return Plugin An instance of the class.
+     */
+    public static function instance() {
+        if (is_null(self::$instance)) {
+            self::$instance = new self();
+
+            /**
+             * on loaded.
+             *
+             * Fires when was fully loaded and instantiated.
+             *
+             * @since 1.0.1
+             */
+            do_action('wizard-blocks/loaded/blocks', self::$instance);
+        }
+
+        return self::$instance;
     }
     
     public function render($attributes, $content, $block) {
@@ -281,6 +315,10 @@ class Block extends Module_Base {
             return reset($posts);
         }
         return false;
+    }
+    
+    public static function get_wb_blocks() {
+        return self::instance()->get_blocks();
     }
     
     public function get_blocks() {

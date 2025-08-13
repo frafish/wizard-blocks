@@ -90,7 +90,7 @@ trait Pages {
             if ($block_post = $this->get_block_post($block_slug)) {
                 $blocks[$name]['post'] = $block_post;
                 if ($block_dir = $this->get_blocks_dir($block_slug)) {
-                    $blocks[$name]['file'] = $block_dir . DIRECTORY_SEPARATOR . $block_slug . DIRECTORY_SEPARATOR . 'block.json';
+                    $blocks[$name]['file'] = $block_dir . DIRECTORY_SEPARATOR . 'block.json';
                 }
             }
             if (!empty($blocks[$name]['file']) && file_exists($blocks[$name]['file'])) {
@@ -131,7 +131,7 @@ trait Pages {
             <ul class="subsubsub blocks-filter">
                 <li class="all"><a class="current" href="#"><?php esc_html_e('All', 'wizard-blocks'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
-                    | <li class><a href="#<?php echo esc_attr($textdomain); ?>"><?php echo esc_html(ucfirst($textdomain)); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
+                    | <li class><a href="#<?php echo esc_attr($textdomain); ?>"><?php echo esc_html(ucfirst(str_replace('-', ' ', $textdomain))); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
                 <?php } ?>
             </ul>
             <hr style="clear: both; padding-top: 10px;">
@@ -356,6 +356,7 @@ trait Pages {
             $block['folder'] = $ablock;
             if (!empty($block['name'])) {
                 $blocks[$block['name']] = $block;
+                //var_dump($ablock);
                 $blocks[$block['name']]['file'] = $ablock . DIRECTORY_SEPARATOR . 'block.json';
             } else {
                 // TODO: no name?!
@@ -381,5 +382,24 @@ trait Pages {
             }
         }
         return $block_count;
+    }
+    
+    function gettext($translation, $text, $domain ) {
+        if ($text == 'No Blocks found.') {
+            ob_start();
+            ?>
+            <div style="text-align: center;">
+                <span class="dashicons dashicons-warning"></span>
+                <br>
+                <h2><?php echo $translation; ?></h2>
+                <br>
+                <a href="<?php echo admin_url('post-new.php?post_type='.self::$cpt_name); ?>" class="button dashicons-before dashicons-plus-alt components-button has-text has-icon">Add your first Block</a>
+                or 
+                <a href="<?php echo admin_url('edit.php?post_type='.self::$cpt_name.'&page=wtools'); ?>" class="button dashicons-before dashicons-database-import">Import Blocks</a>
+            </div>
+            <?php
+            $translation = ob_get_clean();
+        }
+        return $translation;
     }
 }

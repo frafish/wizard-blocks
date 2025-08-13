@@ -52,6 +52,15 @@ Trait Attributes {
         $textdomain = $this->get_block_textdomain($args);
         if (!empty($args['attributes'])) {
             foreach ($args['attributes'] as $id => $attr) {
+                if (!empty($attr['location']) && empty($attr['position'])) { 
+                    //genesis location
+                    switch($attr['location']) {
+                        case 'style': $args['attributes'][$id]['position'] = $attr['position'] = 'style'; break;
+                        case 'advanced': $args['attributes'][$id]['position'] = $attr['position'] = 'advanced'; break;
+                        case 'editor': 
+                        default: // default
+                    }
+                }
                 if (!empty($attr['position'])) {
                     switch ($attr['position']) {
                         case 'style':
@@ -126,10 +135,9 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
         $image_url = $args['example']['attributes']['preview'];
         // TODO: need to convert file:../ to current block folder via js
         $script_id = sanitize_title($args['name']).'-editor-script-js';    
-        //document.getElementById("<?php echo $script_id; ?>").src
+        //document.getElementById("?php echo $script_id; ?").src
         ?>
         if ( props.attributes.preview ) {
-            
             return wp.element.createElement('img', {
                 width: "100%",
                 height: "auto",
@@ -264,6 +272,7 @@ if ($wrapper) { ?></script><?php }
        
        $label = empty($attr['label']) ? ucfirst($id) : esc_html($attr['label']);
        $textdomain = empty($attr['textdomain']) ? $this->get_block_textdomain($args) : esc_attr($attr['textdomain']);
+       
        $in_toolbar = !empty($attr['position']) && $attr['position'] == 'toolbar';
        
        if (!empty($attr['type']) && $attr['type'] == "object") {
@@ -278,6 +287,18 @@ if ($wrapper) { ?></script><?php }
                    case 'CheckboxControl':
                        $attr['type'] = 'boolean';
                }
+           }
+       }
+       
+       if (empty($attr['component'])) {
+           if (!empty($attr['control'])) { 
+                //genesis control
+                switch($attr['control']) {
+                    //case 'url': $attr['component'] = 'LinkControl'; break;
+                    case 'textarea': $attr['component'] = 'TextareaControl'; break;
+                    case 'text':
+                    default: //TextControl
+                }
            }
        }
        
@@ -420,7 +441,7 @@ if ($wrapper) { ?></script><?php }
                                 }
                                 $default_safe = $default;
                                 ?>
-                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo $default_safe; } ?>,
+                                value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (!empty($attr['default'])) { echo ' || '; echo $default_safe; } ?>,
                             <?php 
                                 break;
                             case 'FontSizePicker': 
@@ -437,7 +458,7 @@ if ($wrapper) { ?></script><?php }
                                 }
                                 ?>
                                 fontSizes: <?php echo wp_json_encode($fontSizes); ?>,<?php //[{"name":"Small","slug":"small","size":12},{"name":"Big","slug":"big","size":26}] ?>
-                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
+                                value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
                             <?php
                                 break;
                             case 'BorderBoxControl':
@@ -481,14 +502,14 @@ if ($wrapper) { ?></script><?php }
                             case 'RichText':
                             case 'TextControl':
                             default: ?>
-                                value: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
+                                value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
                             <?php
                         } 
                         switch ($component) {
                             case 'MediaUpload': ?>
                         onSelect: function (media) {
                             document.getElementById('media-<?php echo esc_attr($id); ?>').src = media.sizes.thumbnail.url;
-                            props.setAttributes({<?php echo esc_attr($id); ?>: media.id});
+                            props.setAttributes({"<?php echo esc_attr($id); ?>": media.id});
                         },
                         render: function ( open ) {
                             let src = '/wp-includes/images/media/default.svg';
@@ -540,7 +561,7 @@ if ($wrapper) { ?></script><?php }
                             ?>
                             val = parseInt(val);
                             <?php } ?>
-                            props.setAttributes({<?php echo esc_attr($id); ?>: val});
+                            props.setAttributes({"<?php echo esc_attr($id); ?>": val});
                         },
                         <?php
                         }
@@ -560,7 +581,7 @@ if ($wrapper) { ?></script><?php }
                                         ?>
                                         {title: "<?php echo esc_attr($label); ?>",
                                         onClick: function (event) {
-                                            props.setAttributes({<?php echo esc_attr($id); ?>: <?php echo esc_js($value_safe); ?>});                                    
+                                            props.setAttributes({"<?php echo esc_attr($id); ?>": <?php echo esc_js($value_safe); ?>});                                    
                                         }, },
                                         <?php
                                     }
@@ -643,7 +664,7 @@ if ($wrapper) { ?></script><?php }
                                     onClick: function (event) {
                                         jQuery(event.target).addClass('is-primary').removeClass('is-secondary');
                                         jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
-                                        props.setAttributes({<?php echo esc_attr($id); ?>: event.target.value});                                    
+                                        props.setAttributes({"<?php echo esc_attr($id); ?>": event.target.value});                                    
                                     },
                                     text: wp.i18n.__(<?php echo $label_escaped; ?>, "<?php echo esc_attr($textdomain); ?>")
                                 }),

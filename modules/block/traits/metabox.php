@@ -432,7 +432,7 @@ trait Metabox {
                     <li><b>$block</b> (<a href="https://developer.wordpress.org/reference/classes/wp_block/" target="_blank">WP_Block</a>): <?php esc_attr_e('The instance of the WP_Block class that represents the block being rendered.', 'wizard-blocks'); ?></li>
                 </ul>
                 <?php
-                $example = "&lt;p &lt;?php echo <a href='https://developer.wordpress.org/reference/functions/get_block_wrapper_attributes/' target='_blank'>get_block_wrapper_attributes</a>(); ?&gt&gt;<br> &lt;?php<br> echo <b>\$attributes</b>['acme']; <br> echo <b>\$content</b>; <br> echo <b>\$block</b>->blockName;<br>?&gt;<br>&lt;/p&gt;";
+                $example = "&lt;div &lt;?php echo <a href='https://developer.wordpress.org/reference/functions/get_block_wrapper_attributes/' target='_blank'>get_block_wrapper_attributes</a>(); ?&gt&gt;<br> &lt;?php<br> echo <b>\$attributes</b>['acme']; <br> echo <b>\$content</b>; <br> echo <b>\$block</b>->blockName;<br>?&gt;<br>&lt;/div&gt;";
                 //echo '<p ' . get_block_wrapper_attributes() . '><?php (empty($attributes['acme'])) ? '' : $content) . '</p>' 
                 ?>
                 <details>
@@ -735,13 +735,23 @@ trait Metabox {
                     }
                     ?></select></p>	           
 
-        <?php if (!empty($post->post_name)) { ?>
-                <h3><label for="_block_name"><?php esc_attr_e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
-                <p><input style="width: 45%;" type="text" id="_block_textdomain" name="_block_textdomain" value="<?php echo esc_attr($this->get_block_textdomain($json)); ?>" />
+        <?php
+        
+            $textdomain = $post_name = $placeholder = '';
+            if (!empty($post->post_name)) { 
+                $post_name = $post->post_name; 
+                $textdomain = $this->get_block_textdomain($json);
+            }
+            if ($user = wp_get_current_user()) {
+                $placeholder = $user->user_nicename;
+            }
+            ?>
+            <h3><label for="_block_name"><?php esc_attr_e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p><input style="width: 45%;" type="text" id="_block_textdomain" name="_block_textdomain" value="<?php echo esc_attr($textdomain); ?>" placeholder="<?php echo esc_attr($placeholder); ?>" />
             <?php //echo esc_html($this->get_block_textdomain($json));  ?>
-                    /
-                    <input style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post->post_name); ?>" /></p>
-        <?php } ?>
+                /
+            <input style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post_name); ?>" placeholder="<?php echo esc_attr($post_name); ?>" /></p>
+        
 
             <h3><label for="_block_version"><?php esc_attr_e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php

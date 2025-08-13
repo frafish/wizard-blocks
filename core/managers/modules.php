@@ -16,7 +16,6 @@ final class Modules {
     private $modules = [];
 
     public function __construct($dir) {
-
         $this->register($dir);
         do_action('wizard-blocks/modules');
     }

@@ -2,7 +2,6 @@
 .button.dashicons-before:before {
     margin-right: 4px;
     vertical-align: middle;
-    margin-top: -4px;
 }
 .icon svg {
     max-width: 100%;

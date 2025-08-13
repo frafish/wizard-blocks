@@ -139,5 +139,9 @@ class Plugin {
         $composer = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'composer.json';
         return file_exists($composer);
     }
+    
+    public static function get_blocks() {
+        return \WizardBlocks\Modules\Block\Block::instance()->get_blocks();
+    }
 
 }
