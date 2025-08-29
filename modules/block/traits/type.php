@@ -63,6 +63,18 @@ trait Type {
             'menu_icon' => 'dashicons-block-default',
             'show_in_rest' => true,
             //'rest_base' => self::get_cpt_name().'s',
+            /*'capability_type'    => self::get_cpt_name(), // imposta la base delle capabilities
+            'map_meta_cap'       => true, // abilita il mapping delle capabilities
+            'capabilities'       => array(
+                'edit_post'              => 'edit_'.self::get_cpt_name(),
+                'read_post'              => 'read_'.self::get_cpt_name(),
+                'delete_post'            => 'delete_'.self::get_cpt_name(),
+                'edit_posts'             => 'edit_'.self::get_cpt_name().'s',
+                'edit_others_posts'      => 'edit_others_'.self::get_cpt_name().'s',
+                'publish_posts'          => 'publish_'.self::get_cpt_name().'s',
+                'read_private_posts'     => 'read_private_'.self::get_cpt_name().'s',
+                'delete_posts'           => 'delete_'.self::get_cpt_name().'s',
+            ),*/
         );
 
         register_post_type(self::get_cpt_name(), $args);
@@ -80,7 +92,46 @@ trait Type {
                 }
             }
         }, 10, 2);
+        
+        /*
+        $cpt_administrator_role = get_role('administrator');
+        $capabilities = $this->get_caps();
+        foreach ( $capabilities as $cap ) {
+            $cpt_administrator_role->add_cap( $cap );
+        }
+        */
     }
+    
+    /**
+     * Get capabilities.
+     *
+     * @return array
+     */
+     public function get_caps() {
+      $capability_type = self::get_cpt_name();
+      return [
+          // Post type
+          "edit_{$capability_type}",
+          "read_{$capability_type}",
+          "delete_{$capability_type}",
+          "edit_{$capability_type}s",
+          "edit_others_{$capability_type}s",
+          "publish_{$capability_type}s",
+          "read_private_{$capability_type}s",
+          "delete_{$capability_type}s",
+          "delete_private_{$capability_type}s",
+          "delete_published_{$capability_type}s",
+          "delete_others_{$capability_type}s",
+          "edit_private_{$capability_type}s",
+          "edit_published_{$capability_type}s",
+
+          // Terms
+          // "manage_{$capability_type}_terms",
+          // "edit_{$capability_type}_terms",
+          // "delete_{$capability_type}_terms",
+          // "assign_{$capability_type}_terms",
+        ];
+   }
 
     /**
      * Insert a value or key/value pair after a specific key in an array.  If key doesn't exist, value is appended
@@ -166,7 +217,7 @@ trait Type {
             * they are different, unless a plugin tells us to always save regardless.
             * If no previous revisions, save one.
             */
-           $revisions = wp_get_post_revisions( $post_id );
+           $revisions = wp_get_post_revisions( $post->ID );
            if ( $revisions ) {
                 // Grab the latest revision, but not an autosave.
                 foreach ( $revisions as $revision ) {

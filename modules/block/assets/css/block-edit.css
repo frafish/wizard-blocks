@@ -133,3 +133,17 @@
    border-color: transparent transparent gray transparent;
    transform: rotate(0deg);
 }
+
+.notice-inline {
+  border: 1px solid;
+    border-left-width: 1px;
+  border-left-width: 4px;
+  margin: 15px 0;
+  padding: 0 12px;   
+}
+.notice-inline.notice-success {
+  border-left-color: #00a32a;
+}
+.notice-inline.notice-warning {
+  border-left-color: #dba617;
+}

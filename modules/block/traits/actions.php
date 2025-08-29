@@ -211,8 +211,9 @@ Trait Actions {
     }
     
     public function get_block_zip_filename($block, $basename = false) {
+        if (is_array($block)) $block = $block['name'];
         list($block_textdomain, $block_slug) = explode('/', $block);
-        $block_json = $this->get_json_data($block_slug);
+        $block_json = $this->get_block_json($block_slug, $block_textdomain);
         // Set the system path for our zip file
         $filename = 'block_' . $this->get_block_textdomain($block_json) . '_' . $block_slug;
         if (!$basename) {
@@ -221,7 +222,7 @@ Trait Actions {
         return $filename;
     }
     
-    public function extract_block_zip($target_file) {
+    public function extract_block_zip($target_file, $notice = true) {
         $tmpdir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
         //unzip_file($target_file, $tmpdir);
         $zip = new \ZipArchive;
@@ -267,10 +268,12 @@ Trait Actions {
                 }
                 //}
             }
-            if ($block_post) {
-                $this->_notice(__('Blocks imported!', 'wizard-blocks'));
-            } else {
-                $this->_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
+            if ($notice) {
+                if ($block_post) {
+                    $this->_notice(__('Blocks imported!', 'wizard-blocks'));
+                } else {
+                    $this->_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
+                }
             }
             $this->dir_delete($tmpdir); // MAYBE NOT?!
         }

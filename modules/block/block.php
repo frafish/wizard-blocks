@@ -269,7 +269,7 @@ class Block extends Module_Base {
     }
     
     public function is_block_edit() {
-        return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && get_post_type() == 'block') || (!empty($_GET['post_type']) && $_GET['post_type'] == 'block'));
+        return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && !empty($_GET['post']) && get_post_type($_GET['post']) == self::get_cpt_name()) || (!empty($_GET['post_type']) && $_GET['post_type'] == self::get_cpt_name()));
     }
     
     public function add_mime_types( $mimes ) {
@@ -306,7 +306,7 @@ class Block extends Module_Base {
         $posts = get_posts(
                 [
                     'name' => $slug,
-                    'post_type' => 'block',
+                    'post_type' => self::get_cpt_name(),
                     'posts_per_page' => 1,
                     'post_status' => 'any',
                 ]
@@ -370,15 +370,20 @@ class Block extends Module_Base {
     }
     
     public function insert_block_post($block, $args = []) {
-        $block_post = [
-            'post_title' => empty($args['title']) ? $block : $args['title'],
-            'post_name' => $block,
-            'post_excerpt' => empty($args['description']) ? '' : $args['description'],
-            'post_type' => 'block',
-            'post_status' => 'publish'
-        ];
-        //var_dump($block_post); die();
-        $block_post_id = wp_insert_post($block_post);
+        $block_post = $this->get_block_post($block);
+        if ($block_post) {
+            $block_post_id = $block_post->ID;
+        } else {
+            $block_post = [
+                'post_title' => empty($args['title']) ? $block : $args['title'],
+                'post_name' => $block,
+                'post_excerpt' => empty($args['description']) ? '' : $args['description'],
+                'post_type' => 'block',
+                'post_status' => 'publish'
+            ];
+            //var_dump($block_post); die();
+            $block_post_id = wp_insert_post($block_post);
+        }
         return $block_post_id;
     }
     
@@ -587,7 +592,7 @@ class Block extends Module_Base {
      *
      * @return string
      */
-    private function get_blocks_dir($slug = '', $textdomain = '*') {
+    public function get_blocks_dir($slug = '', $textdomain = '*') {
         $wp_upload_dir = wp_upload_dir();
         $path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'blocks';
         $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
@@ -679,6 +684,8 @@ class Block extends Module_Base {
     public function dir_copy($src, $dst) {
         // open the source directory 
         $dir = opendir($src);
+        if (substr($src,-1) == DIRECTORY_SEPARATOR) $src = substr($src, 0, -1);
+        if (substr($dst,-1) == DIRECTORY_SEPARATOR) $dst = substr($dst, 0, -1);
         // Make the destination directory if not exist 
         @wp_mkdir_p($dst);
         // Loop through the files in source directory 

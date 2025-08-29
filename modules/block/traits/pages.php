@@ -58,13 +58,16 @@ trait Pages {
             $wizard_blocks = $this->get_blocks();
             foreach ($wizard_blocks as $ablock) {
                 $json = $ablock . DIRECTORY_SEPARATOR . 'block.json';
-                $code .= 'register_block_type("' . $json . '");' . PHP_EOL;
+                $code_block = 'register_block_type("' . $json . '");' . PHP_EOL;
+                $code_block = apply_filters('wizard/blocks/code/block', $code_block, $json, $code);
+                $code .= $code_block;
             }
+            $code = apply_filters('wizard/blocks/code', $code);
             ?>
             <hr>
             <h2><?php esc_html_e('Get code', 'wizard-blocks'); ?></h2>
             <p><?php esc_html_e('Copy these lines of PHP code into your Theme (or Child theme) at the end of the functions.php file. After that you could switch off this plugin.', 'wizard-blocks'); ?></p>
-            <textarea style="width:100%;" rows="<?php echo count($wizard_blocks) + 2; ?>"><?php echo esc_html($code); ?></textarea>
+            <textarea style="width:100%;" rows="<?php echo substr_count($code, PHP_EOL) + 2; ?>" data-blocks="<?php echo count($wizard_blocks); ?>"><?php echo esc_html($code); ?></textarea>
             <?php do_action('wizard/blocks/tools', $this); ?>
         </div>
         <?php
