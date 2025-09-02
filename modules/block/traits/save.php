@@ -215,8 +215,8 @@ trait Save {
             }
             //copy image inside block folder  
             $image_name = basename($image_src);
-            if (copy($image_src,$basepath.$image_name)) {
-                $example['attributes']['preview'] = "file:./".$image_name;
+            if (copy($image_src,$basepath.'media'.DIRECTORY_SEPARATOR.$image_name)) {
+                $example['attributes']['preview'] = "file:./media/".$image_name;
             }
         }
         

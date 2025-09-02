@@ -358,11 +358,14 @@ class Block extends Module_Base {
     }
     
     public function get_block_textdomain($block) {
-        if (!empty($block['textdomain'])) return $block['textdomain'];
         if (!empty($block['name'])) {
-            list($textdomain, $title) = explode('/', $block['name'], 2);
-            return strtolower($textdomain);
+            $tmp = explode('/', $block['name'], 2);
+            if (count($tmp) > 1) {
+                list($textdomain, $title) = $tmp;
+                return strtolower($textdomain);
+            }
         }
+        if (!empty($block['textdomain'])) return $block['textdomain'];
         if ($user = wp_get_current_user()) {
             return $user->user_nicename;
         }

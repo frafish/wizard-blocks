@@ -147,3 +147,22 @@
 .notice-inline.notice-warning {
   border-left-color: #dba617;
 }
+
+.button-update-now:before {
+  color: #d63638;
+  content: "\f463";
+  display: inline-block;
+  font: normal 20px/1 dashicons;
+  margin: -3px 5px 0 -2px;
+  speak: never;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  vertical-align: middle;
+}
+
+.pull-right {
+    float: right;
+}
+.text-decoration-none {
+    text-decoration: none;
+}

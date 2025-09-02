@@ -1,0 +1,30 @@
+
+.media-preview {
+    position: relative;
+    display: inline-block; 
+    width: 32%; 
+    margin: 0;
+}
+.media-preview img {
+    width: 100%;
+    height: 60px; 
+    object-fit: contain; 
+    border: 1px solid;
+}
+
+.media-delete {
+    color: red;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: crosshair;
+}
+
+
+#block-media-modal .attachment-actions .success {
+  padding: 0;
+  min-height: 0;
+  line-height: 2.18181818;
+  text-align: left;
+  color: #007017;
+}
