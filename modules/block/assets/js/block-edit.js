@@ -23,6 +23,7 @@ jQuery(document).ready(function ($) {
     //var _block_style = wp.codeEditor.initialize(jQuery('#_block_style_file'), editorSettings);
     //var _block_editorStyle = wp.codeEditor.initialize(jQuery('#_block_editorStyle_file'), editorSettings);
     //var _block_viewStyle = wp.codeEditor.initialize(jQuery('#_block_viewStyle_file'), editorSettings);
+    window._block_render = _block_render;
     
     let _block_styleExtra = document.getElementsByClassName('wb-codemirror-css');
     for (let index = 0; index < _block_styleExtra.length; index++) {
@@ -30,7 +31,6 @@ jQuery(document).ready(function ($) {
         wp.codeEditor.initialize(_block_styleExtra[index], editorSettings);
     }
     
-    jQuery('.wb-hide').hide();
     jQuery('.wb-nav-tab').on('click', function() {
         jQuery(this).siblings().removeClass('nav-tab-active');
         jQuery(this).addClass('nav-tab-active');
@@ -97,7 +97,7 @@ jQuery(document).ready(function ($) {
     jQuery( ".CodeMirror" ).resizable({
         handles: 'se, s' // Only allow resizing from the top and bottom
     });
-  
+
     /**************************************************************************/
 
     // Set all variables to be used in scope
@@ -628,6 +628,9 @@ jQuery(document).ready(function ($) {
 
         update_block_attributes_editor();
     }
+    
+    // after CodeMirror editors init, hide extra tabs
+    jQuery('.wb-hide').hide();
 });
 
 document.addEventListener('DOMContentLoaded', function() {

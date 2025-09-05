@@ -262,7 +262,7 @@ if ($wrapper) { ?></script><?php }
    }
    
    public function get_attributes_condition($args = [], $json = false) {
-       $conditions = isset($_POST['_block_attributes_condition']) ? $_POST['_block_attributes_condition'] : wp_json_encode($this->get_block_attributes_condition($args['name'], $this->get_block_textdomain($args)));
+       $conditions = isset($_POST['_block_attributes_condition']) ? sanitize_textarea_field(wp_unslash($_POST['_block_attributes_condition'])) : wp_json_encode($this->get_block_attributes_condition($args['name'], $this->get_block_textdomain($args)));
        $conditions = $this->unescape($conditions);
        if ($json) $conditions = json_decode($conditions, true);
        return $conditions;

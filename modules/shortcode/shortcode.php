@@ -98,10 +98,8 @@ class Shortcode extends Module_Base {
                 $content = do_shortcode($content);
                 $attributes = json_decode($attr['attributes'], true);
                 $attributes = $attributes ? $attributes : [];
-                
-                $modules = \WizardBlocks\Plugin::instance()->modules_manager;
-                $blocks = $modules->get_modules('block');
-                $block_content = $blocks->render($attributes, $content, $block);
+                $wb = \WizardBlocks\Modules\Block\Block::instance();
+                $block_content = $wb->render($attributes, $content, $block);
             }
         }
         return $block_content;

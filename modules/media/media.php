@@ -68,7 +68,7 @@ class Media extends Module_Base {
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
         ?>
         <p class="d-flex assets">
-            <textarea type="text" id="_block_media" name="_block_media" rows="<?php echo count($_block_media); ?>" placeholder="file:./icon.png"><?php esc_attr_e(Utils::implode($_block_media, PHP_EOL)); ?></textarea>
+            <textarea type="text" id="_block_media" name="_block_media" rows="<?php echo count($_block_media); ?>" placeholder="file:./icon.png"><?php echo esc_textarea(Utils::implode($_block_media, PHP_EOL)); ?></textarea>
             <a title="<?php esc_attr_e('Upload new Media', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-medias" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
         </p>    
         <div class="block-medias">
@@ -77,70 +77,72 @@ class Media extends Module_Base {
                 ?>
                 <figure class="media-preview">
                     <span class="media-delete dashicons dashicons-trash"></span>
-                    <a href="<?php echo $medias_url . $media; ?>" target="_blank">
-                        <img class="media" data-date="<?php echo filemtime($medias_dir.$media); ?>" src="<?php echo $medias_url . $media; ?>">
+                    <a href="<?php echo esc_url($medias_url . $media); ?>" target="_blank">
+                        <img class="media" data-type="<?php echo esc_attr(mime_content_type($medias_dir.$media)); ?>" data-size="<?php echo esc_attr(filesize($medias_dir.$media)); ?>" data-date="<?php echo esc_attr(filemtime($medias_dir.$media)); ?>" src="<?php echo esc_url($medias_url . $media); ?>">
                     </a>    
                 </figure>
                 <?php
             }
             ?>
         </div>
+        <?php /*
         <details class="hidden">
-            <summary class="cursor-pointer"><u><?php _e('Code to insert Media in Content', 'wizard-blocks'); ?>:</u></summary>
+            <summary class="cursor-pointer"><u><?php esc_attr_e('Code to insert Media in Content', 'wizard-blocks'); ?>:</u></summary>
             <ol>
                 <?php foreach ($_block_media as $media) { ?>
                     <li><i>
-                            &lt;img src="&lt;?php echo plugins_url(__DIR__); ?&gt;/<?php echo self::FOLDER; ?>/<?php echo urlencode($media); ?>"&gt;<br>
+                            &lt;img src="&lt;?php echo esc_url(plugins_url(__DIR__)); ?&gt;/<?php echo esc_attr(self::FOLDER); ?>/<?php echo esc_attr(urlencode($media)); ?>"&gt;<br>
                         </i></li>
                 <?php } ?>
             </ol>
         </details>
-
+        */ ?>
+        
         <div tabindex="0" id="block-media-modal" class="media-modal wp-core-ui" role="dialog" aria-labelledby="media-frame-title" style="display:none;">
 
             <div class="media-modal-content" role="document"><div class="edit-attachment-frame mode-select hide-router">
                     <div class="edit-media-header">
-                        <button class="left dashicons"><span class="screen-reader-text"><?php _e('View previous media item'); ?></span></button>
-                        <button class="right dashicons"><span class="screen-reader-text"><?php _e('View next media item'); ?></span></button>
-                        <button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e('Close dialog'); ?></span></span></button>
+                        <button class="left dashicons"><span class="screen-reader-text"><?php esc_attr_e('View previous media item', 'wizard-blocks'); ?></span></button>
+                        <button class="right dashicons"><span class="screen-reader-text"><?php esc_attr_e('View next media item', 'wizard-blocks'); ?></span></button>
+                        <button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php esc_attr_e('Close dialog', 'wizard-blocks'); ?></span></span></button>
                     </div>
-                    <div class="media-frame-title"><h1>&nbsp;<?php _e('Media details', 'wizard-blocks'); ?></h1></div>
+                    <div class="media-frame-title"><h1>&nbsp;<?php esc_attr_e('Media details', 'wizard-blocks'); ?></h1></div>
                     <div class="media-frame-content"><div class="attachment-details save-ready">
                             <div class="attachment-media-view landscape">
-                                <h2 class="screen-reader-text"> <?php _e('Media Preview', 'wizard-blocks'); ?></h2>
+                                <h2 class="screen-reader-text"> <?php esc_attr_e('Media Preview', 'wizard-blocks'); ?></h2>
                                 <div class="thumbnail thumbnail-image">
-                                    <img class="details-image" src="http://localhost/wp-content/uploads/woocommerce-placeholder.png" draggable="false" alt="">
+                                    <img class="details-image" src="/wp-content/uploads/woocommerce-placeholder.png" draggable="false" alt="">
                                     <div class="attachment-actions">
-                                        <button type="button" data-url="<\?php echo plugins_url(__DIR__); ?>/<?php echo self::FOLDER; ?>/" class="button edit-attachment"><?php _e('Copy Media relative URL'); ?></button>
-                                        <span class="success hidden" aria-hidden="true"><?php _e('Copied!'); ?></span>
+                                        <button type="button" data-url="<\?php echo esc_url(plugins_url(__DIR__)); ?>/<?php echo esc_attr(self::FOLDER); ?>/" class="button edit-attachment"><?php esc_attr_e('Copy PHP code for Media relative URL', 'wizard-blocks'); ?></button>
+                                        <span class="success hidden" aria-hidden="true"><?php esc_attr_e('Copied!', 'wizard-blocks'); ?></span>
                                     </div>
                                 </div>
                             </div>
                             <div class="attachment-info">
                                 <div class="details">
-                                    <h2 class="screen-reader-text"><?php _e('Details'); ?></h2>
-                                    <div class="uploaded"><strong><?php _e('Uploaded on'); ?>:</strong> <span><?php date('Y-m-d'); ?></span></div>
-                                    <div class="filename"><strong><?php _e('File name'); ?>:</strong> <span>icon.png</span></div>
-                                    <div class="file-type"><strong><?php _e('File type'); ?>:</strong> <span>image/png</span></div>
-                                    <div class="file-size"><strong><?php _e('File size'); ?>:</strong> <span>117</span> KB</div>
-                                    <div class="dimensions"><strong><?php _e('Dimensions'); ?>:</strong> <span>800 by 800</span> pixels</div>
+                                    <h2 class="screen-reader-text"><?php esc_attr_e('Details', 'wizard-blocks'); ?></h2>
+                                    <div class="uploaded"><strong><?php esc_attr_e('Uploaded on', 'wizard-blocks'); ?>:</strong> <span><?php gmdate('Y-m-d'); ?></span></div>
+                                    <div class="filename"><strong><?php esc_attr_e('File name', 'wizard-blocks'); ?>:</strong> <span>icon.png</span></div>
+                                    <div class="file-type"><strong><?php esc_attr_e('File type', 'wizard-blocks'); ?>:</strong> <span>image/png</span></div>
+                                    <div class="file-size"><strong><?php esc_attr_e('File size', 'wizard-blocks'); ?>:</strong> <span>117</span> KB</div>
+                                    <div class="dimensions"><strong><?php esc_attr_e('Dimensions', 'wizard-blocks'); ?>:</strong> <span>800 by 800</span> pixels</div>
                                 </div>
                                 <div class="settings">
                                     <span class="setting" data-setting="url">
-					<label for="attachment-details-two-column-copy-link" class="name"><?php _e('File URL'); ?>:</label>
-					<input type="text" class="attachment-details-copy-link" id="attachment-details-two-column-copy-link" value="http://localhost/wp-content/uploads/woocommerce-placeholder.png" readonly="">
+					<label for="attachment-details-two-column-copy-link" class="name"><?php esc_attr_e('File URL', 'wizard-blocks'); ?>:</label>
+					<input type="text" class="attachment-details-copy-link" id="attachment-details-two-column-copy-link" value="/wp-content/uploads/woocommerce-placeholder.png" readonly="">
 					<span class="copy-to-clipboard-container">
-						<button type="button" class="button button-small copy-attachment-url" data-clipboard-target="#attachment-details-two-column-copy-link"><?php _e('Copy URL to clipboard'); ?></button>
-						<span class="success hidden" aria-hidden="true"><?php _e('Copied!'); ?></span>
+						<button type="button" class="button button-small copy-attachment-url" data-clipboard-target="#attachment-details-two-column-copy-link"><?php esc_attr_e('Copy URL to clipboard', 'wizard-blocks'); ?></button>
+						<span class="success hidden" aria-hidden="true"><?php esc_attr_e('Copied!', 'wizard-blocks'); ?></span>
 					</span>
                                     </span>
                                 </div>
                                 <div class="actions">
-                                    <a class="view-attachment" href="http://localhost/?attachment_id=106"><?php _e('View media file'); ?></a>
+                                    <a class="view-attachment" href=""><?php esc_attr_e('View media file', 'wizard-blocks'); ?></a>
                                     <span class="links-separator">|</span>
-                                    <a class="download-attachment" href="http://localhost/wp-content/uploads/2025/06/album-1.jpg" download=""><?php _e('Download file'); ?></a>
+                                    <a class="download-attachment" href="" download=""><?php esc_attr_e('Download file', 'wizard-blocks'); ?></a>
                                     <span class="links-separator">|</span>
-                                    <button type="button" class="button-link delete-attachment"><?php _e('Delete permanently'); ?></button>
+                                    <button type="button" class="button-link delete-attachment"><?php esc_attr_e('Delete permanently', 'wizard-blocks'); ?></button>
                                 </div>
                             </div>
                         </div></div>
@@ -167,9 +169,10 @@ class Media extends Module_Base {
         $medias_dir = $basepath . DIRECTORY_SEPARATOR . self::FOLDER . DIRECTORY_SEPARATOR;
 
         if (!empty($_POST['_block_media'])) {
-            $_block_media = explode(PHP_EOL, $_POST['_block_media']);
+            $_block_media_txt = sanitize_textarea_field(wp_unslash($_POST['_block_media']));
+            $_block_media = explode(PHP_EOL, $_block_media_txt);
             $_block_media = array_map('trim', $_block_media);
-
+            //var_dump($_block_media); die();
             // delete unlisted media
             $_old_media = $this->get_media($basepath);
             //var_dump($_old_media); die();
@@ -180,7 +183,7 @@ class Media extends Module_Base {
               } */
             foreach ($_old_media as $media) {
                 if (!in_array($media, $_block_media)) {
-                    unlink($medias_dir . $media);
+                    wp_delete_file($medias_dir . $media);
                 }
             }
 
@@ -190,8 +193,9 @@ class Media extends Module_Base {
                 if (str_starts_with($media, 'http')) {
                     $media_path = \WizardBlocks\Core\Helper::url_to_path($media);
                     $basename = trim(basename($media));
-                    var_dump($media_path);
-                    var_dump($medias_dir . $basename);
+                    //var_dump($media_path);
+                    //var_dump($medias_dir . $basename);
+                    if (!is_dir($medias_dir)) wp_mkdir_p($medias_dir);
                     copy($media_path, $medias_dir . $basename);
                     //$_block_media[$mid] = $basename;
                 }

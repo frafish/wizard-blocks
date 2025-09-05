@@ -40,7 +40,7 @@ Trait Actions {
 
                             case 'disable':
                                 if (!empty($_GET['block'])) {
-                                    $block_name = [ sanitize_text_field(wp_unslash($_GET['block'])) ];
+                                    $block_name = [sanitize_text_field(wp_unslash($_GET['block']))];
                                     $disabled = get_option(self::$blocks_disabled_key);
                                     $disabled = empty($disabled) ? [$block_name] : array_merge($disabled, $block_name);
                                     update_option(self::$blocks_disabled_key, $disabled);
@@ -57,15 +57,16 @@ Trait Actions {
                                 if (!empty($_FILES["zip"]["tmp_name"]) && !empty($_FILES["zip"]["name"])) {
                                     //var_dump($_FILES); die();
                                     //$target_file = $basedir . basename(sanitize_key($_FILES["zip"]["name"]));
-                                    
-                                    if ( ! function_exists( 'wp_handle_upload' ) ) {
-                                        require_once( ABSPATH . 'wp-admin'.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'file.php' );
+
+                                    if (!function_exists('wp_handle_upload')) {
+                                        require_once(ABSPATH . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'file.php');
                                     }
-                                    $uploadedfile = $_FILES['zip'];
-                                    $upload_overrides = array( 'test_form' => false );
-                                    $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+                                    $uploadedfile = array_map('sanitize_text_field', $_FILES['zip']);
+                                    //var_dump($uploadedfile); die();
+                                    $upload_overrides = array('test_form' => false);
+                                    $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
                                     //var_dump($movefile); die();
-                                    if ( $movefile && ! isset( $movefile['error'] ) ) {
+                                    if ($movefile && !isset($movefile['error'])) {
                                         //var_dump($movefile); die();
                                         $block_post = 0;
                                         $target_file = str_replace('/', DIRECTORY_SEPARATOR, $movefile['file']);
@@ -80,7 +81,7 @@ Trait Actions {
                                 }
                                 if (!empty($_GET['block'])) {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
-                                    list($domain, $slug) = explode('/', $_GET['block'], 2);
+                                    list($domain, $slug) = explode('/', $block, 2);
                                     $block_post = $this->get_block_post($slug);
                                     if (!$block_post) {
                                         $args = $this->get_json_data($slug);
@@ -90,7 +91,7 @@ Trait Actions {
                                 }
 
                                 break;
-                                
+
                             case 'export':
 
                                 // Make sure our zipping class exists
@@ -130,18 +131,18 @@ Trait Actions {
                                 $download_url = $dirs['baseurl'] . '/' . $filename;
                                 $this->_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                 // Simulate an HTTP redirect:
-                                wp_add_inline_script( 'wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace('.esc_url($download_url).'); }, 1000);' );
+                                wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
                                 break;
 
                             case 'download':
 
                                 if (!empty($_GET['block'])) {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
-                                    
+
                                     $download_url = $this->generate_block_zip($block);
                                     $this->_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                     // Simulate an HTTP redirect:
-                                    wp_add_inline_script( 'wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace('.esc_url($download_url).'); }, 1000);' );
+                                    wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
                                 }
                                 break;
                         }
@@ -149,11 +150,11 @@ Trait Actions {
                     } else {
                         $this->_notice(__('Security nonce not valid!', 'wizard-blocks'), 'error');
                     }
-                }    
+                }
             }
         }
     }
-    
+
     public function filter_block_json($jsons = []) {
         foreach ($jsons as $jkey => $json) {
             $json_code = file_get_contents($json);
@@ -166,13 +167,13 @@ Trait Actions {
         }
         return $jsons;
     }
-    
+
     public function generate_block_zip($block, $folder = 'zip', $filename = '') {
-        
+
         $dirs = wp_upload_dir();
         $basedir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
         wp_mkdir_p($basedir);
-        
+
         // Make sure our zipping class exists
         if (!class_exists('ZipArchive')) {
             die('Cannot find class ZipArchive');
@@ -185,33 +186,64 @@ Trait Actions {
         list($block_textdomain, $block_slug) = explode('/', $block);
 
         // Remove any existing file with that filename
-        if (file_exists($filepath)) wp_delete_file($filepath);
-        
-        //var_dump($filepath); die();
+        if (file_exists($filepath))
+            wp_delete_file($filepath);
 
+        //var_dump($filepath); die();
         // Create and open the zip file
-        if (!$zip->open($filepath, \ZipArchive::CREATE)) {
+        if (!$zip->open($filepath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
             die(esc_html('Failed to create zip at ' . $filepath));
         }
 
         $block_dir = $this->get_blocks_dir($block_slug, $block_textdomain) . DIRECTORY_SEPARATOR;
-        $block_basedir = $this->get_blocks_dir($block_slug) . DIRECTORY_SEPARATOR;
-        // Add any other files by directory
-        $blocks = glob($block_dir . '*.*');
-        //var_dump($blocks); die();
-        foreach ($blocks as $file) {
-            list($tmp, $local) = explode($block_basedir, $file, 2);
-            $zip->addFile($file, $local);
-        }
+
+        $this->add_files_to_zip($block_dir, $zip);
+
+        /*
+          $block_basedir = $this->get_blocks_dir($block_slug) . DIRECTORY_SEPARATOR;
+          // Add any other files by directory
+          $blocks = glob($block_dir . '*.*');
+          //var_dump($blocks); die();
+          foreach ($blocks as $file) {
+          list($tmp, $local) = explode($block_basedir, $file, 2);
+          $zip->addFile($file, $local);
+          }
+         */
 
         $zip->close();
-        $download_url = $dirs['baseurl'] . '/blocks/' . $folder .'/'. $filename;
-        
+        $download_url = $dirs['baseurl'] . '/blocks/' . $folder . '/' . $filename;
+
         return $download_url;
     }
-    
+
+    public function add_files_to_zip($folder, &$zip, $parentFolder = '') {
+        $handle = opendir($folder);
+        if (!$handle) {
+            return false;
+        }
+        while (($file = readdir($handle)) !== false) {
+            if ($file == '.' || $file == '..') {
+                continue;
+            }
+            $filePath = $folder . DIRECTORY_SEPARATOR . $file;
+            $localPath = $parentFolder . $file;
+            if (is_dir($filePath)) {
+                // Add directory to zip
+                $zip->addEmptyDir($localPath);
+                // Recurse into subdirectory
+                $this->add_files_to_zip($filePath, $zip, $localPath . '/');
+            } else {
+                // Add file to zip
+                $zip->addFile($filePath, $localPath);
+            }
+        }
+        closedir($handle);
+        return true;
+    }
+
     public function get_block_zip_filename($block, $basename = false) {
-        if (is_array($block)) $block = $block['name'];
+        if (is_array($block))
+            $block = $block['name'];
         list($block_textdomain, $block_slug) = explode('/', $block);
         $block_json = $this->get_block_json($block_slug, $block_textdomain);
         // Set the system path for our zip file
@@ -221,7 +253,7 @@ Trait Actions {
         }
         return $filename;
     }
-    
+
     public function extract_block_zip($target_file, $notice = true) {
         $tmpdir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
         //unzip_file($target_file, $tmpdir);
@@ -233,7 +265,7 @@ Trait Actions {
             $jsons = $this->filter_block_json($jsons);
             if (empty($jsons)) {
                 if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
-                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build'. DIRECTORY_SEPARATOR . '*.json');
+                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
                 } else {
                     $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
                 }

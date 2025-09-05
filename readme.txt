@@ -2,8 +2,8 @@
 Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.8
-Tested up to: 6.8.2
-Stable tag: 1.2
+Tested up to: 6.8
+Stable tag: 1.3
 Requires PHP: 8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -38,6 +38,7 @@ Design custom blocks render content, add optional **block attributes**, and orga
 - use Gutenberg Blocks as **Shortcode** in Classic Editor
 - Import any **Assets CSS and JS libs** from Media Library, optimized enqueue of them only if block is used
 - Block Preview Image (instead of automatic preview)
+- Block Media, to include your **relative images** in your block Content
 - **Disable** unused/unwanted Blocks
 - Block **Versioning** (with Revision)
 - Use custom Block **Textdomain**
@@ -145,6 +146,19 @@ Yes, it's possible, but you have to insert it programmatically (via functions.ph
 14. **Selective Elementor Widget Integration:** Choose and enable specific imported Blocks as Elementor widgets through the native Elementor Manager.
 
 == Changelog ==
+
+= 1.3 - 03-10-2025 =
+* Added Media Block
+* Stability fixes
+* Added compatibility with 3rd part blocks
+* Full compatibility with Telex
+* Added Hooks and Filters
+
+= 1.2 - 25-06-2025 =
+* Added Ctrl+S save block
+* Added Code Editor Resizer
+* Enabled native block API
+* Stability fixes
 
 = 1.1 - 31-01-2025 =
 * Stability fixes

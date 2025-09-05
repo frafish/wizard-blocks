@@ -49,7 +49,7 @@ trait Type {
         $args = array(
             //'label' => _x('Blocks', 'wizard-blocks'),
             'labels' => $labels,
-            'public' => true, //false
+            'public' => true,
             //'publicly_queryable' => false,
             'show_ui' => true,
             'show_in_menu' => true,

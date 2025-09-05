@@ -47,8 +47,11 @@ trait Save {
                 $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                 $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
                 // copy all content from old dir to new dir
-                rename($old_dir, $new_dir);
-                $this->dir_delete($old_dir);
+                if (is_dir($old_dir)) {
+                    $this->get_filesystem()->move($old_dir, $new_dir);
+                    //rename($old_dir, $new_dir);
+                    $this->dir_delete($old_dir);
+                }
                 $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
             } else {
                 // changed textdomain
@@ -57,7 +60,8 @@ trait Save {
                     $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                     $new_dir = $this->get_ensure_blocks_dir($post_slug, $block_textdomain);
                     // copy all content from old dir to new dir
-                    rename($old_dir, $new_dir);
+                    $this->get_filesystem()->move($old_dir, $new_dir);
+                    //rename($old_dir, $new_dir);
                     $this->dir_delete($old_dir);
                 }
             }
@@ -214,9 +218,18 @@ trait Save {
                 $example['attributes']['preview'] = $preview_src;
             }
             //copy image inside block folder  
+            $media_dir = \WizardBlocks\Modules\Media\Media::FOLDER.DIRECTORY_SEPARATOR;
             $image_name = basename($image_src);
-            if (copy($image_src,$basepath.'media'.DIRECTORY_SEPARATOR.$image_name)) {
-                $example['attributes']['preview'] = "file:./media/".$image_name;
+            if (!is_dir($basepath.$media_dir)) {
+                wp_mkdir_p($basepath.$media_dir); 
+            }
+            $image_path = \WizardBlocks\Core\Helper::url_to_path($image_src);
+            //var_dump($image_path); var_dump($basepath.$media_dir.$image_name); die();
+            $image = file_get_contents($image_path);
+            //var_dump($image); die();
+            if ($this->get_filesystem()->copy($image_path, $basepath.$media_dir.$image_name, true)) {
+            //if (file_put_contents($basepath.$media_dir.$image_name, $image)) {
+                $example['attributes']['preview'] = "file:./".$media_dir."/".$image_name;
             }
         }
         

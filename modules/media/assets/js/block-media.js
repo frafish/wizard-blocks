@@ -111,14 +111,20 @@ jQuery(document).ready(function ($) {
         let current = jQuery('.block-medias .media[src="'+url+'"]');
         jQuery('#block-media-modal .filename > span').text(basename);
         jQuery('#block-media-modal .dimensions > span').text(this.naturalWidth+' x '+this.naturalHeight);
-        jQuery('#block-media-modal .file-type > span').text(size.contentType);
-        //console.log(size);
-        jQuery('#block-media-modal .file-size > span').text(Math.round(size.transferSize/1024)); //KB
-        //console.log(size); // or decodedBodySize might differ if compression is used on server side
+        
+        if (size) {
+            jQuery('#block-media-modal .file-type > span').text(size.contentType);
+            jQuery('#block-media-modal .file-size > span').text(Math.round(size.transferSize/1024)); //KB
+            //console.log(size); // or decodedBodySize might differ if compression is used on server side
+        } else {
+            jQuery('#block-media-modal .file-type > span').text(current.data('type') ? current.data('type')  : '?');
+            jQuery('#block-media-modal .file-size > span').text(current.data('size') ? Math.round(current.data('size')/1024) : '?'); //KB
+        }
+        
         jQuery('#block-media-modal .view-attachment').attr('href', url);
         jQuery('#block-media-modal .download-attachment').attr('href', url);
         jQuery('#block-media-modal .attachment-details-copy-link').attr('value', url);
-        
+        //console.log(current.data('date'));
         let date = current.data('date') ? new Date(current.data('date') * 1000) : new Date();
         jQuery('#block-media-modal .uploaded > span').text(date.toString());
         

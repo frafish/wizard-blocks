@@ -380,15 +380,21 @@ trait Metabox {
                 if ($post && $post->post_name) {
                     $json = $this->get_json_data($post->post_name);
                     //var_dump($json);
-                    echo '<div id="export-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" target="_blank" href="' . esc_url($this->get_action_url('action=download&block=' . $this->get_block_textdomain($json) . '/' . $post->post_name)) . '">' . esc_html__('Export', 'wizard-blocks') . '</a></div>';
-
+                    ?>
+                    <div id="export-action">
+                        <a class="button button-secondary button-large dashicons-before dashicons-database-export d-block" target="_blank" href="<?php echo esc_url($this->get_action_url('action=download&block=' . $this->get_block_textdomain($json) . '/' . $post->post_name)); ?>">
+                            <?php esc_html_e('Export', 'wizard-blocks'); ?>
+                        </a>
+                    </div>
+                    <?php
                     //$revisione = $this->get_block_revision();
                     /* $revisions_url = wp_get_post_revisions_url($post->ID);
                       if ($revisions_url) {
                       echo '<div id="revision-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" href="' . esc_url($revisions_url) . '">' . esc_html__('Revisions', 'wizard-blocks') . '</a></div>';
                       } */
-
-                    echo '<br style="clear:both;">';
+                    ?>
+                    <hr style="clear:both;">
+                    <?php
                 }
             });
         }
@@ -444,7 +450,9 @@ trait Metabox {
                 </details>    
 
             </div>
-
+            
+            <?php do_action('wizard/block/edit/render', $json, $post, $this); ?>
+            
         </div>
         <?php
     }
@@ -479,7 +487,7 @@ trait Metabox {
                 $assets = $this->assets_merge($assets, $default);
                 foreach ($assets as $key => $asset) {
                     ?>
-                    <a href="#wb-<?php echo sanitize_title($asset); ?>" class="nav-tab wb-nav-tab<?php echo $key ? '' : ' nav-tab-active'; ?>"><?php echo basename($asset); ?></a>
+                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo basename($asset); ?></a>
             <?php } ?>
             </nav>
             <?php } ?>
@@ -492,8 +500,8 @@ trait Metabox {
                 $tmp = explode(DIRECTORY_SEPARATOR, $asset);
                 $asset_name = end($tmp);
                 ?>
-                <p class="wb-file<?php echo $key ? ' wb-hide' : ''; ?> <?php echo sanitize_title($asset_name); ?>" id="wb-<?php echo sanitize_title($asset); ?>">
-                    <textarea class="wp-editor-area wb-asset-<?php echo sanitize_title(basename($asset)); ?> wb-codemirror-<?php echo self::$assets[$asset_file]; ?>" id="<?php echo ($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset); ?>" name="_block_<?php echo $asset_file; ?>_file[<?php esc_attr_e(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                <p class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
+                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo ($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
                 </p>              
             <?php }
         ?>
@@ -501,9 +509,10 @@ trait Metabox {
         <?php
         // Get WordPress' media upload URL
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
+        $txt = empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file]);
         ?>
         <p class="d-flex assets">
-            <input type="text" id="_block_<?php echo $asset_file; ?>" name="_block_<?php echo $asset_file; ?>" value="<?php esc_attr_e(empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file])); ?>" placeholder="file:./<?php echo $asset_file; ?>.<?php echo self::$assets[$asset_file]; ?>">
+            <input type="text" id="_block_<?php echo esc_attr($asset_file); ?>" name="_block_<?php echo esc_attr($asset_file); ?>" value="<?php echo esc_attr($txt); ?>" placeholder="file:./<?php echo esc_attr($asset_file); ?>.<?php echo esc_attr(self::$assets[$asset_file]); ?>">
             <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
         </p>
         <?php

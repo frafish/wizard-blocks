@@ -269,7 +269,7 @@ class Block extends Module_Base {
     }
     
     public function is_block_edit() {
-        return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && !empty($_GET['post']) && get_post_type($_GET['post']) == self::get_cpt_name()) || (!empty($_GET['post_type']) && $_GET['post_type'] == self::get_cpt_name()));
+        return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && !empty($_GET['post']) && get_post_type(intval($_GET['post'])) == self::get_cpt_name()) || (!empty($_GET['post_type']) && $_GET['post_type'] == self::get_cpt_name()));
     }
     
     public function add_mime_types( $mimes ) {
@@ -302,6 +302,8 @@ class Block extends Module_Base {
     }
     
     public function get_block_post($slug) {
+        $tmp = explode('/', $slug, 2);
+        $slug = end($tmp); // maybe is passed name
         //var_dump($slug);
         $posts = get_posts(
                 [
@@ -582,6 +584,7 @@ class Block extends Module_Base {
     }
 
     public function unescape($code = '', $quote = '') {
+        //$code = wp_unslash($code);
         $code = str_replace('\"', $quote ? $quote : '"', $code);
         $code = str_replace("\'", $quote ? $quote : "'", $code);
         $code = str_replace("\/", "/", $code);

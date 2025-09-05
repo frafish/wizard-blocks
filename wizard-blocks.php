@@ -4,7 +4,7 @@
  * @wordpress-plugin
  * Plugin Name:       Wizard Blocks Manager for Gutenberg
  * Description:       Easy create, edit and manage Gutenberg Blocks
- * Version:           1.2
+ * Version:           1.3
  * Author:            frapesce
  * Text Domain:       wizard-blocks
  * Domain Path:       /languages
@@ -39,11 +39,7 @@ define('WIZARD_BLOCKS_PATH', str_replace('/', DIRECTORY_SEPARATOR, plugin_dir_pa
 add_action('plugins_loaded', function () {
     // Load localization file
     //load_plugin_textdomain('wizard-blocks');
-    $loaded = load_plugin_textdomain(
-        'wizard-blocks',
-        false,
-        dirname( plugin_basename( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'languages'
-    );
+    //$loaded = load_plugin_textdomain('wizard-blocks', false, dirname( plugin_basename( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'languages');
     require_once(__DIR__ . DIRECTORY_SEPARATOR . 'autoload.php');
 });
 

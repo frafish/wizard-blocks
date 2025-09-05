@@ -396,9 +396,9 @@ trait Pages {
                 <br>
                 <h2><?php echo $translation; ?></h2>
                 <br>
-                <a href="<?php echo admin_url('post-new.php?post_type='.self::$cpt_name); ?>" class="button dashicons-before dashicons-plus-alt components-button has-text has-icon">Add your first Block</a>
+                <a href="<?php echo esc_url(admin_url('post-new.php?post_type='.self::$cpt_name)); ?>" class="button dashicons-before dashicons-plus-alt components-button has-text has-icon"><?php esc_html_e('Add your first Block', 'wizard-blocks'); ?></a>
                 or 
-                <a href="<?php echo admin_url('edit.php?post_type='.self::$cpt_name.'&page=wtools'); ?>" class="button dashicons-before dashicons-database-import">Import Blocks</a>
+                <a href="<?php echo esc_url(admin_url('edit.php?post_type='.self::$cpt_name.'&page=wtools')); ?>" class="button dashicons-before dashicons-database-import"><?php esc_html_e('Import Blocks', 'wizard-blocks'); ?></a>
             </div>
             <?php
             $translation = ob_get_clean();

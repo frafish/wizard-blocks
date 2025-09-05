@@ -239,7 +239,7 @@ class GutenbergWidget extends Widget_Base {
         $blocks = $modules->get_modules('block');
         $block_content = $blocks->render($attributes, $content, $block);
         
-        echo $block_content;
+        echo esc_html($block_content);
         
     }
 
