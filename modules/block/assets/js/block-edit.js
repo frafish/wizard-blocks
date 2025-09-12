@@ -34,7 +34,7 @@ jQuery(document).ready(function ($) {
     jQuery('.wb-nav-tab').on('click', function() {
         jQuery(this).siblings().removeClass('nav-tab-active');
         jQuery(this).addClass('nav-tab-active');
-        console.log(jQuery(this).attr('href'));
+        //console.log(jQuery(this).attr('href'));
         jQuery(jQuery(this).attr('href')).siblings().hide();
         jQuery(jQuery(this).attr('href')).show();
         return false;
@@ -101,12 +101,11 @@ jQuery(document).ready(function ($) {
     /**************************************************************************/
 
     // Set all variables to be used in scope
-    var frame;
-    var btn;
     // ADD IMAGE LINK
     jQuery('.upload-assets').on('click', function (event) {
+        let frame;
         event.preventDefault();
-        btn = jQuery(this);
+        let btn = jQuery(this);
         // If the media frame already exists, reopen it.
         if (frame) {
             frame.open();
@@ -114,9 +113,9 @@ jQuery(document).ready(function ($) {
         }
         // Create a new media frame
         frame = wp.media({
-            title: 'Select or Upload Assets',
+            title: wp.i18n.__('Select or Upload Assets', 'wizard-blocks'),
             button: {
-                text: 'Use this asset'
+                text: wp.i18n.__('Use this asset', 'wizard-blocks')
             },
             multiple: true  // Set to true to allow multiple files to be selected
         });
@@ -135,6 +134,49 @@ jQuery(document).ready(function ($) {
                 input.val( (input.val() ? input.val()+', ' : '') + asset.url );
                 // Send the attachment id to our hidden input
                 //input.val(asset.id);
+            });
+        });
+        // Finally, open the modal on click
+        frame.open();
+    });
+    
+    jQuery('.upload-icon').on('click', function (event) {
+        event.preventDefault();
+        let frame;
+        let btn = jQuery(this);
+        // If the media frame already exists, reopen it.
+        if (frame) {
+            frame.open();
+            return;
+        }
+        // Create a new media frame
+        frame = wp.media({
+            title: wp.i18n.__('Select or Upload Media', 'wizard-blocks'),
+            button: {
+                text: wp.i18n.__('Use this Icon', 'wizard-blocks')
+            },
+            multiple: false  // Set to true to allow multiple files to be selected
+        });
+        // When an image is selected in the media frame...
+        frame.on('select', () => {
+            // Get media attachment details from the frame state
+            //console.log(frame.state().get('selection'));
+            frame.state().get('selection').each((attachment, index) => {
+                //console.log(index);
+                //console.log(attachment);
+                let asset = attachment.toJSON();
+                if (!asset.url.endsWith('svg')) {
+                    alert(wp.i18n.__('Sorry, only a SVG icon is accepted', 'wizard-blocks'));
+                    return false;
+                }
+                //console.log(asset);
+                let input = btn.siblings('textarea');
+                //console.log(input);
+                // Send the attachment URL to our custom image input field.
+                input.val(asset.url);
+                // Send the attachment id to our hidden input
+                //input.val(asset.id);
+                //jQuery('.block-icon').append('<figure class="media-preview"><span class="media-delete dashicons dashicons-trash"></span><a href="'+asset.url+'" target="_blank"><img class="media media-new" src="'+asset.url+'"></a></figure>');
             });
         });
         // Finally, open the modal on click
@@ -171,14 +213,14 @@ jQuery(document).ready(function ($) {
    
     /**************************************************************************/
    
-    if (jQuery('#_block_icon').val()) {
-        jQuery('#_block_icon_svg').hide();
-    }
+    /*if (jQuery('#_block_icon').val()) {
+        jQuery('#_block_icon_src').hide();
+    }*/
     jQuery('#_block_icon').on('change', function () {
         if (jQuery(this).val()) {
-            jQuery('#_block_icon_svg').hide();
+            jQuery('#icon_src').addClass('d-none');
         } else {
-            jQuery('#_block_icon_svg').show();
+            jQuery('#icon_src').removeClass('d-none');
         }
     });
    
@@ -618,7 +660,7 @@ jQuery(document).ready(function ($) {
         });
         
         _block_editorScript.codemirror.on('change', function (instance, changeObj) {
-            console.log('codemirror change');
+            //console.log('codemirror change');
             instance.save();
             //console.log(instance);
             //console.log(changeObj);

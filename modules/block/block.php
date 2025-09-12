@@ -122,6 +122,9 @@ class Block extends Module_Base {
         //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
         add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
         
+        add_filter('manage_block_posts_columns', [$this, 'add_block_columns']);
+        add_action('manage_block_posts_custom_column', [$this, 'populate_block_columns'], 10, 2);
+        
     }
     
     /**
@@ -426,9 +429,16 @@ class Block extends Module_Base {
         return $this->get_block_json($post_slug, $textdomain);
     }
     public function get_block_json($post_slug, $textdomain = '*') {
+        $tmp = explode('/', $post_slug, 2);
+        if (count($tmp) == 2) {
+            $post_slug = end($tmp);
+            if ($textdomain == '*') {
+                $textdomain = reset($tmp);
+            }
+        }
         $path = $this->get_blocks_dir($post_slug, $textdomain) . DIRECTORY_SEPARATOR . 'block.json';
         if (file_exists($path)) {
-            $content = file_get_contents($path);
+            $content = $this->get_filesystem()->get_contents($path);
             return json_decode($content, true);
         }
         return [];
@@ -437,7 +447,7 @@ class Block extends Module_Base {
     public function get_block_attributes_condition($post_slug, $textdomain = '*') {
         $path = $this->get_blocks_dir($post_slug, $textdomain) . DIRECTORY_SEPARATOR . 'editorScript.js';
         if (file_exists($path)) {
-            $content = file_get_contents($path);
+            $content = $this->get_filesystem()->get_contents($path);
             $tmp = explode('/* wb:attributes:condition ', $content, 2);
             if (count($tmp) > 1) {
                 list($conditions, $more) = explode(' */', end($tmp), 2);
@@ -578,7 +588,7 @@ class Block extends Module_Base {
             $asset_file = $this->get_asset_file($json, $asset, $basepath);
         }
         if (file_exists($asset_file)) {
-            return file_get_contents($asset_file);
+            return $this->get_filesystem()->get_contents($asset_file);
         }
         return '';
     }

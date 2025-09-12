@@ -56,14 +56,15 @@
     cursor: pointer;
 }
 
-.d-none {
-    display: none;
-}
+
 .d-block {
     display: block !important;
 }
 .d-flex {
     display: flex;
+}
+.d-none {
+    display: none;
 }
 .d-flex .dashicons-before {
   display: flex !important;

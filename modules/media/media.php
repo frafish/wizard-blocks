@@ -26,6 +26,28 @@ class Media extends Module_Base {
         });
 
         add_action('save_post', [$this, 'save_medias'], 10, 3);
+
+        // Allow SVG
+        add_filter('wp_check_filetype_and_ext', function ($data, $file, $filename, $mimes) {
+            $filetype = wp_check_filetype($filename, $mimes);
+            return [
+                'ext' => $filetype['ext'],
+                'type' => $filetype['type'],
+                'proper_filename' => $data['proper_filename']
+            ];
+        }, 10, 4);
+        add_filter('upload_mimes', function ($mimes) {
+            $mimes['svg'] = 'image/svg+xml';
+            return $mimes;
+        });
+        add_action('admin_head', function () {
+            echo '<style type="text/css">
+                .attachment-266x266, .thumbnail img {
+                     width: 100% !important;
+                     height: auto !important;
+                }
+                </style>';
+        });
     }
 
     function add_media_meta_box() {
@@ -72,32 +94,32 @@ class Media extends Module_Base {
             <a title="<?php esc_attr_e('Upload new Media', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-medias" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
         </p>    
         <div class="block-medias">
-            <?php
-            foreach ($_block_media as $media) {
-                ?>
+        <?php
+        foreach ($_block_media as $media) {
+            ?>
                 <figure class="media-preview">
                     <span class="media-delete dashicons dashicons-trash"></span>
                     <a href="<?php echo esc_url($medias_url . $media); ?>" target="_blank">
-                        <img class="media" data-type="<?php echo esc_attr(mime_content_type($medias_dir.$media)); ?>" data-size="<?php echo esc_attr(filesize($medias_dir.$media)); ?>" data-date="<?php echo esc_attr(filemtime($medias_dir.$media)); ?>" src="<?php echo esc_url($medias_url . $media); ?>">
+                        <img class="media" data-type="<?php echo esc_attr(mime_content_type($medias_dir . $media)); ?>" data-size="<?php echo esc_attr(filesize($medias_dir . $media)); ?>" data-date="<?php echo esc_attr(filemtime($medias_dir . $media)); ?>" src="<?php echo esc_url($medias_url . $media); ?>">
                     </a>    
                 </figure>
-                <?php
-            }
-            ?>
+            <?php
+        }
+        ?>
         </div>
-        <?php /*
-        <details class="hidden">
-            <summary class="cursor-pointer"><u><?php esc_attr_e('Code to insert Media in Content', 'wizard-blocks'); ?>:</u></summary>
-            <ol>
-                <?php foreach ($_block_media as $media) { ?>
-                    <li><i>
-                            &lt;img src="&lt;?php echo esc_url(plugins_url(__DIR__)); ?&gt;/<?php echo esc_attr(self::FOLDER); ?>/<?php echo esc_attr(urlencode($media)); ?>"&gt;<br>
-                        </i></li>
-                <?php } ?>
-            </ol>
-        </details>
-        */ ?>
-        
+            <?php /*
+              <details class="hidden">
+              <summary class="cursor-pointer"><u><?php esc_attr_e('Code to insert Media in Content', 'wizard-blocks'); ?>:</u></summary>
+              <ol>
+              <?php foreach ($_block_media as $media) { ?>
+              <li><i>
+              &lt;img src="&lt;?php echo esc_url(plugins_url(__DIR__)); ?&gt;/<?php echo esc_attr(self::FOLDER); ?>/<?php echo esc_attr(urlencode($media)); ?>"&gt;<br>
+              </i></li>
+              <?php } ?>
+              </ol>
+              </details>
+             */ ?>
+
         <div tabindex="0" id="block-media-modal" class="media-modal wp-core-ui" role="dialog" aria-labelledby="media-frame-title" style="display:none;">
 
             <div class="media-modal-content" role="document"><div class="edit-attachment-frame mode-select hide-router">
@@ -129,12 +151,12 @@ class Media extends Module_Base {
                                 </div>
                                 <div class="settings">
                                     <span class="setting" data-setting="url">
-					<label for="attachment-details-two-column-copy-link" class="name"><?php esc_attr_e('File URL', 'wizard-blocks'); ?>:</label>
-					<input type="text" class="attachment-details-copy-link" id="attachment-details-two-column-copy-link" value="/wp-content/uploads/woocommerce-placeholder.png" readonly="">
-					<span class="copy-to-clipboard-container">
-						<button type="button" class="button button-small copy-attachment-url" data-clipboard-target="#attachment-details-two-column-copy-link"><?php esc_attr_e('Copy URL to clipboard', 'wizard-blocks'); ?></button>
-						<span class="success hidden" aria-hidden="true"><?php esc_attr_e('Copied!', 'wizard-blocks'); ?></span>
-					</span>
+                                        <label for="attachment-details-two-column-copy-link" class="name"><?php esc_attr_e('File URL', 'wizard-blocks'); ?>:</label>
+                                        <input type="text" class="attachment-details-copy-link" id="attachment-details-two-column-copy-link" value="/wp-content/uploads/woocommerce-placeholder.png" readonly="">
+                                        <span class="copy-to-clipboard-container">
+                                            <button type="button" class="button button-small copy-attachment-url" data-clipboard-target="#attachment-details-two-column-copy-link"><?php esc_attr_e('Copy URL to clipboard', 'wizard-blocks'); ?></button>
+                                            <span class="success hidden" aria-hidden="true"><?php esc_attr_e('Copied!', 'wizard-blocks'); ?></span>
+                                        </span>
                                     </span>
                                 </div>
                                 <div class="actions">
@@ -183,6 +205,7 @@ class Media extends Module_Base {
               } */
             foreach ($_old_media as $media) {
                 if (!in_array($media, $_block_media)) {
+                    //$wb->get-filesystem()->delete
                     wp_delete_file($medias_dir . $media);
                 }
             }
@@ -195,8 +218,10 @@ class Media extends Module_Base {
                     $basename = trim(basename($media));
                     //var_dump($media_path);
                     //var_dump($medias_dir . $basename);
-                    if (!is_dir($medias_dir)) wp_mkdir_p($medias_dir);
-                    copy($media_path, $medias_dir . $basename);
+                    if (!is_dir($medias_dir)) {
+                        wp_mkdir_p($medias_dir);
+                    }
+                    $wb->get_filesystem()->copy($media_path, $medias_dir . $basename, true);
                     //$_block_media[$mid] = $basename;
                 }
             }

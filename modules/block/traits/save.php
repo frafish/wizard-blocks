@@ -184,18 +184,8 @@ trait Save {
         }
         //var_dump($supports); die();
         
-        $icon = '';
-        if (!empty($_POST['_block_icon'])) {
-            $icon = sanitize_key(wp_unslash($_POST['_block_icon']));
-        } else {
-            if (!empty($_POST['_block_icon_svg'])) {
-                $icon = sanitize_textarea_field(wp_unslash($_POST['_block_icon_svg']));
-                $icon = str_replace(PHP_EOL, "", $icon);
-                $icon = str_replace('"', "'", $icon);
-                $icon = str_replace("\'", "'", $icon);
-                
-            }
-        }
+        $icon = $this->save_block_icon($block_textdomain . "/" . $block_slug);
+        //var_dump($icon); die();
         
         $category = '';
         if (!empty($_POST['_block_category'])) {
@@ -225,7 +215,7 @@ trait Save {
             }
             $image_path = \WizardBlocks\Core\Helper::url_to_path($image_src);
             //var_dump($image_path); var_dump($basepath.$media_dir.$image_name); die();
-            $image = file_get_contents($image_path);
+            $image = $this->get_filesystem()->get_contents($image_path);
             //var_dump($image); die();
             if ($this->get_filesystem()->copy($image_path, $basepath.$media_dir.$image_name, true)) {
             //if (file_put_contents($basepath.$media_dir.$image_name, $image)) {
@@ -258,7 +248,7 @@ trait Save {
               "root": ".wp-block-my-plugin-notice"
               }, */
         ];
-        //var_dump($json);
+        //var_dump($json); die();
         
         // SAVING ASSETS FILES
         $min = '.min.';

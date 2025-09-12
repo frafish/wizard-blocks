@@ -7,7 +7,7 @@ Trait Actions {
     static public $blocks_disabled_key = 'blocks_disabled';
 
     function execute_actions() {
-
+        
         if (!empty($_REQUEST['action'])) {
 
             $blocks_dir = apply_filters('wizard/blocks/dirs', []);
@@ -157,7 +157,7 @@ Trait Actions {
 
     public function filter_block_json($jsons = []) {
         foreach ($jsons as $jkey => $json) {
-            $json_code = file_get_contents($json);
+            $json_code = $this->get_filesystem()->get_contents($json);
             $args = json_decode($json_code, true);
             if (empty($args) || empty($args['name']) || empty($args['title'])) {
                 // not valid block json
@@ -281,7 +281,7 @@ Trait Actions {
                 if ($block == 'src') {
                     continue;
                 }
-                $json_code = file_get_contents($json);
+                $json_code = $this->get_filesystem()->get_contents($json);
                 $args = json_decode($json_code, true);
                 //var_dump($args); die();
                 //if (!empty($args['$schema'])) {

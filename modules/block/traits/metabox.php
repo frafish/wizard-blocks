@@ -421,7 +421,7 @@ trait Metabox {
             $render_file = $this->get_blocks_dir($post->post_name) . DIRECTORY_SEPARATOR . $file;
             //var_dump($render_file);
             if (file_exists($render_file)) {
-                $render = file_get_contents($render_file);
+                $render = $this->get_filesystem()->get_contents($render_file);
             }
         }
         //$render_safe = $render;
@@ -712,25 +712,7 @@ trait Metabox {
         $json = $post ? $this->get_block_json($post->post_name) : [];
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
 
-        $icons = [];
-        //Get an instance of WP_Scripts or create new;
-        $wp_styles = wp_styles();
-        //Get the script by registered handler name
-        $style = $wp_styles->registered['dashicons'];
-        $dashicons = ABSPATH . $style->src;
-        $dashicons = str_replace('//', DIRECTORY_SEPARATOR, $dashicons);
-        $dashicons = str_replace('/', DIRECTORY_SEPARATOR, $dashicons);
-        if (file_exists($dashicons)) {
-            $css = file_get_contents($dashicons);  //wp_remote_get($dashicons); //
-            $tmp = explode('.dashicons-', $css);
-            foreach ($tmp as $key => $piece) {
-                if ($key) {
-                    list($icon, $more) = explode(':', $piece, 2);
-                    $icons[$icon] = $icon;
-                }
-            }
-        }
-        unset($icons['before']);
+        $icons = $this->get_dashicons();
         ?>
         <div class="inside">
 
@@ -772,9 +754,9 @@ trait Metabox {
             <p><label for="revision"><input type="checkbox" id="revision" name="revision"> <?php esc_attr_e('Create new revision', 'wizard-blocks'); ?></label></p>	
 
             <h3><label for="_block_icon"><?php esc_attr_e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><select id="_block_icon" name="_block_icon"><option value=""><?php esc_attr_e('Custom', 'wizard-blocks'); ?></option><?php
-                    if (empty($json['icon']))
-                        $json['icon'] = '';
+            <div><select id="_block_icon" name="_block_icon"><option value=""><?php esc_attr_e('CUSTOM', 'wizard-blocks'); ?></option><?php
+                if (empty($json['icon']))
+                    $json['icon'] = '';
                     $is_dash = false;
                     foreach ($icons as $icon) {
                         $selected_safe = '';
@@ -785,18 +767,23 @@ trait Metabox {
                         echo '<option value="' . esc_attr($icon) . '"' . esc_attr($selected_safe) . '>' . esc_html($icon) . '</option>';
                     }
                     ?></select>
-                <span id="icon_svg">
-                    <textarea id="_block_icon_svg" name="_block_icon_svg" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo esc_textarea($json['icon']); ?></textarea>
+                <p class="d-flex<?php if ($is_dash) { ?> d-none<?php } ?> assets" id="icon_src">
+                    <textarea id="_block_icon_src" name="_block_icon_src" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo esc_textarea($json['icon']); ?></textarea>
+                    <a title="<?php esc_attr_e('Upload new Icon', 'wizard-blocks'); ?>" class="dashicons-before dashicons-plus button button-primary upload-icon" href="http://localhost/wp-admin/media-upload.php?post_id=231&amp;type=image&amp;TB_iframe=1" target="_blank"></a>
+                </p>
+                <p id="icon_svg_current">
                     <?php
                     if (!empty($json['icon'])) {
-                        // PHPCS - The SVG file content is being read from a strict file path structure.
-                        $json_icon_safe = $json['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
                         ?> 
                         <b><?php esc_attr_e('Current', 'wizard-blocks'); ?>:</b><br>
-                        <?php echo $is_dash ? '<span class="dashicons dashicons-' . esc_attr($json['icon']) . '"></span>' : $json_icon_safe; ?>
-        <?php } ?> 
-                </span>
-            </p>	
+                        <?php $this->the_block_thumbnail($json['name'], $json['icon']); ?>
+                    <?php } ?> 
+                </p>
+                <?php
+                // TODO: add ColorPicker for background and foreground
+                //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
+                ?>
+            </div>	
             <?php
             $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
             $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));

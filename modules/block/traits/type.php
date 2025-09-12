@@ -305,7 +305,7 @@ trait Type {
                 }
                 $file = 'zip://' . $zip. '#block.json';
                 //var_dump($file);
-                $json = file_get_contents($file);
+                $json = $this->get_filesystem()->get_contents($file);
                 if ($json) {
                     $json = json_decode($json, true);
                 }

@@ -2,12 +2,11 @@ jQuery(document).ready(function ($) {
 
 // Set all variables to be used in scope
 
-    var frame;
-    var btn;
 // ADD IMAGE LINK
     jQuery('.upload-medias').on('click', function (event) {
         event.preventDefault();
-        btn = jQuery(this);
+        let frame;
+        let btn = jQuery(this);
         // If the media frame already exists, reopen it.
         if (frame) {
             frame.open();
@@ -15,9 +14,9 @@ jQuery(document).ready(function ($) {
         }
         // Create a new media frame
         frame = wp.media({
-            title: 'Select or Upload Media',
+            title: wp.i18n.__('Select or Upload Media', 'wizard-blocks'),
             button: {
-                text: 'Use this Media'
+                text: wp.i18n.__('Add this Media', 'wizard-blocks')
             },
             multiple: true  // Set to true to allow multiple files to be selected
         });
@@ -44,7 +43,7 @@ jQuery(document).ready(function ($) {
     });
 
     jQuery('.block-medias').on('click', '.media-delete', function () {
-        if (confirm('Are you sure to remove this Media?')) {
+        if (confirm(wp.i18n.__('Are you sure to remove this Media?', 'wizard-blocks'))) {
             let input = jQuery('#_block_media');
             jQuery(this).parent().remove();
             input.val('');

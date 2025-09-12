@@ -4,6 +4,142 @@ namespace WizardBlocks\Modules\Block\Traits;
 
 Trait Icons {
 
+    // Add the new column
+    function add_block_columns($columns) {
+        $new_columns = array();
+        foreach ($columns as $key => $title) {
+            $new_columns[$key] = $title;
+            if ($key == 'title') {
+                $new_columns['featured_image'] = __('Icon', 'wizard-blocks');
+            }
+        }
+        return $new_columns;
+    }
+
+    function populate_block_columns($column, $post_id) {
+        if ($column == 'featured_image') {
+            if (has_post_thumbnail($post_id)) {
+                the_post_thumbnail('thumbnail', ['style' => 'width:40px;height:40px;']); // You can specify a different image size.
+            } else {
+                $post = get_post($post_id);
+                $this->the_block_thumbnail($post->post_name);
+            }
+        }
+    }
+
+    function save_block_icon($block_name) {
+        //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
+        $icon = '';
+        if (!empty($_POST['_block_icon'])) {
+            $icon = sanitize_key(wp_unslash($_POST['_block_icon']));
+        } else {
+            if (!empty($_POST['_block_icon_src'])) {
+                $icon_name = 'icon.svg'; //basename($icon_url);
+                list($block_textdomain, $block_slug) = explode('/', $block_name);
+                $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+                $medias_dir = $basepath;  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
+                //var_dump($_POST['_block_icon_src']); die();
+                if (str_starts_with($_POST['_block_icon_src'], 'http')) {
+                    // svg image url
+                    $icon_url = sanitize_url($_POST['_block_icon_src']);
+                    $icon_path = \WizardBlocks\Core\Helper::url_to_path($icon_url);
+                    if (!is_dir($medias_dir)) {
+                        wp_mkdir_p($medias_dir);
+                    }
+                    //$icon_name = basename($icon_url);
+                    if ($this->get_filesystem()->copy($icon_path, $medias_dir . $icon_name, true)) {
+                        $icon = 'file:./' . $icon_name;
+                    }
+                } else {
+                    // other...like <svg code
+                    //$_block_icon_src = sanitize_textarea_field(wp_unslash($_POST['_block_icon_src']));
+                    $_block_icon_src = wp_unslash($_POST['_block_icon_src']);
+                    $icon = $_block_icon_src;
+                    $icon = str_replace(PHP_EOL, "", $icon);
+                    $icon = str_replace('"', "'", $icon);
+                    $icon = str_replace("\'", "'", $icon);
+                    //var_dump($icon); die();
+                    if (str_starts_with($icon, '<svg ')) {
+                        if (!is_dir($medias_dir)) {
+                            wp_mkdir_p($medias_dir);
+                        }
+                        //var_dump($medias_dir . $icon_name); die();
+                        if ($this->get_filesystem()->put_contents($medias_dir . $icon_name, $_block_icon_src)) {
+                            $icon = 'file:./' . $icon_name;
+                        }
+                    }
+                }
+            }
+        }
+        return $icon;
+    }
+
+    function the_block_thumbnail($block, $icon = '', $attr = []) {
+        if (empty($attr['width'])) {
+            $attr['width'] = 40;
+            $attr['height'] = 40;
+            $attr['font-size'] = 40;
+        }
+        //var_dump($block);
+        $block_json = $this->get_block_json($block);
+        if (!$icon) {
+            if (!empty($block_json['icon'])) {
+                $icon = $block_json['icon'];
+            }
+        }
+        if ($icon) {
+            $dashicons = $this->get_dashicons();
+            if (in_array($icon, $dashicons)) {
+                ?> 
+                <span style="font-size: <?php echo esc_attr($attr['font-size']); ?>px" class="block-icon dashicons dashicons-<?php echo esc_attr($icon); ?>"></span> 
+                <?php
+            } else {
+                if (str_starts_with($icon, 'file:./')) {
+                    list($block_textdomain, $block_slug) = explode('/', $block_json['name']);
+                    $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+                    $icon_path = str_replace('file:./', $basepath, $icon);
+                    $icon_path = str_replace('/', DIRECTORY_SEPARATOR, $icon_path);
+                    $icon_url = \WizardBlocks\Core\Helper::path_to_url($icon_path);
+                    ?>
+                    <img class="block-icon" width="<?php echo esc_attr($attr['width']); ?>" src="<?php echo esc_url($icon_url); ?>">
+                    <?php
+                } else { 
+                    if (filter_var($icon, FILTER_VALIDATE_URL)) { ?>
+                    <img class="block-icon" src="<?php echo esc_url($icon); ?>">
+                    <?php } else {
+                    // PHPCS - The SVG file content is being read from a strict file path structure.
+                    $json_icon_safe = $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+                    ?>
+                    <span style="max-width: <?php echo esc_attr($attr['width']); ?>px" class="block-icon"><?php echo $json_icon_safe; ?></span>
+                <?php }
+                }
+            }
+        }
+    }
+
+    function get_dashicons() {
+        $icons = [];
+        //Get an instance of WP_Scripts or create new;
+        $wp_styles = wp_styles();
+        //Get the script by registered handler name
+        $style = $wp_styles->registered['dashicons'];
+        $dashicons = ABSPATH . $style->src;
+        $dashicons = str_replace('//', DIRECTORY_SEPARATOR, $dashicons);
+        $dashicons = str_replace('/', DIRECTORY_SEPARATOR, $dashicons);
+        if (file_exists($dashicons)) {
+            $css = $this->get_filesystem()->get_contents($dashicons);  //wp_remote_get($dashicons); //
+            $tmp = explode('.dashicons-', $css);
+            foreach ($tmp as $key => $piece) {
+                if ($key) {
+                    list($icon, $more) = explode(':', $piece, 2);
+                    $icons[$icon] = $icon;
+                }
+            }
+        }
+        unset($icons['before']);
+        return $icons;
+    }
+
     function get_icons_block() {
         return [
             //'core/block' => 'library_symbol',
@@ -62,7 +198,7 @@ Trait Icons {
     function get_icons_core() {
         $icons_core = [];
         $icons_block = [];
-        $block_library_js = file_get_contents(get_home_path() . DIRECTORY_SEPARATOR . 'wp-includes' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'block-library.js');
+        $block_library_js = $this->get_filesystem()->get_contents(get_home_path() . DIRECTORY_SEPARATOR . 'wp-includes' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'block-library.js');
         //var_dump($block_library_js);
         $tmp = explode('external_wp_primitives_namespaceObject.SVG,', $block_library_js);
         foreach ($tmp as $key => $value) {
@@ -151,7 +287,7 @@ Trait Icons {
                 }
             }
         }
-        
+
         $icons_core['blocks'] = $icons_block;
         //var_dump($icons_core);
         //die();
@@ -167,10 +303,10 @@ Trait Icons {
             $woo_js = dirname(WC_PLUGIN_FILE) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $slug . '.js';
             //var_dump($woo_js);
             if (file_exists($woo_js)) {
-                $block_js = file_get_contents($woo_js);
+                $block_js = $this->get_filesystem()->get_contents($woo_js);
                 $tmp = explode('.SVG,', $block_js, 2);
                 if (count($tmp) == 2) {
-                    
+
                     $tmp = explode('));var', end($tmp), 2);
                     if (count($tmp) == 2) {
                         list($jsons, $more) = $tmp;
@@ -183,7 +319,7 @@ Trait Icons {
                             if ($key) {
                                 $tmp3 = explode('",', $piece, 2);
                                 if (count($tmp3) == 2) {
-                                    list($more, $json) = $tmp3; 
+                                    list($more, $json) = $tmp3;
                                     $tmp2 = explode('"', $more);
                                     $types[] = end($tmp2);
                                     $svg_objs[] = str_replace(')', '', $json);
@@ -247,7 +383,7 @@ Trait Icons {
         $jsons = str_replace('strokeWidth:', '"stroke-width":', $jsons);
         return $jsons;
     }
-    
+
     function fix_jsson_js($jsons = '') {
         $jsons = str_replace('"width":', 'width:', $jsons);
         $jsons = str_replace('"height":', 'height:', $jsons);
@@ -271,5 +407,164 @@ Trait Icons {
         $jsons = str_replace('"strokeLinejoin":', 'strokeLinejoin:', $jsons);
         $jsons = str_replace('"strokeLinecap":', 'strokeLinecap:', $jsons);
         return $jsons;
+    }
+
+    public function parse_svg($svg) {
+
+        // remove xml line
+        if (str_starts_with($svg, '<?xml ')) {
+            $tmp = explode('?>', $svg, 2);
+            $svg = end($tmp);
+        }
+
+
+        //include_once(WIZARD_BLOCKS_PATH.'modules/block/assets/lib/svg-parser.php');
+        $svg_js = $this->generateVanillaJSSVG($svg);
+        //$svg_js = 'wp.element.createElement('.$svg_js.'),';
+        $svg_js = str_replace('&quot;', '"', $svg_js);
+        $parsed = $this->fix_jsson_js($svg_js);
+        //var_dump($parsed); die();
+
+        return $parsed;
+
+        /*
+        $parsed = "";
+        $tags = explode('<', $svg);
+        $close = 0;
+        foreach ($tags as $key => $tagg) {
+            if ($key) {
+                list($tag, $more) = explode('>', $tagg, 2);
+                $tag_attr = explode(' ', $tag, 2);
+                $tag_name = array_shift($tag_attr);
+                $tag_attr = reset($tag_attr);
+                $tag_attr = str_replace("'", '"', $tag_attr);
+                $tag_attr = explode('" ', $tag_attr);
+                if (substr($tag_name, 0, 1) == '/') {
+                    // close
+                    $close--;
+                    $parsed .= '),';
+                } else {
+                    // open
+                    $primitive = ($tag_name == 'svg') ? 'SVG' : ucfirst($tag_name);
+                    if (!empty($parsed))
+                        $parsed .= ',';
+                    $parsed .= 'wp.element.createElement(wp.primitives.' . $primitive . ','; //{';
+                    $close++;
+                    $tag_attrs = [];
+                    foreach ($tag_attr as $attr) {
+                        list($attr_name, $attr_value) = explode('=', $attr, 2);
+                        $tmp_name = explode('-', $attr_name);
+                        if ($attr_value != 'http://www.w3.org/2000/svg') {
+                            //$attr_name = array_shift($tmp_name).implode('', array_map('ucfirst', $tmp_name));
+                            $attr_value = str_replace('"', '', $attr_value);
+                            $attr_value = str_replace("'", '', $attr_value);
+                            $attr_value = str_replace("\\", '', $attr_value);
+                            $attr_value = str_replace("/", '', $attr_value);
+                        }
+                        $tag_attrs[$attr_name] = $attr_value;
+                    }
+
+                    $parsed .= wp_json_encode($tag_attrs);
+                    if (substr(end($tag_attr), -1, 1) == '/') {
+                        $close--;
+                        $parsed .= '),';
+                    }
+                }
+            }
+        }
+        //for ($i=0; $i<=$close;$i++) {
+        //    $parsed .= '),';
+        //}
+        $parsed = str_replace('),)', '))', $parsed);
+        $parsed = str_replace(',,', ',', $parsed);
+        $parsed = $this->fix_jsson_js($parsed);
+        //var_dump($parsed); die();
+
+        return $parsed;
+        */
+    }
+
+    function generateVanillaJSSVG($svgString) {
+        // Load the SVG string into a DOMDocument object
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $dom->loadXML($svgString);
+        libxml_clear_errors();
+
+        if (!$dom) {
+            return "Error: Invalid SVG string.";
+        }
+
+        $root = $dom->documentElement;
+        $output = '';
+        // Process the root element
+        $svgJsCode = $this->processNode($root);
+        $output .= $svgJsCode;
+
+        return $output;
+    }
+
+    // This function recursively processes the SVG nodes
+    function processNode($node) {
+        $jsCode = '';
+        $tagName = $node->tagName;
+        $primitivesMap = [
+            'svg' => 'wp.primitives.SVG',
+            'path' => 'wp.primitives.Path',
+            'circle' => 'wp.primitives.Circle',
+            'rect' => 'wp.primitives.Rect',
+            'polygon' => 'wp.primitives.Polygon',
+            'line' => 'wp.primitives.Line',
+            'polyline' => 'wp.primitives.Polyline',
+            // Add more as needed
+            /*
+            BlockQuotation
+            Defs
+            G
+            HorizontalRule
+            LinearGradient 
+            RadialGradient 
+            Stop
+            View
+            */
+        ];
+
+        // Map SVG tags to wp.primitives components, or use createElement for others
+        $component = isset($primitivesMap[$tagName]) ? "wp.element.createElement(".$primitivesMap[$tagName]. "," : "wp.element.createElement('" . $tagName . "',";
+
+        $attributes = [];
+        foreach ($node->attributes as $attr) {
+            // Convert kebab-case attributes to camelCase for React props
+            $propName = preg_replace_callback('/-([a-z])/', function ($matches) {
+                return strtoupper($matches[1]);
+            }, $attr->name);
+            $attributes[$propName] = $attr->value;
+        }
+
+        // Generate the props object string
+        $propsString = json_encode($attributes);
+
+        // Build the current element's code
+        $jsCode .= $component . ' ';
+        $jsCode .= $propsString . ', ';
+
+        // Recursively process child nodes
+        $children = [];
+        foreach ($node->childNodes as $child) {
+            if ($child->nodeType === XML_ELEMENT_NODE) {
+                $children[] = $this->processNode($child);
+            }
+        }
+
+        // Add children to the code
+        if (!empty($children)) {
+            $jsCode .= "\n" . implode(",\n", $children);
+        }
+
+        $jsCode .= '),';
+
+        $jsCode = str_replace(',,', ',', $jsCode); // TODO: fix
+        
+        return $jsCode;
     }
 }

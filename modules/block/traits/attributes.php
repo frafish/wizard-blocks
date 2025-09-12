@@ -120,16 +120,35 @@ wp.apiFetch( { path: '<?php echo esc_url($api['path']); ?>' } ).then( ( data ) =
     }
 }
 //window.addEventListener("load", (event) => {
+//var_dump($args); die();
 ?>
 window.document.addEventListener("DOMContentLoaded", function(e) {
 wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     <?php
-    if (!empty($args['icon']) && substr($args['icon'], 0, 5) == '<svg ') {
+    if (!empty($args['icon'])) {
+        $icon_svg = false;
+        if (substr($args['icon'], 0, 7) == 'file:./') {
+            $tmp = explode('/', $args['name']);
+            $block_slug = end($tmp);
+            $block_path = $this->get_ensure_blocks_dir($block_slug, $args['textdomain']);
+            $tmp = explode('/', $args['icon']);
+            $icon_name = substr($args['icon'], 6); // file:.
+            $icon_name = str_replace('/', DIRECTORY_SEPARATOR, $icon_name);
+            $icon_path = $block_path . $icon_name;
+            $icon_svg = $this->get_filesystem()->get_contents($icon_path);
+            //var_dump($icon_svg); die();
+        }
+        if (substr($args['icon'], 0, 5) == '<svg ') {
+            $icon_svg = $args['icon'];
+        }
+        if ($icon_svg) {
+            $icon_safe = $this->parse_svg($icon_svg);
     ?>
     icon: { 
-        src: <?php $icon_safe = $this->parse_svg($args['icon']); echo esc_js($icon_safe); ?>
+        src: <?php echo $icon_safe; //echo esc_js($icon_safe); ?>
     },
-    <?php } ?>
+    <?php }
+    } ?>
     edit(props) {
         <?php if (!empty($args['example']['attributes']['preview'])) { 
         $image_url = $args['example']['attributes']['preview'];
@@ -686,56 +705,5 @@ if ($wrapper) { ?></script><?php }
     <?php
    }
    
-    public function parse_svg($svg) {
-        $parsed = "";
-        $tags = explode('<', $svg);
-        $close = 0;
-        foreach ($tags as $key => $tagg) {
-            if ($key) {
-                list($tag, $more) = explode('>', $tagg, 2);
-                $tag_attr = explode(' ', $tag, 2);
-                $tag_name = array_shift($tag_attr);
-                $tag_attr = reset($tag_attr);
-                $tag_attr = str_replace("'", '"', $tag_attr);
-                $tag_attr = explode('" ', $tag_attr);
-                if (substr($tag_name, 0 , 1) == '/') {
-                    // close
-                    $close--;
-                    $parsed .= '),';
-                } else {
-                    // open
-                    $primitive = ($tag_name == 'svg') ? 'SVG' : ucfirst($tag_name);
-                    if (!empty($parsed)) $parsed .= ',';    
-                    $parsed .= 'wp.element.createElement(wp.primitives.'.$primitive.','; //{';
-                    $close ++;
-                    $tag_attrs = [];
-                    foreach ($tag_attr as $attr) {
-                        list($attr_name, $attr_value) = explode('=', $attr, 2);
-                        $tmp_name = explode('-', $attr_name);
-                        //$attr_name = array_shift($tmp_name).implode('', array_map('ucfirst', $tmp_name));
-                        $attr_value = str_replace('"', '', $attr_value);
-                        $attr_value = str_replace("'", '', $attr_value);
-                        $attr_value = str_replace("\\", '', $attr_value);
-                        $attr_value = str_replace("/", '', $attr_value);
-                        $tag_attrs[$attr_name ] = $attr_value;
-                    }
-
-                    $parsed .= wp_json_encode($tag_attrs);
-                    if (substr(end($tag_attr), -1, 1) == '/') {
-                        $close--;
-                        $parsed .= '),';
-                    }
-                }
-            }
-        }
-        /*for ($i=0; $i<=$close;$i++) {
-            $parsed .= '),';
-        }*/
-        $parsed = str_replace('),)', '))', $parsed);
-        $parsed = str_replace(',,', ',', $parsed);
-        $parsed = $this->fix_jsson_js($parsed);
-        //var_dump($parsed); die();
-
-        return $parsed;
-    }
+    
 }

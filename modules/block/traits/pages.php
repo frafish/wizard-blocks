@@ -97,7 +97,7 @@ trait Pages {
                 }
             }
             if (!empty($blocks[$name]['file']) && file_exists($blocks[$name]['file'])) {
-                $json = file_get_contents($blocks[$name]['file']);
+                $json = $this->get_filesystem()->get_contents($blocks[$name]['file']);
                 $block_json = json_decode($json, true);
                 foreach ($block_json as $key => $value) {
                     if (!isset($blocks[$name][$key])) {
