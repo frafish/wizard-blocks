@@ -1,4 +1,5 @@
 window.addEventListener("load", (event) => {
+    //alert('all');
     jQuery('#blocks-search').on('change keyup', function () {
         jQuery('.blocks .hentry').show();
         let value = jQuery(this).val();

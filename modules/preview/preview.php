@@ -105,6 +105,12 @@ class Preview extends Module_Base {
                         }
                     }
                 }
+                if (!empty($block_json['example']['preview']['attributes'])) {
+                    foreach ($block_json['example']['preview']['attributes'] as $aid => $value) {
+                        $attributes[$aid] = $value;
+                    }
+                }
+                //var_dump($attributes);
                 $block_content = $wb->render($attributes, $content, $block);
 
                 //if (isset($_GET['context']) && $_GET['context'] == 'preview') {

@@ -388,7 +388,7 @@ jQuery(document).ready(function ($) {
             row = jQuery(row);
             let key = row.find('.key').val();
             console.log(key);
-            key = key.trim().toLowerCase().replaceAll(" ","");
+            key = key.trim().replaceAll("_","");//.toLowerCase()
             if (key) {
                 attributes[key] = {};
                 if (row.find('.type').val()) {

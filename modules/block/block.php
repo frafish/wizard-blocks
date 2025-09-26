@@ -48,6 +48,13 @@ class Block extends Module_Base {
         parent::__construct();
 
         add_action('init', [$this, '_init_type']);
+        
+        if (is_admin() && $this->is_block_archive()) {
+            add_action('admin_enqueue_scripts', function() {
+                wp_enqueue_style('wizard-blocks-archive', WIZARD_BLOCKS_URL.'modules/block/assets/css/block-archive.css', [], '1.2.0');
+            });
+        }
+        
         add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
         add_action( '_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
         add_filter('wizard_blocks/before_save', [$this, 'generate_block_zip_for_revision'], 10, 3);
@@ -273,6 +280,10 @@ class Block extends Module_Base {
     
     public function is_block_edit() {
         return ((!empty($_GET['action']) && $_GET['action'] == 'edit' && !empty($_GET['post']) && get_post_type(intval($_GET['post'])) == self::get_cpt_name()) || (!empty($_GET['post_type']) && $_GET['post_type'] == self::get_cpt_name()));
+    }
+    
+    public function is_block_archive() {
+        return (empty($_GET['action']) && empty($_GET['page']) && (!empty($_GET['post_type']) && $_GET['post_type'] == self::get_cpt_name()));
     }
     
     public function add_mime_types( $mimes ) {
@@ -612,11 +623,11 @@ class Block extends Module_Base {
         $wp_upload_dir = wp_upload_dir();
         $path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'blocks';
         $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
-
+        $blocks_dirs = ['uploads' => $path];
+        $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
+            
         if ($slug) {
-            $path = false;
-            $blocks_dirs = ['uploads' => $path];
-            $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
+            $path = false; // not exists yet
             foreach ($blocks_dirs as $dir) {
                 /*if (is_dir($dir . DIRECTORY_SEPARATOR . $slug)) {
                     $path = $dir;
@@ -697,26 +708,30 @@ class Block extends Module_Base {
         return false;
     }
 
-    public function dir_copy($src, $dst) {
+    public function copy_dir($src, $dst, $skip = []) {
         // open the source directory 
-        $dir = opendir($src);
         if (substr($src,-1) == DIRECTORY_SEPARATOR) $src = substr($src, 0, -1);
         if (substr($dst,-1) == DIRECTORY_SEPARATOR) $dst = substr($dst, 0, -1);
         // Make the destination directory if not exist 
         @wp_mkdir_p($dst);
         // Loop through the files in source directory 
+        /*
+        //$dir = opendir($src);
         foreach (scandir($src) as $file) {
             if (( $file != '.' ) && ( $file != '..' )) {
                 if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
                     // Recursively calling custom copy function 
                     // for sub directory  
-                    $this->dir_copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
+                    $this->copy_dir($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file, $skip);
                 } else {
                     copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
                 }
             }
         }
         closedir($dir);
+        */
+        $this->get_filesystem(); //maybe init $wp_filesystem
+        copy_dir($src, $dst, $skip);
     }
     
     public function get_filesystem() {
@@ -731,12 +746,5 @@ class Block extends Module_Base {
         //var_dump($wp_filesystem);
         return $wp_filesystem;
     }
-    
-    // https://developer.wordpress.org/block-editor/how-to-guides/internationalization/
-    public function add_translation() {
-        // create languages folder
-        // create main lang file
-        //
-    }
-}
 
+}

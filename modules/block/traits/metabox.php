@@ -718,14 +718,14 @@ trait Metabox {
 
             <h3><label for="_block_apiVersion"><?php esc_attr_e('apiVersion', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><select type="text" id="_block_apiVersion" name="_block_apiVersion"><?php
-                    if (empty($json['apiVersion']))
-                        $json['apiVersion'] = 3;
-                    foreach (self::$apiVersions as $apiVersion) {
-                        $selected_safe = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
-                        echo '<option value="' . esc_attr($apiVersion) . '"' . esc_attr($selected_safe) . '>' . esc_html($apiVersion) . '</option>';
-                    }
-                    ?></select></p>	           
-
+            if (empty($json['apiVersion'])) {
+                $json['apiVersion'] = 3;
+            }
+            foreach (self::$apiVersions as $apiVersion) {
+                $selected_safe = (!empty($json['apiVersion']) && $json['apiVersion'] == $apiVersion) ? ' selected' : '';
+                echo '<option value="' . esc_attr($apiVersion) . '"' . esc_attr($selected_safe) . '>' . esc_html($apiVersion) . '</option>';
+            }
+            ?></select></p>	           
         <?php
         
             $textdomain = $post_name = $placeholder = '';
@@ -736,14 +736,40 @@ trait Metabox {
             if ($user = wp_get_current_user()) {
                 $placeholder = $user->user_nicename;
             }
+            
+            $block_usage_count = 0;
+            if (!empty($json['name'])) {
+                $block_usage = $this->get_blocks_usage($json['name']);
+                $block_usage_count = empty($block_usage['count']) ? 0 : intval($block_usage['count']);
+                //var_dump($block_usage);
+            }
             ?>
             <h3><label for="_block_name"><?php esc_attr_e('Name', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#name"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <p><input style="width: 45%;" type="text" id="_block_textdomain" name="_block_textdomain" value="<?php echo esc_attr($textdomain); ?>" placeholder="<?php echo esc_attr($placeholder); ?>" />
+            <p><input<?php echo $block_usage_count ? ' readonly' : ''; ?> style="width: 45%;" type="text" id="_block_textdomain" name="_block_textdomain" value="<?php echo esc_attr($textdomain); ?>" placeholder="<?php echo esc_attr($placeholder); ?>" />
             <?php //echo esc_html($this->get_block_textdomain($json));  ?>
                 /
-            <input style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post_name); ?>" placeholder="<?php echo esc_attr($post_name); ?>" /></p>
-        
-
+            <input<?php echo $block_usage_count ? ' readonly' : ''; ?>  style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post_name); ?>" placeholder="<?php echo esc_attr($post_name); ?>" /></p>
+            
+            <?php if ($block_usage_count) { ?>
+            <label class="text-warning"><input type="checkbox" onChange="jQuery('#_block_textdomain, #_block_name').prop('readonly', false);"><?php esc_html_e('WARNING: I know that if I change Textdomain or Name the block will not appear anymore on pages where I\'ve previously used it.', 'wizard-blocks'); ?></label>            
+            <?php } ?>
+            
+            <?php if (!empty($json['name'])) { ?>
+            <h3><label for="_block_usage"><?php esc_attr_e('Usage', 'wizard-blocks'); ?></label></h3>
+            <p><?php 
+            /* translators: 1: Block used times. */
+            printf( esc_attr__('Used %s times in this site', 'wizard-blocks'), $block_usage_count); ?></p>           
+            <?php if ($block_usage_count) { ?>
+            <div class="block-usage-posts-list"><ul>
+            <?php
+            foreach ($block_usage['posts'] as $post_id) { ?>
+                <li><a href="<?php echo esc_url(get_edit_post_link($post_id)); ?>" target="_blank">[<?php echo esc_html($post_id); ?>] <?php echo esc_html(get_the_title($post_id)); ?></a></li>
+            <?php } ?>
+            </ul>
+            </div>
+            <?php } ?>
+            <?php } ?>
+            
             <h3><label for="_block_version"><?php esc_attr_e('Version', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#version"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_version" name="_block_version" placeholder="1.0.1" value="<?php
                 if (!empty($json['version'])) {
@@ -754,7 +780,7 @@ trait Metabox {
             <p><label for="revision"><input type="checkbox" id="revision" name="revision"> <?php esc_attr_e('Create new revision', 'wizard-blocks'); ?></label></p>	
 
             <h3><label for="_block_icon"><?php esc_attr_e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <div><select id="_block_icon" name="_block_icon"><option value=""><?php esc_attr_e('CUSTOM', 'wizard-blocks'); ?></option><?php
+            <div><select id="_block_icon" name="_block_icon"><option value="">-- <?php esc_attr_e('CUSTOM', 'wizard-blocks'); ?> --</option><?php
                 if (empty($json['icon']))
                     $json['icon'] = '';
                     $is_dash = false;
@@ -802,6 +828,8 @@ trait Metabox {
                         echo '<option value="' . esc_attr($cat['slug']) . '"' . esc_attr($selected) . '>' . esc_html($cat['title']) . '</option>';
                     }
                     ?></select></p>
+            
+            <?php do_action('wizard-block/category', $block_categories, $this); ?>
 
             <h3><label for="_block_keywords"><?php esc_attr_e('Keywords', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#keywords"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p><input type="text" id="_block_keywords" name="_block_keywords" placeholder="alert, message" value="<?php

@@ -1,9 +1,15 @@
-.inside input[type="text"], .inside textarea, .inside select {
+.inside input[type="text"], 
+.inside textarea, 
+.inside select {
     width: 100%;
 }
 .CodeMirror {
     border: 1px solid #ddd;
     width: 100% !important;
+}
+
+.select2-results__option {
+    cursor: pointer;
 }
 
 .viewscriptmodule-js > .CodeMirror,
@@ -150,6 +156,18 @@
 }
 .notice-inline.notice-warning {
   border-left-color: #dba617;
+}
+
+.text-warning {
+    color: orangered; 
+    line-height: 1;
+}
+
+.block-usage-posts-list {
+  max-height: 100px; 
+  overflow: auto; 
+  background-color: #f6f7f7; 
+  padding: 1px 10px;  
 }
 
 .button-update-now:before {

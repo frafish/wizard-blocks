@@ -354,8 +354,6 @@ if ($wrapper) { ?></script><?php }
            if ($component == 'MediaUpload') {
                //$component = 'HStack';
            }
-           
-           
        }
        
        // if has condition
@@ -371,12 +369,14 @@ if ($wrapper) { ?></script><?php }
       ?>
     wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{ className: "block-editor-wrapper block-editor-wrapper__<?php echo esc_attr($id); ?> components-<?php echo strtolower($component); ?><?php if (!empty($attr['className'])) { echo ' '.esc_attr($attr['className']); } ?>", <?php if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
-        if (!$in_toolbar && !in_array($component, ['AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
+        // TITLE LABEL
+        if (!$in_toolbar && !in_array($component, ['InnerBlocks', 'AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo esc_attr($id); ?>", style: {display: "block"}}, wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>")),
         <?php } ?>
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
+                $defaultBlock_safe = empty($attr['defaultBlock']) ? '' : json_encode($attr['defaultBlock']);
                 $template_safe = empty($attr['template']) ? '' : $attr['template'];
                 $allowedBlocks_safe = empty($attr['allowedBlocks']) ? [] : array_map('esc_js', $attr['allowedBlocks']);
                 $allowedBlocks_safe = empty($allowedBlocks_safe) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks_safe;
@@ -385,7 +385,8 @@ if ($wrapper) { ?></script><?php }
                 $orientation_safe = empty($attr['orientation']) ? '' : $attr['orientation']; //$in_toolbar ? 'horizontal' : 'vertical';
                 ?>
                 wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
-                    <?php 
+                    <?php
+                    if ($defaultBlock_safe) { ?>defaultBlock: <?php echo $defaultBlock_safe; ?>, directInsert: true,<?php }
                     if ($template_safe) { ?>template: <?php echo $template_safe; ?>,<?php }
                     if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; ?>,<?php }
                     if ($orientation_safe) { ?>orientation: '<?php echo esc_js($orientation_safe); ?>',<?php }
@@ -589,18 +590,18 @@ if ($wrapper) { ?></script><?php }
                             controls: [
                                     <?php foreach ($attr['options'] as $value => $label) { 
                                         if ($attr['type'] == 'string') {
-                                            $value = '"'.$label.'"';
+                                            $value = '"'.esc_attr($label).'"';
                                             $tmp = explode('|', $label, 2);
                                             if (count($tmp) > 1) {
                                                 $label = reset($tmp);
-                                                $value = '"'.end($tmp).'"';
+                                                $value = '"'.esc_attr(end($tmp)).'"';
                                             }
                                         }
                                         $value_safe = $value;
                                         ?>
                                         {title: "<?php echo esc_attr($label); ?>",
                                         onClick: function (event) {
-                                            props.setAttributes({"<?php echo esc_attr($id); ?>": <?php echo esc_js($value_safe); ?>});                                    
+                                            props.setAttributes({"<?php echo esc_attr($id); ?>": <?php echo $value_safe; ?>});                                    
                                         }, },
                                         <?php
                                     }

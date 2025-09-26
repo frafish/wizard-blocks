@@ -80,6 +80,9 @@ Trait Icons {
             $attr['height'] = 40;
             $attr['font-size'] = 40;
         }
+        if (empty($attr['font-size'])) {
+            $attr['font-size'] = $attr['width'];
+        }
         //var_dump($block);
         $block_json = $this->get_block_json($block);
         if (!$icon) {
@@ -94,6 +97,7 @@ Trait Icons {
                 <span style="font-size: <?php echo esc_attr($attr['font-size']); ?>px" class="block-icon dashicons dashicons-<?php echo esc_attr($icon); ?>"></span> 
                 <?php
             } else {
+                //var_dump($icon);
                 if (str_starts_with($icon, 'file:./')) {
                     list($block_textdomain, $block_slug) = explode('/', $block_json['name']);
                     $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
@@ -108,9 +112,9 @@ Trait Icons {
                     <img class="block-icon" src="<?php echo esc_url($icon); ?>">
                     <?php } else {
                     // PHPCS - The SVG file content is being read from a strict file path structure.
-                    $json_icon_safe = $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
+                    $block_icon_safe = $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
                     ?>
-                    <span style="max-width: <?php echo esc_attr($attr['width']); ?>px" class="block-icon"><?php echo $json_icon_safe; ?></span>
+                    <span style="max-width: <?php echo esc_attr($attr['width']); ?>px" class="block-icon"><?php echo $block_icon_safe; ?></span>
                 <?php }
                 }
             }
@@ -179,7 +183,7 @@ Trait Icons {
             'core/template-part' => 'library_layout',
             //'core/embed' => 'embedContentIcon',
             'core/tag-cloud' => 'library_tag',
-            'core/social-link' => 'library_share',
+            'core/social-links' => 'library_share',
             'core/site-title' => 'map_marker',
             'core/site-tagline' => 'site_tagline_icon',
             'core/read-more' => 'library_link',
@@ -293,6 +297,7 @@ Trait Icons {
         //die();
         // ICONS: \wp-includes\js\dist\block-library.js
         //<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M6 5V18.5911L12 13.8473L18 18.5911V5H6Z"></path></svg>
+        $icons_core = apply_filters('wizard-blocks/icons', $icons_core, $this);
         return $icons_core;
     }
 
@@ -300,6 +305,9 @@ Trait Icons {
         $svg = '';
         if (defined('WC_PLUGIN_FILE')) {
             $slug = $this->get_block_slug($block);
+            switch ($slug) {
+                case 'mini-cart': false;
+            }
             $woo_js = dirname(WC_PLUGIN_FILE) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'blocks' . DIRECTORY_SEPARATOR . $slug . '.js';
             //var_dump($woo_js);
             if (file_exists($woo_js)) {

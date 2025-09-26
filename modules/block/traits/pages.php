@@ -107,11 +107,9 @@ trait Pages {
             }
         }
         $blocks_usage = $this->get_blocks_usage();
-
+        
         $blocks_disabled = get_option(self::$blocks_disabled_key);
         //var_dump($blocks_disabled);
-
-
 
         $block_editor_context = new \WP_Block_Editor_Context(
                 array(
@@ -151,11 +149,11 @@ trait Pages {
                 <table class="wp-list-table widefat fixed striped table-view-list blocks">
                     <thead>
                         <tr>
-                            <th scope="col" id="icon" class="manage-column column-icon" style="width: 30px;"><?php esc_html_e('Icon', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="icon" class="manage-column column-icon" style="width: 50px;"><?php esc_html_e('Icon', 'wizard-blocks'); ?></th>
                             <th scope="col" id="title" class="manage-column column-title column-primary sortable sorted asc"><span><?php esc_html_e('Title', 'wizard-blocks'); ?></span></th>
-                            <th scope="col" id="status" class="manage-column column-status" style="width: 40px;"><?php esc_html_e('Status', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="status" class="manage-column column-status" style="width: 80px;"><?php esc_html_e('Status', 'wizard-blocks'); ?></th>
                             <th scope="col" id="description" class="manage-column column-description"><?php esc_html_e('Description', 'wizard-blocks'); ?></th>
-                            <th scope="col" id="api" class="manage-column column-category" style="width: 30px;"><?php esc_html_e('Api', 'wizard-blocks'); ?></th>
+                            <th scope="col" id="api" class="manage-column column-category" style="width: 50px;"><?php esc_html_e('Api', 'wizard-blocks'); ?></th>
                             <th scope="col" id="category" class="manage-column column-category"><?php esc_html_e('Category', 'wizard-blocks'); ?></th>
                             <th scope="col" id="usage" class="manage-column column-usage sortable" style="width: 50px;"><?php esc_html_e('Usage', 'wizard-blocks'); ?></th>
                             <th scope="col" id="plugin" class="manage-column column-plugin"><?php esc_html_e('Plugin', 'wizard-blocks'); ?></th>
@@ -180,9 +178,7 @@ trait Pages {
                                     if (empty($block['icon'])) {
                                         $block['icon'] = 'block-default';
                                     }
-                                    // PHPCS - The SVG file content is being read from a strict file path structure.
-                                    $block_icon_safe = $block['icon']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
-                                    echo (substr($block['icon'], 0, 5) == '<svg ') ? $block_icon_safe : '<span class="dashicons dashicons-' . esc_attr($block['icon']) . '"></span> ';
+                                    $this->the_block_thumbnail($block_name, $block['icon'], ['width' => '30']);
                                     ?>
                                 </td>
                                 <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
@@ -215,7 +211,7 @@ trait Pages {
                                     ?>
                                 </td>
                                 <td class="usage column-usage" data-colname="<?php esc_attr_e('Usage', 'wizard-blocks'); ?>">
-                                    <?php echo esc_html(empty($blocks_usage[$block['name']]) ? '0' : $blocks_usage[$block['name']]); ?>
+                                    <?php echo esc_html(empty($blocks_usage[$block['name']]['count']) ? '0' : $blocks_usage[$block['name']]['count']); ?>
                                 </td>
                                 <td class="folder column-folder" data-colname="<?php esc_attr_e('Folder', 'wizard-blocks'); ?>">
                                     <?php
@@ -258,15 +254,14 @@ trait Pages {
                                     <?php } ?>
                                     <?php
                                     if (empty($block['post'])) {
-                                        if (!empty($block['folder'])) {
-                                            ?>
+                                        if (!empty($block['folder'])) { ?>
                                             <a class="btn button button-primary dashicons-before dashicons-database-import" href="<?php echo esc_url($this->get_action_url("action=import&block=" . $block_name)); ?>" title="<?php esc_attr_e('Import', 'wizard-blocks'); ?>"></a>
-                                            <?php
-                                        }
+                                        <?php }
                                     } else {
-                                        ?>
+                                        if ($block_post) { ?>
                                         <a class="btn button button-primary dashicons-before dashicons-edit" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" title="<?php esc_attr_e('Edit', 'wizard-blocks'); ?>"></a>
-                                    <?php }
+                                        <?php }
+                                    }
                                     ?>
                                     <?php do_action('wizard/blocks/action/btn', $block, $this); ?>
                                 </td>		
@@ -293,8 +288,8 @@ trait Pages {
             </form>
         </div>
         <?php
-        wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/css/all-blocks.css', [], '1.0.1');
-        wp_enqueue_script('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/js/all-blocks.js', [], '1.0.1', true);
+        wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules'. DIRECTORY_SEPARATOR.'block'. DIRECTORY_SEPARATOR.'assets'. DIRECTORY_SEPARATOR.'css'. DIRECTORY_SEPARATOR.'all-blocks.css', [], '1.0.1');
+        wp_enqueue_script('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules'. DIRECTORY_SEPARATOR.'block'. DIRECTORY_SEPARATOR.'assets'. DIRECTORY_SEPARATOR.'js'. DIRECTORY_SEPARATOR.'all-blocks.js', [], '1.0.1', true);
     }
 
     function get_registered_block($name = '') {
@@ -336,6 +331,17 @@ trait Pages {
             $blocks[$name] = $block;
             list($textdomain, $slug) = explode('/', $name, 2);
             if (empty($block['icon'])) {
+                
+                if (!empty($icons_block[$name])) {
+                    $icon_slug = str_replace('library_', '', $icons_block[$name]);
+                    if (!empty($icons_block[$icon_slug])) {
+                        $blocks[$name]['icon'] = $icons_block[$icon_slug];
+                    }
+                }                
+                if ($textdomain == 'core' && isset($icons_block[$slug])) {
+                    //var_dump($slug);
+                    $blocks[$name]['icon'] = $icons_block[$slug];
+                }
                 if (isset($icons_core['library_' . $slug])) {
                     $blocks[$name]['icon'] = $icons_core['library_' . $slug];
                 }
@@ -346,6 +352,7 @@ trait Pages {
                 if ($block['textdomain'] == 'woocommerce') {
                     $blocks[$name]['icon'] = $this->get_icons_woo($block);
                 }
+
                 if (!empty($icons_block[$name]) && !empty($icons_core[$icons_block[$name]])) {
                     $blocks[$name]['icon'] = $icons_core[$icons_block[$name]];
                 }
@@ -370,9 +377,12 @@ trait Pages {
         return $blocks;
     }
 
-    private function get_blocks_usage() {
+    private function get_blocks_usage($block = '') {
         global $wpdb;
         $block_init = '<!-- wp:';
+        if ($block) {
+            $block_init .= $block;
+        }
         $block_count = [];
         $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE %s AND post_status = "publish"', $wpdb->posts, '%<!-- wp:%'));
         foreach ($posts as $post) {
@@ -380,9 +390,15 @@ trait Pages {
             foreach ($tmp as $key => $block) {
                 if ($key) {
                     list($block_name, $more) = explode(' ', $block, 2);
-                    $block_count[$block_name] = empty($block_count[$block_name]) ? 1 : ++$block_count[$block_name];
+                    $block_count[$block_name]['count'] = empty($block_count[$block_name]) ? 1 : ++$block_count[$block_name]['count'];
+                    if (empty($block_count[$block_name]['posts']) || !in_array($post->ID, $block_count[$block_name]['posts'])) {
+                        $block_count[$block_name]['posts'][] = $post->ID;
+                    }
                 }
             }
+        }
+        if (!empty($block_count) && $block) {
+            return reset($block_count);
         }
         return $block_count;
     }

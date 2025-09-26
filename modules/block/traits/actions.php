@@ -270,6 +270,7 @@ Trait Actions {
                     $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
                 }
             }
+            $block_post = false;
             $jsons = $this->filter_block_json($jsons);
             //var_dump($jsons); die();
             foreach ($jsons as $json) {
@@ -291,7 +292,7 @@ Trait Actions {
                     list($domain, $slug) = explode('/', $args['name'], 2);
                     $dest = $this->get_ensure_blocks_dir($slug, $domain);
                     //var_dump($jfolder); var_dump($dest); die();
-                    $this->dir_copy($jfolder, $dest);
+                    $this->copy_dir($jfolder, $dest);
                     $block_post = $this->get_block_post($slug);
                     if (!$block_post) {
                         $block_post_id = $this->insert_block_post($slug, $args);
