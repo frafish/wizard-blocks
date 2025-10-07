@@ -7,6 +7,28 @@
     border: 1px solid #ddd;
     width: 100% !important;
 }
+.CodeMirror.distraction-free {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 100000;
+}
+.CodeMirror .toggle-distraction-free {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 10;
+    font-size: 15px;
+    cursor: nesw-resize;
+    opacity: 0.5;
+}
+.CodeMirror .toggle-distraction-free:hover {
+    color: #2271b1;
+    opacity: 1;
+    font-size: 20px;
+}
 
 .select2-results__option {
     cursor: pointer;

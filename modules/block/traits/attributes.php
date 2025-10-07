@@ -376,13 +376,36 @@ if ($wrapper) { ?></script><?php }
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
-                $defaultBlock_safe = empty($attr['defaultBlock']) ? '' : json_encode($attr['defaultBlock']);
-                $template_safe = empty($attr['template']) ? '' : $attr['template'];
-                $allowedBlocks_safe = empty($attr['allowedBlocks']) ? [] : array_map('esc_js', $attr['allowedBlocks']);
+                
+                //$defaultBlock_safe = empty($attr['defaultBlock']) ? '' : json_encode($attr['defaultBlock']);
+                $defaultBlock_safe = '';
+                if (!empty($attr['defaultBlock'])) {
+                    $defaultBlock_safe = '[';
+                    foreach ($attr['defaultBlock'] as $block_name => $block_value) {
+                        $block_value_str = json_encode($block_value);
+                        $block_value_str = str_replace('[]', '{}', $block_value_str);
+                        $defaultBlock_safe .= "['".$block_name."', ".json_encode($block_value_str)."],";
+                    }
+                    $defaultBlock_safe .= ']';
+                }
+                
+                $template_safe = '';
+                if (!empty($attr['template'])) {
+                    $template_safe = '[';
+                    foreach ($attr['template'] as $block_name => $block_value) {
+                        $block_value_str = json_encode($block_value);
+                        $block_value_str = str_replace('[]', '{}', $block_value_str);
+                        $template_safe .= "['".$block_name."', ".$block_value_str."],";
+                    }
+                    $template_safe .= ']';
+                }
+                
+                $allowedBlocks_safe = empty($attr['allowedBlocks']) ? '' : $attr['allowedBlocks'];
                 $allowedBlocks_safe = empty($allowedBlocks_safe) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks_safe;
                 $allowedBlocks_safe = !empty($allowedBlocks_safe) && is_array($allowedBlocks_safe) ? '["'.implode('","', $allowedBlocks_safe).'"]' : '';
+                
                 $renderAppender_safe = false; // TODO: a function that render a button
-                $orientation_safe = empty($attr['orientation']) ? '' : $attr['orientation']; //$in_toolbar ? 'horizontal' : 'vertical';
+                $orientation_safe = empty($attr['orientation']) ? '' : esc_js($attr['orientation']); //$in_toolbar ? 'horizontal' : 'vertical';
                 ?>
                 wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
                     <?php
@@ -435,8 +458,9 @@ if ($wrapper) { ?></script><?php }
                                 break;
                             case 'RadioControl': 
                                 if (!empty($attr['selected'])) { $attr['default'] = $attr['selected']; }
+                                //selected: String(props.attributes.inherit !== undefined ? props.attributes.inherit : true),
                                 ?>
-                                selected: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
+                                selected: String(props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>),
                             <?php 
                                 break;
                             case 'SelectControl': 
@@ -457,6 +481,7 @@ if ($wrapper) { ?></script><?php }
                                         $default .= ']';
                                     } else {
                                         $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
+                                        $default = ($attr['type'] == 'boolean') ? '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"' : $default;
                                     }
                                 }
                                 $default_safe = $default;
@@ -521,8 +546,13 @@ if ($wrapper) { ?></script><?php }
                                 break;
                             case 'RichText':
                             case 'TextControl':
-                            default: ?>
-                                value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (!empty($attr['default'])) { echo ' || '; echo (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_attr($attr['default']).'"' : esc_attr($attr['default']); } ?>,
+                            default: 
+                                if (isset($attr['default'])) {
+                                    $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
+                                    $default = ($attr['type'] == 'boolean') ? '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"' : $default; 
+                                }
+                                ?>
+                                value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (isset($attr['default'])) { echo ' || '.$default; } ?>,
                             <?php
                         } 
                         switch ($component) {
@@ -566,21 +596,38 @@ if ($wrapper) { ?></script><?php }
                         case 'ToolbarDropdownMenu':  break;
                         case 'ToolbarGroup':  break;
                         case 'ButtonGroup':  break;
-                            default: ?>
+                        default: ?>
                         onChange: function (val) {
-                            //console.log(val);
+                            console.log(val);
+                            console.log(typeof val);
                             <?php
-                            if (!empty($attr['sanitize'])) { 
-                                switch($attr['sanitize']) {
-                                    case 'title': ?>
-                                        val = val.replace(/[^a-zA-Z0-9_-]/g,"");
-                                        <?php break;
-                                }
+                            switch ($attr['type']) { 
+                                case 'number':
+                                case 'integer': 
+                                    ?>
+                                    val = parseFloat(val);
+                                    <?php
+                                    break;
+                                case 'boolean': ?>
+                                    val = typeof val == 'string' ? val === 'true' : val;
+                                    <?php
+                                    break;
+                                case 'string':
+                                default:
+                                    if (!empty($attr['sanitize'])) { 
+                                        switch($attr['sanitize']) {
+                                            case 'title': ?>
+                                                val = val.replace(/[^a-zA-Z0-9_-]/g,"");
+                                                <?php break;
+                                        }
+                                    }
+                                
                             }
-                            if ($attr['type'] == 'number' || $attr['type'] == 'integer') { 
+                            /*document.querySelector('[id=^"<?php echo esc_attr($id); ?>"][value=<?php echo (empty($attr['type']) || $attr['type'] == 'string') ? '"' : ''; ?>'+val+'<?php echo (empty($attr['type']) || $attr['type'] == 'string') ? '"' : ''; ?>]').checked = true;*/
                             ?>
-                            val = parseInt(val);
-                            <?php } ?>
+                            console.log("<?php echo esc_attr($id); ?>");
+                            console.log(val);
+                            console.log(typeof val);
                             props.setAttributes({"<?php echo esc_attr($id); ?>": val});
                         },
                         <?php
@@ -590,7 +637,7 @@ if ($wrapper) { ?></script><?php }
                             controls: [
                                     <?php foreach ($attr['options'] as $value => $label) { 
                                         if ($attr['type'] == 'string') {
-                                            $value = '"'.esc_attr($label).'"';
+                                            $value = '"'.esc_attr($value).'"';
                                             $tmp = explode('|', $label, 2);
                                             if (count($tmp) > 1) {
                                                 $label = reset($tmp);
@@ -600,7 +647,12 @@ if ($wrapper) { ?></script><?php }
                                         $value_safe = $value;
                                         ?>
                                         {title: "<?php echo esc_attr($label); ?>",
-                                        onClick: function (event) {
+                                        className: "btn-option " + (<?php echo $value_safe; ?> == props.attributes["<?php echo $id; ?>"] ? "is-active" : ""),
+                                        onClick: function () {
+                                            console.log("<?php echo esc_attr($id); ?>");
+                                            console.log(<?php echo $value_safe; ?>);
+                                            console.log(this);
+                                            //this.className.add("is-active");
                                             props.setAttributes({"<?php echo esc_attr($id); ?>": <?php echo $value_safe; ?>});                                    
                                         }, },
                                         <?php
@@ -615,13 +667,24 @@ if ($wrapper) { ?></script><?php }
                                         echo wp_json_encode($attr['options']);
                                     } else {
                                         foreach ($attr['options'] as $value => $label) { 
-                                            if (in_array($attr['type'], ['string', 'array', 'object'])) {
-                                                $value = '"'.$label.'"';
-                                                $tmp = explode('|', $label, 2);
-                                                if (count($tmp) > 1) {
-                                                    $label = reset($tmp);
-                                                    $value = '"'.end($tmp).'"';
-                                                }
+                                            switch ($attr['type']) {
+                                                case 'string':
+                                                case 'array':
+                                                case 'object': 
+                                                    $value = '"'.$value.'"';
+                                                    break;
+                                            }
+                                            $tmp = explode('|', $label, 2);
+                                            if (count($tmp) > 1) {
+                                                $label = reset($tmp);
+                                                $value = '"'.end($tmp).'"';
+                                            }
+                                            switch($attr['type']) {   
+                                                case 'boolean':
+                                                    //var_dump($value); die();
+                                                    $value = is_bool($value) ? ($value ? 'true' : 'false') : $value;
+                                                    $value = '"'.$value.'"';
+                                                        break;
                                             }
                                             $value_safe = $value;
                                             ?>
@@ -669,22 +732,50 @@ if ($wrapper) { ?></script><?php }
                             $attr['options'] = ['left', 'center', 'right', 'justify'];
                         }
                         if (!empty($attr['options'])) {
-                            foreach ($attr['options'] as $key => $value) {
-                                $label_escaped = $value_escaped = '"'.esc_attr($value).'"';
+                            //var_dump($attr); die();
+                            foreach ($attr['options'] as $key => $label) {
+                                $value = $key;
+                                $tmp = explode('|', $label, 2);
+                                if (count($tmp) > 1) {
+                                    $value = reset($tmp);
+                                    $label = end($tmp);
+                                }
+                                $value_escaped = '"'.esc_attr($value).'"';
+                                $label_escaped = '"'.esc_attr($label).'"';
                                 if (!is_numeric($key)) {
                                     $value_escaped = '"'.esc_attr($key).'"'; // value|Label
-                                    $label_escaped = '"'.esc_attr($value).'"'; // value|Label
+                                    $label_escaped = '"'.esc_attr($label).'"'; // value|Label
                                 }
-                                if (in_array($attr['type'], ['number', 'integer', 'boolean'])) {
-                                    $value_escaped = esc_attr($value);
-                                } ?>
+                                if (in_array($attr['type'], ['boolean'])) {
+                                    $value = is_bool($value) ? ($value ? 'true' : 'false') : $value;
+                                    $value_escaped = esc_attr( $value );
+                                }
+                                if (in_array($attr['type'], ['number', 'integer'])) {
+                                    $value_escaped = esc_attr(floatval($label));
+                                }
+                                ?>
                                 wp.element.createElement(wp.components.<?php echo $in_toolbar ? 'Toolbar' : ''; ?>Button, {
                                     value: <?php echo $value_escaped; ?>,
                                     variant: (props.attributes.<?php echo esc_attr($id); ?> === <?php echo $value_escaped; ?>) ? 'primary' : 'secondary',
                                     onClick: function (event) {
                                         jQuery(event.target).addClass('is-primary').removeClass('is-secondary');
                                         jQuery(event.target).siblings('.is-primary').removeClass('is-primary');
-                                        props.setAttributes({"<?php echo esc_attr($id); ?>": event.target.value});                                    
+                                        let val = event.target.value;
+                                        <?php 
+                                        switch ($attr['type']) { 
+                                            case 'number':
+                                            case 'integer': 
+                                                ?>
+                                                val = parseFloat(val);
+                                                <?php
+                                                break;
+                                            case 'boolean': ?>
+                                            val = typeof val == 'string' ? val === 'true' : val;
+                                            <?php
+                                            break;
+                                        }
+                                        ?>
+                                        props.setAttributes({"<?php echo esc_attr($id); ?>": val});                                    
                                     },
                                     text: wp.i18n.__(<?php echo $label_escaped; ?>, "<?php echo esc_attr($textdomain); ?>")
                                 }),

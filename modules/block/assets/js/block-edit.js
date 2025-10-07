@@ -97,6 +97,13 @@ jQuery(document).ready(function ($) {
     jQuery( ".CodeMirror" ).resizable({
         handles: 'se, s' // Only allow resizing from the top and bottom
     });
+    
+    jQuery( ".CodeMirror" ).prepend('<span class="dashicons dashicons-fullscreen-alt toggle-distraction-free"></span>');
+    jQuery( ".toggle-distraction-free" ).on('click', function(){
+       jQuery(this).parent().toggleClass('distraction-free'); 
+       jQuery(this).toggleClass('dashicons-fullscreen-alt');
+       jQuery(this).toggleClass('dashicons-fullscreen-exit-alt');
+    });
 
     /**************************************************************************/
 
@@ -282,10 +289,10 @@ jQuery(document).ready(function ($) {
                         row.find('.default').val(element.selected);
                         delete(element.selected);
                     }
-                    if (element.hasOwnProperty('template')) {
+                    /*if (element.hasOwnProperty('template')) {
                         row.find('.default').val(element.template);
                         delete(element.template);
-                    }
+                    }*/
                     if (element.enum) {
                         row.find('.options').val(element.enum.join("\r\n"));
                         delete(element.enum);
@@ -330,12 +337,6 @@ jQuery(document).ready(function ($) {
                         row.find('.multiple').val(element.multiple ? 'true' : 'false');
                         delete(element.multiple);
                     }
-                    if (Object.keys(element).length) {
-                        row.find('label[for="extra"]').show();
-                        row.find('.extra').val(JSON.stringify(element));
-                    } else {
-                        row.find('label[for="extra"]').hide();
-                    }
                     if (element.position) {
                         row.find('.position').val(element.position);
                         delete(element.position);
@@ -348,6 +349,14 @@ jQuery(document).ready(function ($) {
                     let condition = get_field_condition(key);
                     if (condition) {
                         row.find('.condition').val(condition);
+                    }
+                    
+                    if (Object.keys(element).length) {
+                        row.find('label[for="extra"]').show();
+                        console.log(element);
+                        row.find('.extra').val(JSON.stringify(element));
+                    } else {
+                        row.find('label[for="extra"]').hide();
                     }
                     
                     update_block_label(row, title);

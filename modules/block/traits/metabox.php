@@ -874,18 +874,18 @@ trait Metabox {
             <h3><label for="_block_blockHooks"><?php esc_attr_e('Hooks', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#block-hooks"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="block-blockHooks"><textarea id="_block_blockHooks" name="_block_blockHooks" placeholder='{ "my-plugin/banner": "after" }'><?php
                     if (!empty($json['blockHooks'])) {
-                        echo wp_json_encode($json['blockHooks'], JSON_PRETTY_PRINT);
+                        echo wp_unslash(wp_json_encode($json['blockHooks'], JSON_PRETTY_PRINT));
                     }
                     ?></textarea></p>
 
             <h3><label for="_block_providesContext"><?php esc_attr_e('providesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#provides-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="block-providesContext"><textarea id="_block_providesContext" name="_block_providesContext" placeholder='{ "my-plugin/recordId": "recordId" }'><?php
                     if (!empty($json['providesContext'])) {
-                        echo wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT);
+                        echo wp_unslash(wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT));
                     }
                     ?></textarea></p>	
 
-            <h3><label for="_block_usesContext"><?php esc_attr_e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#uses-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <h3><label for="_block_usesContext"><?php esc_attr_e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#context"><span class="dashicons dashicons-info-outline"></span></a></h3>
             <p class="block-usesContext"><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php
                 if (!empty($json['usesContext'])) {
                     echo esc_attr(is_array($json['usesContext']) ? implode(', ', $json['usesContext']) : $json['usesContext']);
@@ -962,7 +962,7 @@ trait Metabox {
                             foreach ($support as $sub => $suppo) {
                                 //var_dump($sub); var_dump($sup);
                                 if (!isset($custom[$sup][$sub]) && !isset(self::$supports[$sup . '.' . $sub])) {
-                                    if (!is_array($custom[$sup])) {
+                                    if (empty($custom[$sup]) || !is_array($custom[$sup])) {
                                         $custom[$sup] = [];
                                     }
                                     $custom[$sup][$sub] = $suppo;
