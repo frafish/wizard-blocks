@@ -1,4 +1,9 @@
 jQuery(document).ready(function ($) {
+
+    // expand handlediv
+    jQuery('.handlediv[aria-expanded="false"]').addClass('to-close');
+    jQuery('.handlediv[aria-expanded="false"]').trigger('click');
+    
     var editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
     editorSettings.codemirror = _.extend(
             {},
@@ -682,6 +687,8 @@ jQuery(document).ready(function ($) {
     
     // after CodeMirror editors init, hide extra tabs
     jQuery('.wb-hide').hide();
+    jQuery('.handlediv.to-close').trigger('click');
+    jQuery('.handlediv.to-close').removeClass('to-close');
 });
 
 document.addEventListener('DOMContentLoaded', function() {

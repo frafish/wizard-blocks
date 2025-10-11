@@ -74,7 +74,7 @@ Trait Attributes {
                             $args['attributes'][$id]['panel'] = 'advanced';
                             break;
                         case 'toolbar':
-                            $args['attributes'][$id]['group'] = 'other';
+                            $args['attributes'][$id]['group'] = 'block';
                             $args['attributes'][$id]['panel'] = 'base';
                             break;
                     }
@@ -231,11 +231,11 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
                         ),
                     <?php }
                     
-                    $toolbar = $this->get_attributes($args['attributes'], 'base', 'other', 'toolbar');
+                    $toolbar = $this->get_attributes($args['attributes'], 'base', 'block', 'toolbar');
                     if (!empty($toolbar)) { ?>
                         wp.element.createElement(
                             wp.blockEditor.BlockControls,
-                            { group: "other" },
+                            { group: "block" },
                             <?php 
                             foreach ($toolbar as $id => $attr) {
                                 $this->_component($id, $attr, $args);
@@ -350,6 +350,7 @@ if ($wrapper) { ?></script><?php }
            }
            if ($component == 'RadioControl') {
                $component = 'ToolbarDropdownMenu';
+               if (!empty($attr['selected'])) { $attr['default'] = $attr['selected']; }
            }
            if ($component == 'MediaUpload') {
                //$component = 'HStack';
@@ -593,14 +594,18 @@ if ($wrapper) { ?></script><?php }
                         case 'ExternalLink': ?>
                             href: <?php echo "'". esc_attr($attr['default']) ."'";  ?>,
                         <?php break;
-                        case 'ToolbarDropdownMenu':  break;
+                        case 'ToolbarDropdownMenu':  
+                            if (!empty($attr['icon'])) { ?>
+                            icon: '<?php echo esc_attr($attr['icon']); ?>',    
+                            <?php }
+                            break;
                         case 'ToolbarGroup':  break;
                         case 'ButtonGroup':  break;
                         default: ?>
                         onChange: function (val) {
-                            console.log(val);
-                            console.log(typeof val);
                             <?php
+                            //console.log(val);
+                            //console.log(typeof val);
                             switch ($attr['type']) { 
                                 case 'number':
                                 case 'integer': 
@@ -624,10 +629,10 @@ if ($wrapper) { ?></script><?php }
                                 
                             }
                             /*document.querySelector('[id=^"<?php echo esc_attr($id); ?>"][value=<?php echo (empty($attr['type']) || $attr['type'] == 'string') ? '"' : ''; ?>'+val+'<?php echo (empty($attr['type']) || $attr['type'] == 'string') ? '"' : ''; ?>]').checked = true;*/
+                            /*console.log("<?php echo esc_attr($id); ?>");*/
+                            //console.log(val);
+                            //console.log(typeof val);
                             ?>
-                            console.log("<?php echo esc_attr($id); ?>");
-                            console.log(val);
-                            console.log(typeof val);
                             props.setAttributes({"<?php echo esc_attr($id); ?>": val});
                         },
                         <?php
@@ -647,12 +652,13 @@ if ($wrapper) { ?></script><?php }
                                         $value_safe = $value;
                                         ?>
                                         {title: "<?php echo esc_attr($label); ?>",
-                                        className: "btn-option " + (<?php echo $value_safe; ?> == props.attributes["<?php echo $id; ?>"] ? "is-active" : ""),
+                                        icon: (<?php echo $value_safe; ?> == props.attributes["<?php echo $id; ?>"] ? "saved" : ""),
                                         onClick: function () {
+                                            <?php /*
                                             console.log("<?php echo esc_attr($id); ?>");
                                             console.log(<?php echo $value_safe; ?>);
                                             console.log(this);
-                                            //this.className.add("is-active");
+                                            //this.className.add("is-active"); */ ?>
                                             props.setAttributes({"<?php echo esc_attr($id); ?>": <?php echo $value_safe; ?>});                                    
                                         }, },
                                         <?php
