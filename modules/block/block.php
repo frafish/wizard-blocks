@@ -12,6 +12,8 @@ if (!defined('ABSPATH')) {
 class Block extends Module_Base {
 
     use Traits\Type;
+    use Traits\Assets;
+    use Traits\Filesystem;
     use Traits\Metabox;
     use Traits\Attributes;
     use Traits\Pages;
@@ -49,10 +51,18 @@ class Block extends Module_Base {
 
         add_action('init', [$this, '_init_type']);
         
-        if (is_admin() && $this->is_block_archive()) {
-            add_action('admin_enqueue_scripts', function() {
-                wp_enqueue_style('wizard-blocks-archive', WIZARD_BLOCKS_URL.'modules/block/assets/css/block-archive.css', [], '1.2.0');
-            });
+        if (is_admin()) {
+            if ($this->is_block_archive()) {
+                add_action('admin_enqueue_scripts', function() {
+                    wp_enqueue_style('wizard-blocks-archive', WIZARD_BLOCKS_URL.'modules/block/assets/css/block-archive.css', [], '1.2.0');
+                    wp_print_scripts();
+                });
+            }
+            /*if ($this->is_block_edit()) {
+                add_action('admin_enqueue_scripts', function() {
+                    //wp_print_scripts();
+                });
+            }*/
         }
         
         add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
@@ -207,33 +217,6 @@ class Block extends Module_Base {
 
         $this->enqueue_block_assets($block);
         return $block_content;
-    }
-    
-    public function enqueue_block_assets($block) {
-        //var_dump($block);
-        // frontend assets
-        $styles = [];
-        if (!empty($block->style)) { $styles = array_merge($styles, is_array($block->style) ? $block->style : [$block->style]); }
-        if (!empty($block->style_handles)) { $styles = array_merge($styles, is_array($block->style_handles) ? $block->style_handles : [$block->style_handles]); }
-        if (!empty($block->viewStyle)) { $styles = array_merge($styles, is_array($block->viewStyle) ? $block->viewStyle : [$block->viewStyle]); }
-        if (!empty($block->view_style_handles)) { $styles = array_merge($styles, is_array($block->view_style_handles) ? $block->view_style_handles : [$block->view_style_handles]); }
-        //var_dump($styles);
-        foreach ($styles as $style) {
-            wp_enqueue_style($style);
-        }
-        
-        $scripts = [];
-        if (!empty($block->script)) { $scripts = array_merge($scripts, is_array($block->script) ? $block->script : [$block->script]); }
-        if (!empty($block->script_handles)) { $scripts = array_merge($scripts, is_array($block->script_handles) ? $block->script_handles : [$block->script_handles]); }
-        if (!empty($block->viewScript)) { $scripts = array_merge($scripts, is_array($block->viewScript) ? $block->viewScript : [$block->viewScript]); }
-        if (!empty($block->view_script_handles)) { $scripts = array_merge($scripts, is_array($block->view_script_handles) ? $block->view_script_handles : [$block->view_script_handles]); }
-        if (!empty($block->viewScriptModule)) { $scripts = array_merge($scripts, is_array($block->viewScriptModule) ? $block->viewScriptModule : [$block->viewScriptModule]); }
-        if (!empty($block->view_script_module_ids)) { $scripts = array_merge($scripts, is_array($block->view_script_module_ids) ? $block->view_script_module_ids : [$block->view_script_module_ids]); }
-        //var_dump($scripts);
-        foreach ($scripts as $script) {
-            wp_enqueue_script($script);
-        }
-
     }
     
     public function allowed_block_types($allowed_block_types, $block_editor_context) {
@@ -468,142 +451,6 @@ class Block extends Module_Base {
         return [];
     }
     
-    public function get_asset_files($json, $asset, $basepath = '') {
-        $type = self::$assets[$asset];
-        $asset_file = $asset.'.'.$type;
-        $asset_file_min = $asset.'.min.'.$type;
-        $asset_files = [];
-        if (!empty($json[$asset])) {
-            //var_dump($json[$asset]); die();
-            $asset_files = Utils::maybe_json_decode($json[$asset]);
-            if (!is_array($asset_files)) {
-                $asset_files = [$asset_files];
-            }
-            if ($type != 'php') {
-                foreach ($asset_files as $key => $asset_file) {
-                    //$unmin = str_replace('.min.js', '.js', $asset_file);
-                    $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
-                    $unmin = str_replace('file:./', '', $unmin); // maybe local asset
-                    $unmin_file = $basepath . $unmin;
-                    $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
-                    if (file_exists($unmin_file)) {
-                        $asset_file = $unmin;
-                    }
-                    $asset_file = str_replace('file:', '', $asset_file);
-                    $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
-                    $asset_file = $basepath . $asset_file;
-                    
-                    if (file_exists($asset_file)) {
-                        // asset file in block folder
-                        $asset_files[$key] = $asset_file;
-                    } else {
-                        // remove external libs
-                        unset($asset_files[$key]);
-                    }
-                }
-            }            
-            $asset_files = array_unique($asset_files); //die();
-        }
-        return $asset_files;
-    }
-    
-    
-    public function get_asset_default_file($json, $asset, $basepath = '') {
-        $type = self::$assets[$asset];
-        $asset_file = $asset.'.'.$type;
-        $asset_file_min = $asset.'.min.'.$type;
-        if (!empty($json[$asset])) {
-            //var_dump($json[$asset]); die();
-            $asset_files = $json[$asset];
-            if (is_array($asset_files)) {
-                $key = array_search('file:./' . $asset_file, $asset_files);
-                if ($key === false) {
-                    $key = array_search('file:./' . $asset_file_min, $asset_files);
-                }
-                if ($key !== false) {
-                    $asset_file = $json[$asset][$key];
-                }
-            }
-            if ($type != 'php') {
-                //$unmin = str_replace('.min.js', '.js', $asset_file);
-                $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
-                $unmin = str_replace('file:./', '', $unmin); // maybe local asset
-                $unmin_file = $basepath . $unmin;
-                $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
-                if (file_exists($unmin_file)) {
-                    $asset_file = $unmin;
-                }
-            }
-            $asset_file = str_replace('file:', '', $asset_file);
-            $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
-            //var_dump($asset_file); die();
-        }
-        $asset_file = $basepath . $asset_file;
-        return $asset_file;
-    }
-    
-    
-    public function get_asset_file($json, $asset, $basepath = '') {
-        $type = self::$assets[$asset];
-        $asset_file = $asset.'.'.$type;
-        $asset_file_min = $asset.'.min.'.$type;
-        if (!empty($json[$asset])) {
-            //var_dump($json[$asset]); die();
-            $asset_files = $json[$asset];
-            if (is_array($asset_files)) {
-                $key = array_search('file:./' . $asset_file, $asset_files);
-                if ($key === false) {
-                    $key = array_search('file:./' . $asset_file_min, $asset_files);
-                }
-                //var_dump($style_key);
-                if ($key !== false) {
-                    $asset_file = $json[$asset][$key];
-                } else {
-                    foreach ($json[$asset] as $tmp) {
-                        /*if ($tmp == 'file:./'.$asset_file) {
-                            $asset_file = $tmp;
-                        }*/
-                        if (substr($tmp, 0, 5) == 'file:') {
-                            $asset_file = $tmp;
-                            break; // maybe use the first one
-                        }
-                    }
-                }
-            } else {
-                if (strpos($asset_files, 'file:./') !== false) {
-                    $asset_file = $asset_files;
-                }
-            }
-            if ($type != 'php') {
-                //$unmin = str_replace('.min.js', '.js', $asset_file);
-                $unmin = str_replace('.min.'.$type, '.'.$type, $asset_file);
-                $unmin = str_replace('file:./', '', $unmin); // maybe local asset
-                $unmin_file = $basepath . $unmin;
-                $unmin_file = str_replace('/', DIRECTORY_SEPARATOR, $unmin_file);
-                if (file_exists($unmin_file)) {
-                    $asset_file = $unmin;
-                }
-            }
-            $asset_file = str_replace('file:', '', $asset_file);
-            $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
-            //var_dump($asset_file); die();
-        }
-        $asset_file = $basepath . $asset_file;
-        return $asset_file;
-    }
-    
-    public function get_asset_file_contents($json, $asset, $basepath) {
-        if (is_file($basepath)) {
-            $asset_file = $basepath;
-        } else {
-            $asset_file = $this->get_asset_file($json, $asset, $basepath);
-        }
-        if (file_exists($asset_file)) {
-            return $this->get_filesystem()->get_contents($asset_file);
-        }
-        return '';
-    }
-
     public function unescape($code = '', $quote = '') {
         //$code = wp_unslash($code);
         $code = str_replace('\"', $quote ? $quote : '"', $code);
@@ -612,139 +459,6 @@ class Block extends Module_Base {
         $code = str_replace("=&gt;", "=>", $code);
         $code = str_replace("=&gt;", "=>", $code);
         return $code;
-    }
-
-    /**
-     * Gets the path to uploaded file.
-     *
-     * @return string
-     */
-    public function get_blocks_dir($slug = '', $textdomain = '*') {
-        $wp_upload_dir = wp_upload_dir();
-        $path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . 'blocks';
-        $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
-        $blocks_dirs = ['uploads' => $path];
-        $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
-            
-        if ($slug) {
-            $path = false; // not exists yet
-            foreach ($blocks_dirs as $dir) {
-                /*if (is_dir($dir . DIRECTORY_SEPARATOR . $slug)) {
-                    $path = $dir;
-                }*/
-                $paths = glob($dir.DIRECTORY_SEPARATOR.$textdomain.DIRECTORY_SEPARATOR.$slug); // TODO: any textdomain?!
-                //var_dump($paths);
-                if (!empty($paths)) {
-                    $path = reset($paths);
-                }
-            }
-        }
-
-        /**
-         * Blocks upload file path.
-         *
-         * @since 1.0.0
-         *
-         * @param string $path Path to uploaded files.
-         */
-        $path = apply_filters('wizard/blocks/path', $path);
-
-        return $path;
-    }
-
-    /**
-     * This function returns the uploads folder after making sure
-     * it is created and has protection files
-     * @return string
-     */
-    private function get_ensure_blocks_dir($slug = '', $textdomain = '*') {
-        //var_dump($slug); var_dump($textdomain);
-        $path = $this->get_blocks_dir($slug, $textdomain);
-        if ($slug) {
-            // generate block folder textdomain/slug
-            $textdomain = $textdomain == '*' ? $this->get_plugin_textdomain() : $textdomain;
-            $path = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . $textdomain . DIRECTORY_SEPARATOR . $slug . DIRECTORY_SEPARATOR;
-            wp_mkdir_p($path);
-        } else {
-            // init blocks folder
-            if (!file_exists($path . DIRECTORY_SEPARATOR . 'index.php')) {
-                wp_mkdir_p($path);
-                $files = [
-                    [
-                        'file' => 'index.php',
-                        'content' => [
-                            '<?php',
-                            '// Silence is golden.',
-                        ],
-                    ],
-                    [
-                        'file' => '.htaccess',
-                        'content' => [
-                            'Options -Indexes',
-                            '<ifModule mod_headers.c>',
-                            '	<Files *.*>',
-                            '       Header set Content-Disposition attachment',
-                            '	</Files>',
-                            '</IfModule>',
-                        ],
-                    ],
-                ];
-                foreach ($files as $file) {
-                    if (!file_exists(trailingslashit($path) . $file['file'])) {
-                        $content = implode(PHP_EOL, $file['content']);
-                        @ $this->get_filesystem()->put_contents(trailingslashit($path) . $file['file'], $content);
-                    }
-                }
-            }
-        }
-        
-        return $path;
-    }
-
-    public function dir_delete($dir) {
-        if ($dir && is_dir($dir)) {
-            return $this->get_filesystem()->delete($dir, true);
-        }
-        return false;
-    }
-
-    public function copy_dir($src, $dst, $skip = []) {
-        // open the source directory 
-        if (substr($src,-1) == DIRECTORY_SEPARATOR) $src = substr($src, 0, -1);
-        if (substr($dst,-1) == DIRECTORY_SEPARATOR) $dst = substr($dst, 0, -1);
-        // Make the destination directory if not exist 
-        @wp_mkdir_p($dst);
-        // Loop through the files in source directory 
-        /*
-        //$dir = opendir($src);
-        foreach (scandir($src) as $file) {
-            if (( $file != '.' ) && ( $file != '..' )) {
-                if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
-                    // Recursively calling custom copy function 
-                    // for sub directory  
-                    $this->copy_dir($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file, $skip);
-                } else {
-                    copy($src . DIRECTORY_SEPARATOR . $file, $dst . DIRECTORY_SEPARATOR . $file);
-                }
-            }
-        }
-        closedir($dir);
-        */
-        $this->get_filesystem(); //maybe init $wp_filesystem
-        copy_dir($src, $dst, $skip);
-    }
-    
-    public function get_filesystem() {
-        global $wp_filesystem;
-
-        if (!$wp_filesystem) {
-            require_once( ABSPATH . DIRECTORY_SEPARATOR . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'file.php' ); // phpcs:ignore WPThemeReview.CoreFunctionality.FileInclude.FileIncludeFound
-            $context = apply_filters('request_filesystem_credentials_context', false);
-            $creds = request_filesystem_credentials(site_url(), '', false, $context, null);
-            \WP_Filesystem($creds, $context);
-        }
-        //var_dump($wp_filesystem);
-        return $wp_filesystem;
     }
 
 }

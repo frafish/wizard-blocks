@@ -21,7 +21,7 @@ class Media extends Module_Base {
             $wb = \WizardBlocks\Modules\Block\Block::instance();
             if ($wb->is_block_edit()) {
                 $this->enqueue_style('block-media', 'assets/css/block-media.css');
-                $this->enqueue_script('block-media', 'assets/js/block-media.js');
+                $this->enqueue_script('block-media', 'assets/js/block-media.js', ['query']);
             }
         });
 
@@ -211,17 +211,28 @@ class Media extends Module_Base {
             }
 
             //var_dump($_block_media); die();
-            foreach ($_block_media as $mid => $media) {
+            foreach ($_block_media as $mid => $amedia) {
                 // copy media starting with http
-                if (str_starts_with($media, 'http')) {
-                    $media_path = \WizardBlocks\Core\Helper::url_to_path($media);
-                    $basename = trim(basename($media));
-                    //var_dump($media_path);
-                    //var_dump($medias_dir . $basename);
+                if (str_starts_with($amedia, 'http')) {
+                    $media_url = $amedia;
+                    $basename = trim(basename($media_url));
                     if (!is_dir($medias_dir)) {
                         wp_mkdir_p($medias_dir);
                     }
-                    $wb->get_filesystem()->copy($media_path, $medias_dir . $basename, true);
+                    if (!str_starts_with($media_url, site_url())) {                        
+                        // Use wp_remote_get to fetch the data
+                        $data = wp_remote_get($media_url);
+                        // Save the body part to a variable
+                        $media = $data['body'];
+                        $media_path = $medias_dir.$basename;
+                        //var_dump($media_path); die();
+                        $wb->get_filesystem()->put_contents($media_path, $media);
+                    } else {
+                        $media_path = \WizardBlocks\Core\Helper::url_to_path($media_url);
+                        //var_dump($media_path);
+                        //var_dump($medias_dir . $basename);
+                        $wb->get_filesystem()->copy($media_path, $medias_dir . $basename, true);
+                    }
                     //$_block_media[$mid] = $basename;
                 }
             }

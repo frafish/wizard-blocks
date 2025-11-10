@@ -42,13 +42,27 @@ Trait Icons {
                 if (str_starts_with($_POST['_block_icon_src'], 'http')) {
                     // svg image url
                     $icon_url = sanitize_url($_POST['_block_icon_src']);
-                    $icon_path = \WizardBlocks\Core\Helper::url_to_path($icon_url);
-                    if (!is_dir($medias_dir)) {
-                        wp_mkdir_p($medias_dir);
-                    }
-                    //$icon_name = basename($icon_url);
-                    if ($this->get_filesystem()->copy($icon_path, $medias_dir . $icon_name, true)) {
-                        $icon = 'file:./' . $icon_name;
+                    if (!str_starts_with($icon_url, site_url())) {
+                        if (str_ends_with(strtolower($icon_url), '.svg')) {
+                            //var_dump($icon_url); var_dump(site_url()); die();
+                            // Use wp_remote_get to fetch the data
+                            $data = wp_remote_get($icon_url);
+                            // Save the body part to a variable
+                            $svg = $data['body'];
+                            $icon_path = $basepath.$icon_name;
+                            //var_dump($icon_path); die();
+                            $this->get_filesystem()->put_contents($icon_path, $svg);
+                            $icon = 'file:./' . $icon_name;
+                        }
+                    } else {
+                        $icon_path = \WizardBlocks\Core\Helper::url_to_path($icon_url);
+                        if (!is_dir($medias_dir)) {
+                            wp_mkdir_p($medias_dir);
+                        }
+                        //$icon_name = basename($icon_url);
+                        if ($this->get_filesystem()->copy($icon_path, $medias_dir . $icon_name, true)) {
+                            $icon = 'file:./' . $icon_name;
+                        }
                     }
                 } else {
                     // other...like <svg code

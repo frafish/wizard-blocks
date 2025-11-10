@@ -131,7 +131,8 @@ Trait Actions {
                                 $download_url = $dirs['baseurl'] . '/' . $filename;
                                 $this->_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                 // Simulate an HTTP redirect:
-                                wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
+                                //wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
+                                echo "<script>setTimeout(() => { window.location.replace('" . esc_url($download_url) . "'); }, 1000);</script>";
                                 break;
 
                             case 'download':
@@ -142,7 +143,8 @@ Trait Actions {
                                     $download_url = $this->generate_block_zip($block);
                                     $this->_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                     // Simulate an HTTP redirect:
-                                    wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
+                                    //wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
+                                    echo "<script>setTimeout(() => { window.location.replace('" . esc_url($download_url) . "'); }, 1000);</script>";
                                 }
                                 break;
                         }

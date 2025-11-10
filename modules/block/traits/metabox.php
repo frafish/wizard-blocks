@@ -52,7 +52,9 @@ trait Metabox {
     ];
     // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
     public static $supports = [
+        'allowedBlocks' => false,
         'anchor' => false,
+        'auto_register' => false,
         'align' => false,
         'alignWide' => true,
         'ariaLabel' => false,
@@ -67,7 +69,7 @@ trait Metabox {
         'color.heading' => false,
         'color.link' => false,
         'color.text' => true,
-        'customClassName' => false,
+        'customClassName' => true,
         'dimensions.aspectRatio' => true,
         'dimensions.minHeight' => false,
         'filter.duotone' => false,
@@ -83,18 +85,19 @@ trait Metabox {
         'layout.allowJustification' => true,
         'layout.allowOrientation' => true,
         'layout.allowCustomContentAndWideSize' => true,
-        'multiple' => true,
-        'reusable' => true,
         'lock' => true,
+        'multiple' => true,
         'position.sticky' => false,
+        'renaming' => true,
+        'reusable' => true,
+        'shadow' => false,
         'spacing.margin' => false,
         'spacing.padding' => false,
         'spacing.blockGap' => false,
-        'shadow' => false,
-        'splitting' => false,
         'typography.fontSize' => false,
         'typography.lineHeight' => false,
-        'typography.textAlign' => false
+        'typography.textAlign' => false,
+        'splitting' => false
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
     public static $attributes_type = [

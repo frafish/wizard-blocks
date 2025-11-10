@@ -35,38 +35,37 @@ trait Save {
         //var_dump($update); die();
         $json_old = [];
         if ($update) {
-            $json_old = $this->get_block_json($post_slug);    
-            //var_dump($json_old); die();
-            
+            $json_old = $this->get_block_json($post_slug);                
             $textdomain_old = $this->get_block_textdomain($json_old);
             
             //changed block slug
             if ($post_slug && $block_slug && $post_slug != $block_slug) {
                 wp_update_post( ['ID' => $post_id, 'post_name' => $block_slug] );
-                // delete old dir
                 $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                 $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
                 // copy all content from old dir to new dir
                 if (is_dir($old_dir)) {
-                    $this->get_filesystem()->move($old_dir, $new_dir);
+                    //$this->get_filesystem()->move($old_dir, $new_dir);
+                    $this->copy_dir($old_dir, $new_dir);
                     //rename($old_dir, $new_dir);
                     $this->dir_delete($old_dir);
                 }
                 $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
             } else {
                 // changed textdomain
+                //var_dump($block_textdomain); var_dump($textdomain_old); var_dump($post_slug); //die();
                 if ($post_slug && $textdomain_old && $block_textdomain != $textdomain_old) {
-                    // delete old dir
                     $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                     $new_dir = $this->get_ensure_blocks_dir($post_slug, $block_textdomain);
                     // copy all content from old dir to new dir
-                    $this->get_filesystem()->move($old_dir, $new_dir);
+                    //$this->get_filesystem()->move($old_dir, $new_dir);
+                    $this->copy_dir($old_dir, $new_dir);
                     //rename($old_dir, $new_dir);
                     $this->dir_delete($old_dir);
                 }
             }
         }
-        
+
         $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
         $post_excerpt = get_post_field('post_excerpt', $post_id);
         
@@ -170,6 +169,11 @@ trait Save {
                 }
             }
         }
+        if (!empty($allowedBlocks)) {
+            $supports['allowedBlocks'] = true;
+        }
+        $supports['auto_register'] = true;
+        
         if (!empty($_POST['_block_supports_custom']) && $_POST['_block_supports_custom'] != '{}') {            
             $custom_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_supports_custom'], '"')));
             $custom = json_decode($custom_json, true); 
@@ -256,7 +260,7 @@ trait Save {
             $json[$asset] = [];
             $code = '';
             $path = $this->get_asset_file($json_old, $asset, $basepath);
-            //var_dump($basepath); die();
+            //if ($asset == 'style') { var_dump($path); die(); }
             $file = basename($path);
             $file_name = basename($file, '.'.$type);
             $path_min = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $min . $type;

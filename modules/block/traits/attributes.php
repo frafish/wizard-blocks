@@ -344,6 +344,12 @@ if ($wrapper) { ?></script><?php }
            $component = $attr['component'];
        }
        
+       if ($component == 'ColorPicker') {
+            if (!isset($attr['enableAlpha'])) {
+                $attr['enableAlpha'] = true;
+            }
+        }
+       
        if ($in_toolbar) {
            if ($component == 'ButtonGroup') {
                $component = 'ToolbarGroup';
@@ -454,7 +460,7 @@ if ($wrapper) { ?></script><?php }
                                 break;
                             case 'CheckboxControl':
                             case 'ToggleControl': ?>
-                                checked: props.attributes.<?php echo esc_attr($id); ?>,
+                                checked: (typeof props.attributes.<?php echo esc_attr($id); ?> == "boolean") ? props.attributes.<?php echo esc_attr($id); ?> : <?php if (!empty($attr['checked']) && $attr['checked'] == 'true') { ?>props.setAttributes({"<?php echo esc_attr($id); ?>": true}) || true<?php } else { ?>false<?php } ?>,
                             <?php 
                                 break;
                             case 'RadioControl': 
@@ -603,6 +609,17 @@ if ($wrapper) { ?></script><?php }
                         case 'ButtonGroup':  break;
                         default: ?>
                         onChange: function (val) {
+                            if (val === '') {
+                               <?php if (isset($attr['default'])) {
+                                    $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
+                                    $default = ($attr['type'] == 'boolean') ? '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"' : $default; 
+                                    ?>
+                                    val = <?php echo $default; ?>;
+                                    <?php    
+                                } else { ?>
+                                     val = undefined; // Or null
+                                <?php } ?>
+                            } else {
                             <?php
                             //console.log(val);
                             //console.log(typeof val);
@@ -633,6 +650,7 @@ if ($wrapper) { ?></script><?php }
                             //console.log(val);
                             //console.log(typeof val);
                             ?>
+                            }
                             props.setAttributes({"<?php echo esc_attr($id); ?>": val});
                         },
                         <?php
@@ -672,7 +690,18 @@ if ($wrapper) { ?></script><?php }
                                     if (is_array(reset($attr['options']))) {
                                         echo wp_json_encode($attr['options']);
                                     } else {
+                                        
+                                        $has_label = false;
                                         foreach ($attr['options'] as $value => $label) { 
+                                            if (count(explode('|', $label)) > 1) {
+                                                $has_label = true;
+                                            }
+                                        }
+                                        
+                                        foreach ($attr['options'] as $value => $label) { 
+                                            if (!$has_label) {
+                                                $value = $label;
+                                            }
                                             switch ($attr['type']) {
                                                 case 'string':
                                                 case 'array':
