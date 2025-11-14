@@ -108,7 +108,7 @@ trait Metabox {
         'array' => 'Array',
         'null' => 'Null',
         'object' => 'Object',
-        '' => 'Eval',
+        //'' => 'Enum',
     ];
     //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
     //https://developer.wordpress.org/news/2023/06/02/using-block-inspector-sidebar-groups/

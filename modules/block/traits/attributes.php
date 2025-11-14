@@ -380,6 +380,7 @@ if ($wrapper) { ?></script><?php }
         if (!$in_toolbar && !in_array($component, ['InnerBlocks', 'AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo esc_attr($id); ?>", style: {display: "block"}}, wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>")),
         <?php } ?>
+       <?php if ($component == 'MediaUpload')  { ?>wp.element.createElement(wp.blockEditor.MediaUploadCheck, null, <?php } ?>
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
@@ -564,35 +565,88 @@ if ($wrapper) { ?></script><?php }
                         } 
                         switch ($component) {
                             case 'MediaUpload': ?>
-                        onSelect: function (media) {
-                            document.getElementById('media-<?php echo esc_attr($id); ?>').src = media.sizes.thumbnail.url;
-                            props.setAttributes({"<?php echo esc_attr($id); ?>": media.id});
-                        },
-                        render: function ( open ) {
-                            let src = '/wp-includes/images/media/default.svg';
-                            if (props.attributes.<?php echo esc_attr($id); ?>) {
-                                wp.apiFetch( { path: '/wp/v2/media/'+props.attributes.<?php echo esc_attr($id); ?> } ).then( ( media ) => {
-                                    src = media.media_details.sizes.thumbnail.source_url;
-                                    document.getElementById('media-<?php echo esc_attr($id); ?>').src = src;
-                                } );
-                            }
-                            return wp.element.createElement("div", {},
-                                wp.element.createElement(wp.components.Button,
-                                { 
-                                    text: wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>"),
-                                    //title: wp.i18n.__("Open Media Library", "<?php echo esc_attr($textdomain); ?>"),
-                                    onClick: open.open,
-                                    variant: "secondary",
-                                    style: {width: "100%"},
-                                }), 
-                                wp.element.createElement("img",
-                                    {
-                                        id: "media-<?php echo esc_attr($id); ?>",
-                                        src: src,
+                                allowedTypes: ['image'],
+                                multiple: false,
+                                onSelect: function (media) {
+                                    props.setAttributes({ "<?php echo esc_attr($id); ?>": media.id });
+                                    if (media.sizes && media.sizes.thumbnail && media.sizes.thumbnail.url) {
+                                        let mediaElement = document.getElementById('media-<?php echo esc_attr($id); ?>');
+                                        if (mediaElement) { mediaElement.src = media.sizes.thumbnail.url; }
                                     }
-                                ),
-                            );
-                        },
+                                },
+                                render: function ({ open }) {
+                                    const mediaId = props.attributes.<?php echo esc_attr($id); ?>;
+                                    let src = '/wp-includes/images/media/default.svg';
+                                    if (mediaId) {
+                                        wp.apiFetch({
+                                            path: '/wp/v2/media/' + mediaId
+                                        }).then((media) => {
+                                            let newSrc = media.source_url;
+                                            if (media.media_details && media.media_details.sizes && media.media_details.sizes.thumbnail && media.media_details.sizes.thumbnail.source_url) {
+                                                newSrc = media.media_details.sizes.thumbnail.source_url;
+                                            }
+                                            let mediaElement = document.getElementById('media-<?php echo esc_attr($id); ?>');
+                                            if (mediaElement && mediaElement.src !== newSrc) {
+                                                mediaElement.src = newSrc;
+                                            }
+                                        }).catch(() => { /* Handle error */ });
+                                    }
+
+                                    return wp.element.createElement("div", {
+                                        style: {
+                                            backgroundColor: "#e7e7e7",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            gap: "10px",
+                                            border: "1px solid #ccc",
+                                            position: "relative"
+                                        }
+                                    },
+                                    
+                                        wp.element.createElement("img", {
+                                            id: "media-<?php echo esc_attr($id); ?>",
+                                            src: src,
+                                            style: {
+                                                width: "100%",
+                                                height: "auto",
+                                                maxHeight: "150px",
+                                                objectFit: "cover",
+                                                aspectRatio: "2/1",
+                                                objectPosition: "50% 50%"
+                                            },
+                                            alt: wp.i18n.__("<?php echo esc_attr($label); ?> preview", "<?php echo esc_attr($textdomain); ?>")
+                                        }),
+
+                                        wp.element.createElement("div", {
+                                            className: "components-image-controls",
+                                            style: {
+                                                position: "absolute",
+                                                top: "5px",
+                                                right: "5px",
+                                                display: "flex",
+                                                gap: "5px"
+                                            }
+                                        },
+                                            wp.element.createElement(wp.components.IconButton, {
+                                                icon: mediaId ? 'edit' : 'upload',
+                                                label: mediaId ? wp.i18n.__("Change Media", "<?php echo esc_attr($textdomain); ?>") : wp.i18n.__("Select Media", "<?php echo esc_attr($textdomain); ?>"),
+                                                onClick: open,
+                                                isPrimary: true,
+                                            }),
+                                            mediaId && wp.element.createElement(wp.components.IconButton, {
+                                                icon: 'trash', 
+                                                label: wp.i18n.__("Remove Media", "<?php echo esc_attr($textdomain); ?>"),
+                                                onClick: () => {
+                                                    props.setAttributes({ "<?php echo esc_attr($id); ?>": undefined }); 
+                                                    let mediaElement = document.getElementById('media-<?php echo esc_attr($id); ?>');
+                                                    if (mediaElement) { mediaElement.src = '/wp-includes/images/media/default.svg'; }
+                                                },
+                                                isDestructive: true,
+                                            })  
+                                        )
+                                    )
+                                },
                         <?php break;
                             case 'Heading': ?>
                             text: wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
@@ -819,11 +873,11 @@ if ($wrapper) { ?></script><?php }
                     } 
             }
             ?>
+            <?php if ($component == 'MediaUpload')  { ?>), <?php } ?>
             <?php if ($component == 'ExternalLink') { ?>
             wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
             <?php } ?>
             ),
-
             <?php if ($component == 'ExternalLink' && !empty($attr['help'])) { ?>
             wp.element.createElement("p", {className:'components-base-control__help'}, wp.i18n.__("<?php echo esc_attr($attr['help']); ?>", "<?php echo esc_attr($textdomain); ?>"), ),
             <?php } ?>

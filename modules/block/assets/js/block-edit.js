@@ -269,7 +269,7 @@ jQuery(document).ready(function ($) {
                         row.find('.type').val(element.type);
                         delete(element.type);
                     } else {
-                        row.find('.type').val(''); //eval
+                        //row.find('.type').val(''); //enum
                     }
                     if (element.component) {
                         row.find('.component').val(element.component);
@@ -297,6 +297,13 @@ jQuery(document).ready(function ($) {
                     /*if (element.hasOwnProperty('template')) {
                         row.find('.default').val(element.template);
                         delete(element.template);
+                    }*/
+                    //console.log(element.type);
+                    /*if (typeof element.type == 'undefined') {
+                        if (element.options) {
+                            element.enum = element.options;
+                            delete(element.options);
+                        }
                     }*/
                     if (element.enum) {
                         row.find('.options').val(element.enum.join("\r\n"));
@@ -401,7 +408,7 @@ jQuery(document).ready(function ($) {
         attr_editor.find('.repeat_attr').each(function (index, row) {
             row = jQuery(row);
             let key = row.find('.key').val();
-            console.log(key);
+            //console.log(key);
             key = key.trim().replaceAll("_","");//.toLowerCase()
             if (key) {
                 attributes[key] = {};
@@ -453,8 +460,9 @@ jQuery(document).ready(function ($) {
                     let rowptions = row.find('.options').val().split('\n');
                     if ( attributes[key]['component'] && attributes[key]['component'] == 'InnerBlocks') {
                         attributes[key]['allowedBlocks'] = rowptions;
-                        attributes[key]['type'] = 'null';
+                        attributes[key]['type'] = 'array';
                     } else {
+                        //console.log();
                         if (row.find('.options').val().includes('|') || attributes[key]['component']) {
                             if (!row.find('.options').val().includes('|') && (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer')) {
                                 attributes[key]['options'] = [];
@@ -484,7 +492,7 @@ jQuery(document).ready(function ($) {
                             }
                         } else {
                             attributes[key]['enum'] = rowptions;
-                            delete(attributes[key]['type']);
+                            //delete(attributes[key]['type']);
                         }
                     }
                 }
