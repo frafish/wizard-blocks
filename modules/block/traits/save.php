@@ -85,6 +85,25 @@ trait Save {
             if ($attributes == NULL) {
                 update_post_meta($post_id, '_transient_block_attributes', $attributes_json);
             } else {
+                // automatically set correct Type based on Component
+                foreach($attributes as $aid => $attribute) {
+                    if (empty($attribute['type'])) {
+                        $attributes[$aid]['type'] = 'string';
+                        if (!empty($attribute['component'])) {
+                            switch ($attribute['component']) {
+                                case 'InnerBlocks':
+                                    $attributes[$aid]['type'] = 'array';
+                                    break;
+                                case 'MediaUpload':
+                                    $attributes[$aid]['type'] = 'integer';
+                                    if (!empty($attribute['multiple'])) {
+                                        $attributes[$aid]['type'] = 'array';
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
                 delete_post_meta($post_id, '_transient_block_attributes');
             }
             //var_dump($attributes); die();

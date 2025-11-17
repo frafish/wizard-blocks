@@ -559,14 +559,122 @@ if ($wrapper) { ?></script><?php }
                                     $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
                                     $default = ($attr['type'] == 'boolean') ? '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"' : $default; 
                                 }
+                                if ($attr['type'] == 'array') {
+                                    $default = '[]';
+                                    if (isset($attr['default'])) {
+                                        $default = '['.esc_js(implode(',', $attr['default'])).']';
+                                    }
+                                }
                                 ?>
                                 value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (isset($attr['default'])) { echo ' || '.$default; } ?>,
                             <?php
                         } 
                         switch ($component) {
-                            case 'MediaUpload': ?>
+                            case 'MediaUpload': 
+                                ?>
                                 allowedTypes: ['image'],
-                                multiple: false,
+                                <?php
+                                if (!empty($attr['multiple'])) { ?>
+                                gallery: true,
+                                frame: 'post',
+                                onSelect: function (mediaArray) {
+                                    const newIds = mediaArray.map(media => media.id);
+                                    props.setAttributes({ "<?php echo esc_attr($id); ?>": newIds }); 
+                                },
+                                render: function ({ open }) {
+                                    const mediaIds = props.attributes.<?php echo esc_attr($id); ?> || [];
+                                    const mediaCount = mediaIds.length;
+                                    const previewImages = mediaIds.map((mediaId, index) => {
+                                        const elementId = 'media-image-' + mediaId;
+                                        if (mediaId) {
+                                            wp.apiFetch({
+                                                path: '/wp/v2/media/' + mediaId
+                                            }).then((media) => {
+                                                let newSrc = media.source_url;
+                                                if (media.media_details && media.media_details.sizes && media.media_details.sizes.thumbnail && media.media_details.sizes.thumbnail.source_url) {
+                                                    newSrc = media.media_details.sizes.thumbnail.source_url;
+                                                }
+                                                let mediaElement = document.getElementById(elementId);
+                                                if (mediaElement && mediaElement.src !== newSrc) {
+                                                    mediaElement.src = newSrc;
+                                                }
+                                            }).catch(() => { 
+                                                 // error
+                                            });
+                                        }
+                                        return wp.element.createElement("img", {
+                                            key: mediaId,
+                                            id: elementId, // ID DOM unic
+                                            style: {
+                                                display: 'block',
+                                                width: '24%', 
+                                                height: 'auto', 
+                                                objectFit: 'cover',
+                                                marginRight: '1%',
+                                                marginBottom: '2px',
+                                                border: '1px solid #aaa'
+                                            },
+                                            alt: wp.i18n.__("Media preview", "<?php echo esc_attr($textdomain); ?>"),
+                                            title: `ID: ${mediaId}`, 
+                                        });
+                                    });
+                                    const controls = [];
+                                    controls.push(
+                                        wp.element.createElement(wp.components.IconButton, {
+                                            icon: mediaCount > 0 ? 'edit' : 'upload',
+                                            label: mediaCount > 0 ? wp.i18n.__("Edit Gallery", "<?php echo esc_attr($textdomain); ?>") : wp.i18n.__("Aggiungi Immagini", "wb"),
+                                            onClick: open,
+                                            isPrimary: true,
+                                        })
+                                    );
+
+                                    if (mediaCount > 0) {
+                                        controls.push(
+                                            wp.element.createElement(wp.components.IconButton, {
+                                                icon: 'trash', 
+                                                label: wp.i18n.__("Remove Gallery", "<?php echo esc_attr($textdomain); ?>"),
+                                                onClick: () => {
+                                                    props.setAttributes({ "<?php echo esc_attr($id); ?>": undefined }); 
+                                                },
+                                                isDestructive: true,
+                                            })
+                                        );
+                                    }
+
+                                    return wp.element.createElement("div", {
+                                        style: {
+                                            backgroundColor: "#e7e7e7",
+                                            padding: "5px",
+                                            border: "1px solid #ccc",
+                                            position: "relative"
+                                        }
+                                    },
+                                        wp.element.createElement("div", {
+                                            style: {
+                                                display: "flex",
+                                                flexWrap: "wrap"
+                                            }
+                                        },
+                                            mediaCount > 0 
+                                                ? previewImages 
+                                                : wp.element.createElement("p", { style: { margin: 0, padding: '15px 0', width: '100%', textAlign: 'center' } }, wp.i18n.__("No selected Medias", "<?php echo esc_attr($textdomain); ?>"))
+                                        ),
+
+                                        wp.element.createElement("div", {
+                                            style: {
+                                                position: "absolute",
+                                                top: "5px",
+                                                right: "5px",
+                                                display: "flex",
+                                                gap: "5px",
+                                            }
+                                        },
+                                            ...controls
+                                        )
+                                    );
+                                },
+                                <?php } else {
+                                ?>
                                 onSelect: function (media) {
                                     props.setAttributes({ "<?php echo esc_attr($id); ?>": media.id });
                                     if (media.sizes && media.sizes.thumbnail && media.sizes.thumbnail.url) {
@@ -647,7 +755,9 @@ if ($wrapper) { ?></script><?php }
                                         )
                                     )
                                 },
-                        <?php break;
+                        <?php
+                                }
+                            break;
                             case 'Heading': ?>
                             text: wp.i18n.__('<?php echo esc_attr($label); ?>', "<?php echo esc_attr($textdomain); ?>"),
                         <?php break;

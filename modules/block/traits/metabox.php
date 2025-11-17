@@ -101,6 +101,7 @@ trait Metabox {
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
     public static $attributes_type = [
+        '' => 'Auto',
         'string' => 'String',
         'boolean' => 'Boolean',
         'number' => 'Number',
@@ -108,7 +109,6 @@ trait Metabox {
         'array' => 'Array',
         'null' => 'Null',
         'object' => 'Object',
-        //'' => 'Enum',
     ];
     //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
     //https://developer.wordpress.org/news/2023/06/02/using-block-inspector-sidebar-groups/

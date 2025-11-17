@@ -409,7 +409,7 @@ jQuery(document).ready(function ($) {
             row = jQuery(row);
             let key = row.find('.key').val();
             //console.log(key);
-            key = key.trim().replaceAll("_","");//.toLowerCase()
+            key = key.trim().replaceAll("-","_");//.toLowerCase()
             if (key) {
                 attributes[key] = {};
                 if (row.find('.type').val()) {
@@ -650,7 +650,7 @@ jQuery(document).ready(function ($) {
                 } else {
                     row.find('label[for="inputType"]').hide();
                 }
-                if (['SelectControl'].includes(jQuery(this).val())) {
+                if (['SelectControl', 'MediaUpload'].includes(jQuery(this).val())) {
                     row.find('label[for="multiple"]').show();
                 } else {
                     row.find('label[for="multiple"]').hide();
