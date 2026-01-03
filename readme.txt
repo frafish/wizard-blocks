@@ -2,7 +2,7 @@
 Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.8
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: 1.3
 Requires PHP: 8.0
 License: GPLv3

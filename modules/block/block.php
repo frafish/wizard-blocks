@@ -65,11 +65,12 @@ class Block extends Module_Base {
             }*/
         }
         
+        /* REVSISION */
         add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
-        add_action( '_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
+        add_action('_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
         add_filter('wizard_blocks/before_save', [$this, 'generate_block_zip_for_revision'], 10, 3);
-        add_filter( 'wp_get_revision_ui_diff', [$this, 'get_revision_ui_diff'], 10, 3);
-        add_action( 'wp_restore_post_revision', [$this, 'restore_block_revision'], 10, 2 );
+        add_filter('wp_get_revision_ui_diff', [$this, 'get_revision_ui_diff'], 10, 3);
+        add_action('wp_restore_post_revision', [$this, 'restore_block_revision'], 10, 2 );
                 
         add_action('add_meta_boxes', [$this, 'meta_fields_add_meta_box']);
         add_action('save_post', [$this, 'meta_fields_save_meta_box_data'], 10, 3);

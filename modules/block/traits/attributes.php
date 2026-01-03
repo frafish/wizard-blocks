@@ -47,6 +47,121 @@ Trait Attributes {
         return false;
     }
     
+    public function set_inner_blocks_props($args) {
+        if (!empty($args['attributes'])) {
+            foreach ($args['attributes'] as $key => $attr) {
+                if (!empty($attr['component']) && $attr['component'] == 'InnerBlocks') {
+                    
+                    //defaultBlock
+                    if (empty($attr['defaultBlock']) && !empty($attr['options'])) {
+                        $attr['defaultBlock'] = wp_unslash($attr['options']);
+                    }
+                    if (!empty($attr['defaultBlock']) && is_string($attr['defaultBlock'])) {
+                        $tmp = array_filter(explode(PHP_EOL, $attr['defaultBlock']));
+                        $attr['defaultBlock'] = [];
+                        foreach ($tmp as $ablock) {
+                            $bname = $ablock;
+                            $bargs = [];
+                            $btmp = explode(':', $ablock, 2);
+                            if (count($btmp) == 2) {
+                                $bname = reset($btmp);
+                                $bargs = json_decode(end($btmp), true);
+                            }
+                            $attr['defaultBlock'][$bname] = $bargs;
+                        }
+
+                    }
+                    //$defaultBlock_safe = empty($attr['defaultBlock']) ? '' : json_encode($attr['defaultBlock']);
+                    $defaultBlock_safe = '';
+                    if (!empty($attr['defaultBlock'])) {
+                        $defaultBlock_safe = '[';
+                        foreach ($attr['defaultBlock'] as $block_name => $block_value) {
+                            if (!is_numeric($block_name)) {
+                                $block_value_str = json_encode($block_value);
+                                $block_value_str = str_replace('[]', '{}', $block_value_str);
+                                $defaultBlock_safe .= "['".$block_name."', ".json_encode($block_value_str)."],";
+                            }
+                        }
+                        $defaultBlock_safe .= ']';
+                    }
+
+                    //template
+                    if (empty($attr['template']) && !empty($attr['default'])) {
+                        $attr['template'] = wp_unslash($attr['default']);
+                    }
+                    if (!empty($attr['template']) && is_string($attr['template'])) {
+                        $tmp = array_filter(explode(PHP_EOL, $attr['template']));
+                        $attr['template'] = [];
+                        foreach ($tmp as $ablock) {
+                            $bname = $ablock;
+                            $bargs = [];
+                            $btmp = explode(':', $ablock, 2);
+                            if (count($btmp) == 2) {
+                                $bname = reset($btmp);
+                                $bargs = end($btmp);
+                                $bargs = $this->unescape($bargs);
+                                
+                                $bargs = str_replace("'", '"', $bargs);
+                                //var_dump($bargs); die();
+                                $bargs = str_replace('{', '{"', $bargs);
+                                $bargs = str_replace(':', '":', $bargs);
+                                $bargs = json_decode($bargs, true);
+                                //var_dump($bargs); die();
+                            }
+                            $attr['template'][$bname] = $bargs;
+                        }
+
+                    }
+                    //var_dump($attr['template']); die();
+                    $template_safe = '';
+                    if (!empty($attr['template'])) {
+                        $template_safe = '[';
+                        //foreach ($attr['template'] as $block_template) {
+                            foreach ($attr['template'] as $block_name => $block_value) {
+                                $block_value_str = json_encode($block_value);
+                                if (!$block_value_str) {
+                                    $block_value_str = '{}';
+                                } else {
+                                    $block_value_str = str_replace('[]', '{}', $block_value_str);
+                                }
+                                $template_safe .= "['".$block_name."', ".$block_value_str."],";
+                            }
+                        //}
+                        $template_safe .= ']';
+                        $template_safe = $this->unescape($template_safe);
+                        if ($template_safe == '[]') $template_safe = false;
+                    }
+                    //var_dump($template_safe); die();
+
+                    $allowedBlocks_safe = empty($attr['allowedBlocks']) ? '' : $attr['allowedBlocks'];
+                    $allowedBlocks_safe = empty($allowedBlocks_safe) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks_safe;
+                    $allowedBlocks_safe = !empty($allowedBlocks_safe) && is_array($allowedBlocks_safe) ? '["'.implode('","', $allowedBlocks_safe).'"]' : '';
+
+                    $renderAppender_safe = false; // TODO: a function that render a button
+                    $orientation_safe = empty($attr['orientation']) ? '' : esc_js($attr['orientation']); //$in_toolbar ? 'horizontal' : 'vertical';
+                    ?>
+                    const innerBlocksProps = wp.blockEditor.useInnerBlocksProps(blockProps, {});
+                    
+                    const innerBlocksPropsCustom = { 
+                    <?php
+                        if ($defaultBlock_safe) { ?>defaultBlock: <?php echo $defaultBlock_safe; ?>, directInsert: true,<?php }
+                        if ($template_safe) { ?>templateLock: false, template: <?php echo $template_safe; ?>,<?php }
+                        if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; ?>,<?php }
+                        if ($orientation_safe) { ?>orientation: '<?php echo esc_js($orientation_safe); ?>',<?php }
+                        if ($renderAppender_safe) { ?>renderAppender: <?php echo $renderAppender_safe; ?>,<?php }
+                        ?>
+                    };
+                    
+                    const blockInnerBlocksProps = {
+                        ...innerBlocksProps,
+                        ...innerBlocksPropsCustom
+                    };
+                <?php
+                }
+            }
+        }
+    }
+    
     public function _edit($args = [], $wrapper = false) {
         $key = esc_attr($args['name']);
         $textdomain = $this->get_block_textdomain($args);
@@ -164,9 +279,15 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
             });	
 	}
         <?php } ?>
+        
+        const blockProps = wp.blockEditor.useBlockProps();
+        <?php
+        $this->set_inner_blocks_props($args);
+        ?>
+                
         return wp.element.createElement(
                 'div',
-                wp.blockEditor.useBlockProps(),
+                blockProps,
                 <?php 
                 if (!empty($args['attributes'])) {
                     
@@ -264,9 +385,17 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     save() { <?php 
         // https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
         if ($this->has_inner_blocks($args)) { ?>
-        const innerBlocksProps = wp.blockEditor.useInnerBlocksProps.save();
-        return innerBlocksProps.children; //wp.blockEditor.InnerBlocks.Content;
-        <?php } else { ?>return null;<?php } ?> },
+        const blockPropsSave = wp.blockEditor.useBlockProps.save();
+        //const innerBlocksPropsSave = wp.blockEditor.useInnerBlocksProps.save();
+        const innerBlocksPropsSave = wp.blockEditor.useInnerBlocksProps.save(blockPropsSave);
+        return innerBlocksPropsSave.children; //wp.blockEditor.InnerBlocks.Content;
+        <?php
+        /*return wp.element.createElement(
+            'div',
+            innerBlocksPropsSave,
+            wp.element.createElement(wp.blockEditor.InnerBlocks.Content, null)
+        );*/
+        } else { ?>return null;<?php } ?> },
 });
 });
 <?php
@@ -377,60 +506,39 @@ if ($wrapper) { ?></script><?php }
     wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{ className: "block-editor-wrapper block-editor-wrapper__<?php echo esc_attr($id); ?> components-<?php echo strtolower($component); ?><?php if (!empty($attr['className'])) { echo ' '.esc_attr($attr['className']); } ?>", <?php if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
         // TITLE LABEL
-        if (!$in_toolbar && !in_array($component, ['InnerBlocks', 'AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl']) && $label) { ?>
+        if (!$in_toolbar && !in_array($component, ['InnerBlocks', 'AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl', 'FocalPointPicker']) && $label) { ?>
             wp.element.createElement("label",{className:"components-input-control__label", htmlFor: "inspector-control-<?php echo esc_attr($id); ?>", style: {display: "block"}}, wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>")),
         <?php } ?>
        <?php if ($component == 'MediaUpload')  { ?>wp.element.createElement(wp.blockEditor.MediaUploadCheck, null, <?php } ?>
        wp.element.createElement(
             <?php 
             if ($component == 'InnerBlocks') {
-                
-                //$defaultBlock_safe = empty($attr['defaultBlock']) ? '' : json_encode($attr['defaultBlock']);
-                $defaultBlock_safe = '';
-                if (!empty($attr['defaultBlock'])) {
-                    $defaultBlock_safe = '[';
-                    foreach ($attr['defaultBlock'] as $block_name => $block_value) {
-                        $block_value_str = json_encode($block_value);
-                        $block_value_str = str_replace('[]', '{}', $block_value_str);
-                        $defaultBlock_safe .= "['".$block_name."', ".json_encode($block_value_str)."],";
-                    }
-                    $defaultBlock_safe .= ']';
-                }
-                
-                $template_safe = '';
-                if (!empty($attr['template'])) {
-                    $template_safe = '[';
-                    foreach ($attr['template'] as $block_name => $block_value) {
-                        $block_value_str = json_encode($block_value);
-                        $block_value_str = str_replace('[]', '{}', $block_value_str);
-                        $template_safe .= "['".$block_name."', ".$block_value_str."],";
-                    }
-                    $template_safe .= ']';
-                }
-                
-                $allowedBlocks_safe = empty($attr['allowedBlocks']) ? '' : $attr['allowedBlocks'];
-                $allowedBlocks_safe = empty($allowedBlocks_safe) && !empty($args['allowedBlocks']) ? $args['allowedBlocks'] : $allowedBlocks_safe;
-                $allowedBlocks_safe = !empty($allowedBlocks_safe) && is_array($allowedBlocks_safe) ? '["'.implode('","', $allowedBlocks_safe).'"]' : '';
-                
-                $renderAppender_safe = false; // TODO: a function that render a button
-                $orientation_safe = empty($attr['orientation']) ? '' : esc_js($attr['orientation']); //$in_toolbar ? 'horizontal' : 'vertical';
                 ?>
-                wp.blockEditor.InnerBlocks, wp.blockEditor.useInnerBlocksProps(wp.blockEditor.useBlockProps(), {
-                    <?php
-                    if ($defaultBlock_safe) { ?>defaultBlock: <?php echo $defaultBlock_safe; ?>, directInsert: true,<?php }
-                    if ($template_safe) { ?>template: <?php echo $template_safe; ?>,<?php }
-                    if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; ?>,<?php }
-                    if ($orientation_safe) { ?>orientation: '<?php echo esc_js($orientation_safe); ?>',<?php }
-                    if ($renderAppender_safe) { ?>renderAppender: <?php echo $renderAppender_safe; ?>,<?php }
-                    ?>
-                }),
+                wp.blockEditor.InnerBlocks, 
+                blockInnerBlocksProps 
             <?php } else {
                 echo in_array($component, ['MediaUpload', 'RichText', 'PanelColorSettings']) ? 'wp.blockEditor.' : 'wp.components.'; ?><?php echo esc_attr($component); ?>,
                     {
+                    <?php if ($component == 'TextControl') {
+                      switch ($attr['type']) {
+                        case 'number':
+                        case 'integer': ?>
+                            type: 'number',
+                            <?php if ($attr['type'] == 'integer') { ?>
+                                step: 1,
+                            <?php }
+                      } 
+                    } ?>
                         'aria-label': wp.i18n.__("<?php echo esc_attr($label); ?>","<?php echo esc_attr($textdomain); ?>"),
                         label: wp.i18n.__("<?php echo esc_attr($label); ?>", "<?php echo esc_attr($textdomain); ?>"),
                         id: "inspector-control-<?php echo esc_attr($id); ?>",
+                        <?php if ($component == 'ButtonGroup') { ?>
+                        style: {
+                            display: "flex",
+                            width: "100%"
+                        },
                         <?php
+                        }
                         // default
                         switch($component) {
                             case 'ToolbarGroup':  break;
@@ -510,6 +618,7 @@ if ($wrapper) { ?></script><?php }
                                     unset($attr['options']);
                                 }
                                 ?>
+                                withSlider: true,
                                 fontSizes: <?php echo wp_json_encode($fontSizes); ?>,<?php //[{"name":"Small","slug":"small","size":12},{"name":"Big","slug":"big","size":26}] ?>
                                 value: props.attributes["<?php echo esc_attr($id); ?>"]<?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
                             <?php
@@ -529,8 +638,29 @@ if ($wrapper) { ?></script><?php }
                                 if (!empty($colors)) { ?>
                                     colors: <?php echo wp_json_encode($colors); ?>,
                                 <?php }
-                            case 'BoxControl': ?>
-                                values: props.attributes.<?php echo esc_attr($id); ?><?php if (!empty($attr['default'])) { echo ' || ' . esc_attr($attr['default']); } ?>,
+                            case 'BoxControl':
+                                $default_safe = '{}';
+                                if (!empty($attr['default'])) {
+                                    $tmp = $attr['default'];
+                                    if (is_string($attr['default'])) {
+                                       $tmp = explode(',', $attr['default']);
+                                       $tmp = array_filter($tmp);
+                                    }
+                                    $default = [];
+                                    if (is_array($tmp) && count($tmp)) {
+                                        if (count($tmp) == 1) {
+                                            $default['left'] = $default['top'] = $default['right'] = $default['bottom'] = trim(reset($tmp));
+                                        } else {
+                                            if (!empty($tmp[0])) { $default['left'] = trim($tmp[0]); }
+                                            if (!empty($tmp[1])) { $default['top'] = trim($tmp[1]); }
+                                            if (!empty($tmp[2])) { $default['right'] = trim($tmp[2]); }
+                                            if (!empty($tmp[3])) { $default['bottom'] = trim($tmp[3]); }
+                                        }
+                                        $default_safe = $default = json_encode($default);
+                                    }
+                                }
+                                ?>
+                                values: props.attributes.<?php echo esc_attr($id); ?> || <?php if (!empty($default_safe)) { echo $default_safe; } else { echo '{}'; } ?>,
                             <?php
                                 break;
                             case 'DuotonePicker':
@@ -771,12 +901,42 @@ if ($wrapper) { ?></script><?php }
                             break;
                         case 'ToolbarGroup':  break;
                         case 'ButtonGroup':  break;
+                        case 'BorderControl': ?>
+                            onChange: function (val) {
+                                const { width, style, color } = val;
+                                const isEffectivelyEmpty = (width === undefined || width === '') && 
+                                                           (style === undefined || style === '') && 
+                                                           (color === undefined || color === '');
+                                if (isEffectivelyEmpty) {
+                                    val = undefined;
+                                } 
+                                props.setAttributes({"<?php echo esc_attr($id); ?>": val});
+                            },
+                            <?php
+                            break;
                         default: ?>
                         onChange: function (val) {
                             if (val === '') {
                                <?php if (isset($attr['default'])) {
-                                    $default = (empty($attr['type']) || $attr['type'] == 'string') ? '"'.esc_js($attr['default']).'"' : esc_js($attr['default']);
-                                    $default = ($attr['type'] == 'boolean') ? '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"' : $default; 
+                                    switch ($attr['type']) {
+                                        case 'boolean':
+                                            $default = '"'.esc_js($attr['default'] === true || $attr['default'] === 'true' ? 'true' : 'false').'"';
+                                            break;
+                                        case 'numeric':
+                                        case 'integer':
+                                            $default = esc_js($attr['default']);
+                                            break;
+                                        case 'array':
+                                        case 'object':
+                                            // this var already contain the previous generated default JS printable value
+                                            if (!isset($default)) {
+                                                $default = json_encode($attr['default']);
+                                            }
+                                            break;
+                                        case 'string':
+                                        default:
+                                            $default = '"'.esc_js($attr['default']).'"';
+                                    }
                                     ?>
                                     val = <?php echo $default; ?>;
                                     <?php    
@@ -788,14 +948,24 @@ if ($wrapper) { ?></script><?php }
                             //console.log(val);
                             //console.log(typeof val);
                             switch ($attr['type']) { 
-                                case 'number':
+                                case 'number': ?>
+                                    val = parseFloat(val);
+                                    <?php
+                                    break;
                                 case 'integer': 
                                     ?>
-                                    val = parseFloat(val);
+                                    val = parseInt(val);
                                     <?php
                                     break;
                                 case 'boolean': ?>
                                     val = typeof val == 'string' ? val === 'true' : val;
+                                    <?php
+                                    break;
+                                case 'object': ?>
+                                    const isEmpty = Object.values(val).every(v => v === undefined || v === '');
+                                    if (isEmpty) {
+                                        val = undefined;
+                                    }
                                     <?php
                                     break;
                                 case 'string':
@@ -954,6 +1124,9 @@ if ($wrapper) { ?></script><?php }
                                 }
                                 ?>
                                 wp.element.createElement(wp.components.<?php echo $in_toolbar ? 'Toolbar' : ''; ?>Button, {
+                                    style: {
+                                        width: "100%"
+                                    },
                                     value: <?php echo $value_escaped; ?>,
                                     variant: (props.attributes.<?php echo esc_attr($id); ?> === <?php echo $value_escaped; ?>) ? 'primary' : 'secondary',
                                     onClick: function (event) {

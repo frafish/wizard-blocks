@@ -442,8 +442,8 @@ jQuery(document).ready(function ($) {
                         attributes[key]['selected'] = row.find('.default').val();
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
                         attributes[key]['value'] = row.find('.default').val();
-                    } else if (attributes[key]['component'] && attributes[key]['component'] == 'InnerBlocks') {
-                        attributes[key]['template'] = row.find('.default').val();
+                    //} else if (attributes[key]['component'] && attributes[key]['component'] == 'InnerBlocks') {
+                        //attributes[key]['template'] = row.find('.default').val();
                     } else {
                         attributes[key]['default'] = defa;
                     }

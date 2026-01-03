@@ -54,6 +54,7 @@ Trait Actions {
                                 break;
 
                             case 'import':
+                                // TODO: add Telex compatibility (need to manage zip block structure, src/build)
                                 if (!empty($_FILES["zip"]["tmp_name"]) && !empty($_FILES["zip"]["name"])) {
                                     //var_dump($_FILES); die();
                                     //$target_file = $basedir . basename(sanitize_key($_FILES["zip"]["name"]));
@@ -258,59 +259,62 @@ Trait Actions {
 
     public function extract_block_zip($target_file, $notice = true) {
         $tmpdir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
-        //unzip_file($target_file, $tmpdir);
-        $zip = new \ZipArchive;
-        if ($zip->open($target_file) === TRUE) {
-            $zip->extractTo($tmpdir);
-            $zip->close();
-            $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
-            $jsons = $this->filter_block_json($jsons);
-            if (empty($jsons)) {
-                if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
-                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
-                } else {
-                    $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
-                }
-            }
-            $block_post = false;
-            $jsons = $this->filter_block_json($jsons);
-            //var_dump($jsons); die();
-            foreach ($jsons as $json) {
-                //var_dump($json);
-                $jfolder = dirname($json);
-                //var_dump($jfolder);
-                $block = basename($jfolder);
-                //var_dump($block);
-                if ($block == 'src') {
-                    continue;
-                }
-                $json_code = $this->get_filesystem()->get_contents($json);
-                $args = json_decode($json_code, true);
-                //var_dump($args); die();
-                //if (!empty($args['$schema'])) {
-                if (!empty($args['name'])) {
-                    //var_dump($args); die();
-                    // is a valid block
-                    list($domain, $slug) = explode('/', $args['name'], 2);
-                    $dest = $this->get_ensure_blocks_dir($slug, $domain);
-                    //var_dump($jfolder); var_dump($dest); die();
-                    $this->copy_dir($jfolder, $dest);
-                    $block_post = $this->get_block_post($slug);
-                    if (!$block_post) {
-                        $block_post_id = $this->insert_block_post($slug, $args);
-                        $block_post = $block_post_id;
+        if ( class_exists( 'ZipArchive', false ) && apply_filters( 'unzip_file_use_ziparchive', true ) ) {
+            //if (file_exists($target_file) && unzip_file($target_file, $tmpdir)) {
+            $zip = new \ZipArchive;
+            if ($zip->open($target_file) === TRUE) {
+                $zip->extractTo($tmpdir);
+                $zip->close();
+                $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
+                $jsons = $this->filter_block_json($jsons);
+                if (empty($jsons)) {
+                    if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
+                        $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
+                    } else {
+                        $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
                     }
                 }
-                //}
-            }
-            if ($notice) {
-                if ($block_post) {
-                    $this->_notice(__('Blocks imported!', 'wizard-blocks'));
-                } else {
-                    $this->_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
+                //var_dump($tmpdir); var_dump($jsons); die();
+                $block_post = false;
+                $jsons = $this->filter_block_json($jsons);
+                //var_dump($jsons); die();
+                foreach ($jsons as $json) {
+                    //var_dump($json);
+                    $jfolder = dirname($json);
+                    //var_dump($jfolder);
+                    $block = basename($jfolder);
+                    //var_dump($block);
+                    if ($block == 'src') {
+                        continue;
+                    }
+                    $json_code = $this->get_filesystem()->get_contents($json);
+                    $args = json_decode($json_code, true);
+                    //var_dump($args); die();
+                    //if (!empty($args['$schema'])) {
+                    if (!empty($args['name'])) {
+                        //var_dump($args); die();
+                        // is a valid block
+                        list($domain, $slug) = explode('/', $args['name'], 2);
+                        $dest = $this->get_ensure_blocks_dir($slug, $domain);
+                        //var_dump($jfolder); var_dump($dest); die();
+                        $this->copy_dir($jfolder, $dest);
+                        $block_post = $this->get_block_post($slug);
+                        if (!$block_post) {
+                            $block_post_id = $this->insert_block_post($slug, $args);
+                            $block_post = $block_post_id;
+                        }
+                    }
+                    //}
                 }
             }
             $this->dir_delete($tmpdir); // MAYBE NOT?!
+        }
+        if ($notice) {
+            if (!empty($block_post)) {
+                $this->_notice(__('Blocks imported!', 'wizard-blocks'));
+            } else {
+                $this->_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
+            }
         }
     }
 }

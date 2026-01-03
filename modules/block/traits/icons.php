@@ -88,27 +88,43 @@ Trait Icons {
         return $icon;
     }
 
-    function the_block_thumbnail($block, $icon = '', $attr = []) {
+    function the_block_thumbnail($block_name, $icon = '', $attr = []) {
         if (empty($attr['width'])) {
             $attr['width'] = 40;
             $attr['height'] = 40;
-            $attr['font-size'] = 40;
+            $attr['font-size'] = '40px';
         }
         if (empty($attr['font-size'])) {
-            $attr['font-size'] = $attr['width'];
+            $attr['font-size'] = $attr['width'].'px';
         }
-        //var_dump($block);
-        $block_json = $this->get_block_json($block);
+        
+        $width = $attr['width'];
+        $height = 'auto';
+        if (!empty($attr['height'])) {
+            $height = $attr['height'];
+            unset($attr['height']);
+        }
+        $attr['max-width'] = $attr['width'].'px';
+        unset($attr['width']);
+        
+        $class = 'block-icon';
+        if (!empty($attr['class'])) {
+            $class .= ' '.$attr['class'];
+            unset($attr['class']);
+        }
+        
+        $block_json = $this->get_block_json($block_name);
         if (!$icon) {
             if (!empty($block_json['icon'])) {
                 $icon = $block_json['icon'];
             }
         }
+        
         if ($icon) {
             $dashicons = $this->get_dashicons();
             if (in_array($icon, $dashicons)) {
                 ?> 
-                <span style="font-size: <?php echo esc_attr($attr['font-size']); ?>px" class="block-icon dashicons dashicons-<?php echo esc_attr($icon); ?>"></span> 
+                <span class="<?php echo esc_attr($class); ?> dashicons dashicons-<?php echo esc_attr($icon); ?>" style="<?php echo esc_attr($this->get_icon_style($attr)); ?>"></span> 
                 <?php
             } else {
                 //var_dump($icon);
@@ -119,20 +135,28 @@ Trait Icons {
                     $icon_path = str_replace('/', DIRECTORY_SEPARATOR, $icon_path);
                     $icon_url = \WizardBlocks\Core\Helper::path_to_url($icon_path);
                     ?>
-                    <img class="block-icon" width="<?php echo esc_attr($attr['width']); ?>" src="<?php echo esc_url($icon_url); ?>">
+                    <img class="<?php echo esc_attr($class); ?>" width="<?php echo esc_attr($width); ?>" src="<?php echo esc_url($icon_url); ?>" style="<?php echo esc_attr($this->get_icon_style($attr)); ?>">
                     <?php
                 } else { 
                     if (filter_var($icon, FILTER_VALIDATE_URL)) { ?>
-                    <img class="block-icon" src="<?php echo esc_url($icon); ?>">
-                    <?php } else {
+                    <img class="<?php echo esc_attr($class); ?>" width="<?php echo esc_attr($width); ?>" src="<?php echo esc_url($icon); ?>" style="<?php echo esc_attr($this->get_icon_style($attr)); ?>">
+                <?php } else {
                     // PHPCS - The SVG file content is being read from a strict file path structure.
                     $block_icon_safe = $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
                     ?>
-                    <span style="max-width: <?php echo esc_attr($attr['width']); ?>px" class="block-icon"><?php echo $block_icon_safe; ?></span>
+                    <span class="<?php echo esc_attr($class); ?>" style="<?php echo esc_attr($this->get_icon_style($attr)); ?>"><?php echo $block_icon_safe; ?></span>
                 <?php }
                 }
             }
         }
+    }
+    
+    function get_icon_style($attr = []) {
+        $style = '';
+        foreach ($attr as $key => $value) {
+            $style .= $key.':'.$value.';';
+        }
+        return $style;
     }
 
     function get_dashicons() {

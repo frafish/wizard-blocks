@@ -129,25 +129,27 @@ trait Metabox {
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/components/
     //https://wp-gb.com/
+    //https://wordpress.github.io/gutenberg/
     public static $attributes_component = [
         'AlignmentMatrixControl' => 'Alignment Matrix',
         'AnglePickerControl' => 'Angle',
         //'BaseControl' => 'Base',
         //'BorderBoxControl' => 'Border Box',
         //'BorderControl' => 'Border',
-        //'BoxControl' => 'Box',
+        'BoxControl' => 'Box Sizing',
         'ButtonGroup' => 'Buttons',
         'CheckboxControl' => 'Checkbox',
         'ComboboxControl' => 'Combobox',
         'ColorPicker' => 'Color',
         'DatePicker' => 'Date',
         'DateTimePicker' => 'DateTime',
-        //'Divider' => 'Divider',
+        //'Divider' => 'Divider', // same of HorizontalRule
         //'Dropdown' => 'Dropdown',
-        'DuotonePicker' => 'Duotone',
+        //'DuotonePicker' => 'Duotone',
         'ExternalLink' => 'External Link',
-        //'FocalPointPicker' => 'Focal Point',
+        'FocalPointPicker' => 'Focal Point',
         'FontSizePicker' => '​Font Size',
+        //'FormToggle' => 'Toggle',
         //'GradientPicker' => 'Gradient',
         'InnerBlocks' => 'Inner Blocks',
         //'InputControl' => 'Email', //experimental
@@ -398,7 +400,11 @@ trait Metabox {
                     ?>
                     <hr style="clear:both;">
                     <?php
-                }
+                } else { ?>
+                    <button class="button-ai">
+                       <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
+                    </button>
+                <?php }
             });
         }
     }

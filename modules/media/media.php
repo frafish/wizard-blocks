@@ -20,8 +20,9 @@ class Media extends Module_Base {
         add_action('init', function () {
             $wb = \WizardBlocks\Modules\Block\Block::instance();
             if ($wb->is_block_edit()) {
+                //die();
                 $this->enqueue_style('block-media', 'assets/css/block-media.css');
-                $this->enqueue_script('block-media', 'assets/js/block-media.js', ['query']);
+                $this->enqueue_script('block-media', 'assets/js/block-media.js', ['jquery']);
             }
         });
 

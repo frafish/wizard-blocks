@@ -210,3 +210,46 @@
 .text-decoration-none {
     text-decoration: none;
 }
+
+
+
+.button-ai {
+  position: relative;
+  padding: 2px; /* Spessore del bordo luminoso */
+  border: none;
+  border-radius: 3px;
+  background: none;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  transform: scale(1.05);
+}
+.button-ai:before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    #4285f4,
+    #9b72cb,
+    #d96570,
+    #4285f4
+  );
+  animation: rotate-aura 4s linear infinite;
+  z-index: -2;
+}
+.button-ai:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  filter: blur(15px);
+  opacity: 0.6;
+  z-index: -1;
+}
+@keyframes rotate-aura {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
