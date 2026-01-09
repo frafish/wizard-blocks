@@ -701,10 +701,19 @@ jQuery(document).ready(function ($) {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
+        console.log(e);
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             let saveButton = document.querySelector('#publish, #save-post');
             saveButton.click();
+        }
+        
+        if (e.keyCode === 27) {
+            if (jQuery('.CodeMirror.distraction-free').length) {
+                //jQuery('.CodeMirror.distraction-free').removeClass('distraction-free');
+                jQuery( ".CodeMirror.distraction-free .toggle-distraction-free" ).trigger('click');
+                e.preventDefault();
+            }
         }
     });
 });

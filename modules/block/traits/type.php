@@ -7,7 +7,6 @@ trait Type {
     public $revision;
     public static $cpt_name = 'block';
 
-
     public static function get_cpt_name() {
         return apply_filters('wizard_block/cpt/name', self::$cpt_name);
     }
@@ -62,19 +61,19 @@ trait Type {
             'supports' => array('title', 'author', 'excerpt', 'thumbnail', 'revisions'), // 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
             'show_in_rest' => true,
-            //'rest_base' => self::get_cpt_name().'s',
-            /*'capability_type'    => self::get_cpt_name(), // imposta la base delle capabilities
-            'map_meta_cap'       => true, // abilita il mapping delle capabilities
-            'capabilities'       => array(
-                'edit_post'              => 'edit_'.self::get_cpt_name(),
-                'read_post'              => 'read_'.self::get_cpt_name(),
-                'delete_post'            => 'delete_'.self::get_cpt_name(),
-                'edit_posts'             => 'edit_'.self::get_cpt_name().'s',
-                'edit_others_posts'      => 'edit_others_'.self::get_cpt_name().'s',
-                'publish_posts'          => 'publish_'.self::get_cpt_name().'s',
-                'read_private_posts'     => 'read_private_'.self::get_cpt_name().'s',
-                'delete_posts'           => 'delete_'.self::get_cpt_name().'s',
-            ),*/
+                //'rest_base' => self::get_cpt_name().'s',
+                /* 'capability_type'    => self::get_cpt_name(), // imposta la base delle capabilities
+                  'map_meta_cap'       => true, // abilita il mapping delle capabilities
+                  'capabilities'       => array(
+                  'edit_post'              => 'edit_'.self::get_cpt_name(),
+                  'read_post'              => 'read_'.self::get_cpt_name(),
+                  'delete_post'            => 'delete_'.self::get_cpt_name(),
+                  'edit_posts'             => 'edit_'.self::get_cpt_name().'s',
+                  'edit_others_posts'      => 'edit_others_'.self::get_cpt_name().'s',
+                  'publish_posts'          => 'publish_'.self::get_cpt_name().'s',
+                  'read_private_posts'     => 'read_private_'.self::get_cpt_name().'s',
+                  'delete_posts'           => 'delete_'.self::get_cpt_name().'s',
+                  ), */
         );
 
         register_post_type(self::get_cpt_name(), $args);
@@ -92,46 +91,45 @@ trait Type {
                 }
             }
         }, 10, 2);
-        
+
         /*
-        $cpt_administrator_role = get_role('administrator');
-        $capabilities = $this->get_caps();
-        foreach ( $capabilities as $cap ) {
-            $cpt_administrator_role->add_cap( $cap );
-        }
-        */
+          $cpt_administrator_role = get_role('administrator');
+          $capabilities = $this->get_caps();
+          foreach ( $capabilities as $cap ) {
+          $cpt_administrator_role->add_cap( $cap );
+          }
+         */
     }
-    
+
     /**
      * Get capabilities.
      *
      * @return array
      */
-     public function get_caps() {
-      $capability_type = self::get_cpt_name();
-      return [
-          // Post type
-          "edit_{$capability_type}",
-          "read_{$capability_type}",
-          "delete_{$capability_type}",
-          "edit_{$capability_type}s",
-          "edit_others_{$capability_type}s",
-          "publish_{$capability_type}s",
-          "read_private_{$capability_type}s",
-          "delete_{$capability_type}s",
-          "delete_private_{$capability_type}s",
-          "delete_published_{$capability_type}s",
-          "delete_others_{$capability_type}s",
-          "edit_private_{$capability_type}s",
-          "edit_published_{$capability_type}s",
-
-          // Terms
-          // "manage_{$capability_type}_terms",
-          // "edit_{$capability_type}_terms",
-          // "delete_{$capability_type}_terms",
-          // "assign_{$capability_type}_terms",
+    public function get_caps() {
+        $capability_type = self::get_cpt_name();
+        return [
+            // Post type
+            "edit_{$capability_type}",
+            "read_{$capability_type}",
+            "delete_{$capability_type}",
+            "edit_{$capability_type}s",
+            "edit_others_{$capability_type}s",
+            "publish_{$capability_type}s",
+            "read_private_{$capability_type}s",
+            "delete_{$capability_type}s",
+            "delete_private_{$capability_type}s",
+            "delete_published_{$capability_type}s",
+            "delete_others_{$capability_type}s",
+            "edit_private_{$capability_type}s",
+            "edit_published_{$capability_type}s",
+                // Terms
+                // "manage_{$capability_type}_terms",
+                // "edit_{$capability_type}_terms",
+                // "delete_{$capability_type}_terms",
+                // "assign_{$capability_type}_terms",
         ];
-   }
+    }
 
     /**
      * Insert a value or key/value pair after a specific key in an array.  If key doesn't exist, value is appended
@@ -167,31 +165,30 @@ trait Type {
         // natively check only title and excerpt
         //echo 'REVISION:'; var_dump($post_has_changed); die();
         if ($post->post_type == self::get_cpt_name()) {
-            $post_has_changed = false; 
+            $post_has_changed = false;
             $json = $this->get_block_json($post->post_name);
             //var_dump(($_POST['revision'])); die();
             if (!empty($json)) {
-                if (!empty($json['version']) && !empty($_POST['_block_version']) 
-                        && $_POST['_block_version'] != $json['version']) {
-                    $post_has_changed = true; 
+                if (!empty($json['version']) && !empty($_POST['_block_version']) && $_POST['_block_version'] != $json['version']) {
+                    $post_has_changed = true;
                 }
                 if (!empty($_POST['revision'])) {
-                    $post_has_changed = true; 
+                    $post_has_changed = true;
                 }
             }
         }
         return $post_has_changed;
     }
-    
+
     /**
-    * Fires once a revision has been saved.
-    *
-    * @since 2.6.0
-    * @since 6.4.0 The post_id parameter was added.
-    *
-    * @param int $revision_id Post revision ID.
-    * @param int $post_id     Post ID.
-    */
+     * Fires once a revision has been saved.
+     *
+     * @since 2.6.0
+     * @since 6.4.0 The post_id parameter was added.
+     *
+     * @param int $revision_id Post revision ID.
+     * @param int $post_id     Post ID.
+     */
     public function save_block_revision($revision_id, $post_id) {
         $post = get_post($post_id);
         if ($post->post_type == self::get_cpt_name()) {
@@ -205,40 +202,39 @@ trait Type {
             //$this->generate_block_zip($json['name'], 'revision');
         }
     }
-    
-    
+
     public function generate_block_zip_for_revision($json, $post, $update) {
         if ($this->has_block_changed(false, $post, $post)) {
             //var_dump($json); die();
             // create new zip with previous block folder
-            
+
             /*
-            * Compare the proposed update with the last stored revision verifying that
-            * they are different, unless a plugin tells us to always save regardless.
-            * If no previous revisions, save one.
-            */
-           $revisions = wp_get_post_revisions( $post->ID );
-           if ( $revisions ) {
+             * Compare the proposed update with the last stored revision verifying that
+             * they are different, unless a plugin tells us to always save regardless.
+             * If no previous revisions, save one.
+             */
+            $revisions = wp_get_post_revisions($post->ID);
+            if ($revisions) {
                 // Grab the latest revision, but not an autosave.
-                foreach ( $revisions as $revision ) {
-                        if ( str_contains( $revision->post_name, "{$revision->post_parent}-revision" ) ) {
-                                $latest_revision = $revision;
-                                break;
-                        }
-                }           
+                foreach ($revisions as $revision) {
+                    if (str_contains($revision->post_name, "{$revision->post_parent}-revision")) {
+                        $latest_revision = $revision;
+                        break;
+                    }
+                }
 
                 //var_dump($post); die();
                 $this->revision = strtotime($latest_revision->post_modified); //date('U');
-                $filename = $this->get_block_zip_filename($json['name'], true).'_'.$this->revision.'.zip';
+                $filename = $this->get_block_zip_filename($json['name'], true) . '_' . $this->revision . '.zip';
                 $this->generate_block_zip($json['name'], 'revision', $filename);
             }
         }
         return $json;
     }
-    
+
     public function get_block_revision($block, $revision = '') {
         $basename = $this->get_block_zip_filename($block, true);
-        $filename = $this->get_blocks_dir().DIRECTORY_SEPARATOR.'revision'.DIRECTORY_SEPARATOR.$basename.($revision ? '_'.$revision : '_*').'.zip';
+        $filename = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'revision' . DIRECTORY_SEPARATOR . $basename . ($revision ? '_' . $revision : '_*') . '.zip';
         //var_dump($filename);
         $zip = glob($filename);
         if (!empty($zip)) {
@@ -246,108 +242,127 @@ trait Type {
         }
         return false;
     }
-    
+
     /**
-	 * Filters the fields displayed in the post revision diff UI.
-	 *
-	 * @since 4.1.0
-	 *
-	 * @param array[] $return       Array of revision UI fields. Each item is an array of id, name, and diff.
-	 * @param WP_Post $compare_from The revision post to compare from.
-	 * @param WP_Post $compare_to   The revision post to compare to.
-	 */
-	public function get_revision_ui_diff( $return, $compare_from, $compare_to ) {
-            //var_dump($compare_from); var_dump($zip_from); var_dump($zip_to); die(); 
-            $parent = get_post($compare_from->post_parent);
-            $json_last = $this->get_block_json($parent->post_name);
-            
-            $json_from = $this->get_block_revision_json($compare_from);
-            $json_to = $this->get_block_revision_json($compare_to);
-            //var_dump($compare_to);
-            
-            /*
-            $return[] = [
-                'id' => 'zip',
-                'name' => 'Zip',
-                'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr><td>'.$zip_from.'</td><td></td><td>'.$zip_to.'</td></tr></tbody></table>',
-            ];
-            */
-            
-            $fields = ['version', 'render', 'attributes'];
-            foreach ($json_last as $key => $field) {
-                if (is_string($field)) {
-                    $empty = '<td class="diff-deletedline"><span aria-hidden="true" class="dashicons dashicons-minus"></span><span class="screen-reader-text">Eliminato: </span></td>';
-                    //if (!empty($json[$key])) {
-                        $prev = '<td>'.(empty($json_from[$key]) ? $empty : $json_from[$key]).'</td>';
-                        $next = '<td>'.(empty($json_to[$key]) ? $empty : $json_to[$key]).'</td>';
-                    //}
-                    $return[] = [
-                        'id' => $key,
-                        'name' => $key,
-                        'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr>'.$prev.'<td></td>'.$next.'</tr></tbody></table>',
-                    ];
-                }
+     * Filters the fields displayed in the post revision diff UI.
+     *
+     * @since 4.1.0
+     *
+     * @param array[] $return       Array of revision UI fields. Each item is an array of id, name, and diff.
+     * @param WP_Post $compare_from The revision post to compare from.
+     * @param WP_Post $compare_to   The revision post to compare to.
+     */
+    public function get_revision_ui_diff($return, $compare_from, $compare_to) {
+        //var_dump($compare_from); var_dump($zip_from); var_dump($zip_to); die(); 
+        $parent = get_post($compare_from->post_parent);
+        $json_last = $this->get_block_json($parent->post_name);
+
+        $json_from = $this->get_block_revision_json($compare_from);
+        $json_to = $this->get_block_revision_json($compare_to);
+        //var_dump($compare_to);
+
+        /*
+          $return[] = [
+          'id' => 'zip',
+          'name' => 'Zip',
+          'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr><td>'.$zip_from.'</td><td></td><td>'.$zip_to.'</td></tr></tbody></table>',
+          ];
+         */
+
+        $fields = ['version', 'render', 'attributes'];
+        foreach ($json_last as $key => $field) {
+            if (is_string($field)) {
+                $empty = '<td class="diff-deletedline"><span aria-hidden="true" class="dashicons dashicons-minus"></span><span class="screen-reader-text">Eliminato: </span></td>';
+                //if (!empty($json[$key])) {
+                $prev = '<td>' . (empty($json_from[$key]) ? $empty : $json_from[$key]) . '</td>';
+                $next = '<td>' . (empty($json_to[$key]) ? $empty : $json_to[$key]) . '</td>';
+                //}
+                $return[] = [
+                    'id' => $key,
+                    'name' => $key,
+                    'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr>' . $prev . '<td></td>' . $next . '</tr></tbody></table>',
+                ];
             }
-            //TODO
-            // add Render
-            // add Attributes
-            //var_dump($return); die();
-            return $return;
         }
-        
-        public function get_block_revision_json($revision) {
-            $json = false;
-            $zip = $this->get_revision_zip($revision);
-            if ($zip) {
-                // Make sure our zipping class exists
-                if (!class_exists('ZipArchive')) {
-                    die('Cannot find class ZipArchive');
-                }
-                $file = 'zip://' . $zip. '#block.json';
-                //var_dump($file);
-                $json = $this->get_filesystem()->get_contents($file);
-                if ($json) {
-                    $json = json_decode($json, true);
-                }
+        //TODO
+        // add Render
+        // add Attributes
+        //var_dump($return); die();
+        return $return;
+    }
+
+    public function get_block_revision_json($revision) {
+        $json = false;
+        $zip = $this->get_revision_zip($revision);
+        if ($zip) {
+            // Make sure our zipping class exists
+            if (!class_exists('ZipArchive')) {
+                die('Cannot find class ZipArchive');
+            }
+            $file = 'zip://' . $zip . '#block.json';
+            //var_dump($file);
+            $json = $this->get_filesystem()->get_contents($file);
+            if ($json) {
+                $json = json_decode($json, true);
+            }
+        } else {
+            if ($revision->post_parent) {
+                $parent = get_post($revision->post_parent);
+                $json = $this->get_block_json($parent->post_name);
             } else {
-                if ($revision->post_parent) {
-                    $parent = get_post($revision->post_parent);
-                    $json = $this->get_block_json($parent->post_name);
-                } else {
-                    $json = $this->get_block_json($revision->post_name);
-                }
-            }   
-            //var_dump($json);
-            return $json;
-        }
-        
-        public function get_revision_zip($revision) {
-            $parent = $revision->post_parent ? get_post($revision->post_parent) : $revision;
-            $json = $this->get_block_json($parent->post_name);
-            $zip = $this->get_block_revision($json['name'], strtotime($revision->post_date));
-            //var_dump($zip);
-            if (file_exists($zip)) {
-                return $zip;
-            }
-            return false;
-        }
-        
-        /**
-	 * Fires after a post revision has been restored.
-	 *
-	 * @since 2.6.0
-	 *
-	 * @param int $post_id     Post ID.
-	 * @param int $revision_id Post revision ID.
-	 */
-        public function restore_block_revision($post_id, $revision_id) {            
-            $revision = get_post($revision_id);
-            // backup current block as new zip
-            $zip = $this->get_revision_zip($revision);
-            //var_dump($zip); die();
-            if ($zip) {
-                // restore revizion zip on block folder
-                $this->extract_block_zip($zip);
+                $json = $this->get_block_json($revision->post_name);
             }
         }
+        //var_dump($json);
+        return $json;
+    }
+
+    public function get_revision_zip($revision) {
+        $parent = $revision->post_parent ? get_post($revision->post_parent) : $revision;
+        $json = $this->get_block_json($parent->post_name);
+        $zip = $this->get_block_revision($json['name'], strtotime($revision->post_date));
+        //var_dump($zip);
+        if (file_exists($zip)) {
+            return $zip;
+        }
+        return false;
+    }
+
+    /**
+     * Fires after a post revision has been restored.
+     *
+     * @since 2.6.0
+     *
+     * @param int $post_id     Post ID.
+     * @param int $revision_id Post revision ID.
+     */
+    public function restore_block_revision($post_id, $revision_id) {
+        $revision = get_post($revision_id);
+        // backup current block as new zip
+        $zip = $this->get_revision_zip($revision);
+        //var_dump($zip); die();
+        if ($zip) {
+            // restore revizion zip on block folder
+            $this->extract_block_zip($zip);
+        }
+    }
+
+    /**
+     * Set custom sort order for "block" post type in admin dashboard
+     */
+    function block_admin_order($query) {
+        // Check if we are in the admin area and it is the main query
+        if (is_admin() && $query->is_main_query()) {
+
+            // Target only the 'block' post type
+            if ($query->get('post_type') === 'block') {
+
+                // Set the 'orderby' parameter (e.g., 'title', 'date', 'menu_order')
+                $query->set('orderby', 'modified');
+
+                // Set the 'order' parameter ('ASC' or 'DESC')
+                $query->set('order', 'DESC');
+            }
+        }
+    }
 }

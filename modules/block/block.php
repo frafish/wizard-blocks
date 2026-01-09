@@ -57,6 +57,7 @@ class Block extends Module_Base {
                     wp_enqueue_style('wizard-blocks-archive', WIZARD_BLOCKS_URL.'modules/block/assets/css/block-archive.css', [], '1.2.0');
                     wp_print_scripts();
                 });
+                add_action( 'pre_get_posts', [$this,'block_admin_order'] );
             }
             /*if ($this->is_block_edit()) {
                 add_action('admin_enqueue_scripts', function() {
@@ -65,7 +66,7 @@ class Block extends Module_Base {
             }*/
         }
         
-        /* REVSISION */
+        /* REVISION */
         add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
         add_action('_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
         add_filter('wizard_blocks/before_save', [$this, 'generate_block_zip_for_revision'], 10, 3);
@@ -402,7 +403,7 @@ class Block extends Module_Base {
         return $normalized;
     }
 
-    function get_blocks_dirs($blocks_dirs) {
+    public function get_blocks_dirs($blocks_dirs) {
 
         // uploads
         $wp_upload_dir = wp_upload_dir();

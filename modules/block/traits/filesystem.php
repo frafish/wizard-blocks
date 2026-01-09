@@ -22,8 +22,8 @@ Trait Filesystem {
                 /*if (is_dir($dir . DIRECTORY_SEPARATOR . $slug)) {
                     $path = $dir;
                 }*/
-                $paths = glob($dir.DIRECTORY_SEPARATOR.$textdomain.DIRECTORY_SEPARATOR.$slug); // TODO: any textdomain?!
-                //var_dump($paths);
+                $find = $dir.DIRECTORY_SEPARATOR.$textdomain.DIRECTORY_SEPARATOR.$slug;
+                $paths = glob($find); // TODO: any textdomain?!
                 if (!empty($paths)) {
                     $path = reset($paths);
                 }

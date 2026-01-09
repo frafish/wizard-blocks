@@ -760,7 +760,7 @@ trait Metabox {
             <input<?php echo $block_usage_count ? ' readonly' : ''; ?>  style="width: 45%;" type="text" id="_block_name" name="_block_name" value="<?php echo esc_attr($post_name); ?>" placeholder="<?php echo esc_attr($post_name); ?>" /></p>
             
             <?php if ($block_usage_count) { ?>
-            <label class="text-warning"><input type="checkbox" onChange="jQuery('#_block_textdomain, #_block_name').prop('readonly', false);"><?php esc_html_e('WARNING: I know that if I change Textdomain or Name the block will not appear anymore on pages where I\'ve previously used it.', 'wizard-blocks'); ?></label>            
+            <label class="text-warning"><input type="checkbox" onChange="jQuery('#_block_textdomain, #_block_name').prop('readonly', false); jQuery(this).parent().fadeOut();"><?php esc_html_e('WARNING: I know that if I change Textdomain or Name the block will not appear anymore on pages where I\'ve previously used it.', 'wizard-blocks'); ?></label>            
             <?php } ?>
             
             <?php if (!empty($json['name'])) { ?>
