@@ -197,7 +197,7 @@ jQuery(document).ready(function ($) {
 
     /**************************************************************************/
 
-    jQuery('#_block_icon').select2({
+    jQuery('.block-icon-select').select2({
         templateResult: function (state) {
             if (!state.id) {
                 return state.text;
@@ -228,11 +228,11 @@ jQuery(document).ready(function ($) {
     /*if (jQuery('#_block_icon').val()) {
         jQuery('#_block_icon_src').hide();
     }*/
-    jQuery('#_block_icon').on('change', function () {
+    jQuery('.block-icon-select').on('change', function () {
         if (jQuery(this).val()) {
-            jQuery('#icon_src').addClass('d-none');
+            jQuery(this).parent().find('.block-icon-src-wrapper').addClass('d-none');
         } else {
-            jQuery('#icon_src').removeClass('d-none');
+            jQuery(this).parent().find('.block-icon-src-wrapper').removeClass('d-none');
         }
     });
    

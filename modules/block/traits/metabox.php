@@ -721,7 +721,6 @@ trait Metabox {
         $json = $post ? $this->get_block_json($post->post_name) : [];
         //$style = get_post_meta($post->ID, '_meta_fields_book_title', true);
 
-        $icons = $this->get_dashicons();
         ?>
         <div class="inside">
 
@@ -789,36 +788,10 @@ trait Metabox {
             <p><label for="revision"><input type="checkbox" id="revision" name="revision"> <?php esc_attr_e('Create new revision', 'wizard-blocks'); ?></label></p>	
 
             <h3><label for="_block_icon"><?php esc_attr_e('Icon', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#icon"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <div><select id="_block_icon" name="_block_icon"><option value="">-- <?php esc_attr_e('CUSTOM', 'wizard-blocks'); ?> --</option><?php
-                if (empty($json['icon']))
-                    $json['icon'] = '';
-                    $is_dash = false;
-                    foreach ($icons as $icon) {
-                        $selected_safe = '';
-                        if (isset($json['icon']) && $json['icon'] == $icon) {
-                            $selected_safe = ' selected';
-                            $is_dash = true;
-                        }
-                        echo '<option value="' . esc_attr($icon) . '"' . esc_attr($selected_safe) . '>' . esc_html($icon) . '</option>';
-                    }
-                    ?></select>
-                <p class="d-flex<?php if ($is_dash) { ?> d-none<?php } ?> assets" id="icon_src">
-                    <textarea id="_block_icon_src" name="_block_icon_src" placeholder="<svg ...>...</svg>"><?php if (!empty($json['icon']) && !$is_dash) echo esc_textarea($json['icon']); ?></textarea>
-                    <a title="<?php esc_attr_e('Upload new Icon', 'wizard-blocks'); ?>" class="dashicons-before dashicons-plus button button-primary upload-icon" href="http://localhost/wp-admin/media-upload.php?post_id=231&amp;type=image&amp;TB_iframe=1" target="_blank"></a>
-                </p>
-                <p id="icon_svg_current">
-                    <?php
-                    if (!empty($json['icon'])) {
-                        ?> 
-                        <b><?php esc_attr_e('Current', 'wizard-blocks'); ?>:</b><br>
-                        <?php $this->the_block_thumbnail($json['name'], $json['icon']); ?>
-                    <?php } ?> 
-                </p>
-                <?php
-                // TODO: add ColorPicker for background and foreground
-                //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
-                ?>
-            </div>	
+            <?php 
+            $block_icon = empty($json['icon']) ? '' : $json['icon'];
+            $block_name = empty($json['name']) ? '' : $json['name'];
+            $this->_block_icon_selector($block_icon, $block_name); ?>	
             <?php
             $this->enqueue_style('select2', 'assets/lib/select2/select2.min.css');
             $this->enqueue_script('select2', 'assets/lib/select2/select2.min.js', array('jquery'));

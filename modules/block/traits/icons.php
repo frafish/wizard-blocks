@@ -3,6 +3,46 @@
 namespace WizardBlocks\Modules\Block\Traits;
 
 Trait Icons {
+    
+    public function _block_icon_selector($block_icon, $block_name = '', $input_name = '_block_icon') {
+        $input_name_attr = str_replace('[','_', $input_name);
+        $input_name_attr = str_replace(']','', $input_name_attr);
+        ?>
+        <div class="block-icon-selector">
+            <select id="<?php echo esc_attr($input_name_attr); ?>" name="<?php echo esc_attr($input_name); ?>" class="block-icon-select">
+                <option value="">-- <?php esc_attr_e('CUSTOM', 'wizard-blocks'); ?> --</option><?php
+            if (empty($block_icon)) {
+                $block_icon = '';
+            }
+            $is_dash = false;
+            $icons = $this->get_dashicons();
+            foreach ($icons as $icon) {
+                $selected_safe = '';
+                if (isset($block_icon) && $block_icon == $icon) {
+                    $selected_safe = ' selected';
+                    $is_dash = true;
+                }
+                echo '<option value="' . esc_attr($icon) . '"' . esc_attr($selected_safe) . '>' . esc_html($icon) . '</option>';
+            }
+            ?></select>
+            <p class="d-flex<?php if ($is_dash) { ?> d-none<?php } ?> assets block-icon-src-wrapper" id="<?php echo esc_attr($input_name_attr); ?>-src-wrapper">
+                <textarea id="<?php echo esc_attr($input_name_attr); ?>_src" name="<?php echo esc_attr($input_name_attr); ?>_src" placeholder="<svg ...>...</svg>"><?php if (!empty($block_icon) && !$is_dash) echo esc_textarea($block_icon); ?></textarea>
+                <a title="<?php esc_attr_e('Upload new Icon', 'wizard-blocks'); ?>" class="dashicons-before dashicons-plus button button-primary upload-icon" href="http://localhost/wp-admin/media-upload.php?post_id=<?php echo get_the_ID(); ?>&amp;type=image&amp;TB_iframe=1" target="_blank"></a>
+            </p>
+            <p id="<?php echo esc_attr($input_name_attr); ?>_current">
+                <?php
+                if (!empty($block_icon)) {
+                    ?> 
+                    <b><?php esc_attr_e('Current', 'wizard-blocks'); ?>:</b><br>
+                    <?php $this->the_block_thumbnail($block_name, $block_icon); ?>
+                <?php } ?> 
+            </p>
+            <?php
+            // TODO: add ColorPicker for background and foreground
+            //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
+            ?>
+        </div>
+    <?php }
 
     // Add the new column
     function add_block_columns($columns) {

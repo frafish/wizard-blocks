@@ -36,7 +36,7 @@ class Preview extends Module_Base {
                 //add_action('wizard/block/edit/render', function ($block_json, $post, $wb) {
                     ?>
                     <p>
-                        <a href="#block-preview" class="dashicons-before dashicons-welcome-view-site button d-block"> <?php esc_html_e('Check Block Preview', 'wizard-blocks'); ?>*</a> <small>* <?php esc_html_e('For an optimal Preview please add Default value to Block Attributes and Save your Block.', 'wizard-blocks'); ?></small>
+                        <a href="#block-preview" class="dashicons-before dashicons-welcome-view-site button d-block"> <?php esc_html_e('Check Block Preview', 'wizard-blocks'); ?>*</a> <small>* <?php esc_html_e('For an optimal Preview please add Default values to Block Attributes and Save your Block.', 'wizard-blocks'); ?></small>
                         <?php /*<br><label for="block-instant-preview"><input id="block-instant-preview" type="checkbox"> <?php esc_html_e('Enable Instant Block Preview update', 'wizard-blocks'); ?></label> */ ?>
                     </p>
                     <hr>
