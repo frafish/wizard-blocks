@@ -3,7 +3,7 @@ Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.8
 Tested up to: 6.9
-Stable tag: 1.3
+Stable tag: 2.0
 Requires PHP: 8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -147,7 +147,10 @@ Yes, it's possible, but you have to insert it programmatically (via functions.ph
 
 == Changelog ==
 
-= 1.3 - 03-10-2025 =
+= 2.0 - 2026-01-18 =
+* Moved Elementor and Shortcode to PRO 
+
+= 1.3 - 2025-10-03 =
 * Added Media Block
 * Stability fixes
 * Added compatibility with 3rd part blocks

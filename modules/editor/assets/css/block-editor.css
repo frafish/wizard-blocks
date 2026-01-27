@@ -1,0 +1,27 @@
+.interface-complementary-area__fill {
+    /*width: 380px !important;*/
+    min-width: 280px;
+    left: 0 !important;
+}
+
+.admin-ui-navigable-region.interface-interface-skeleton__secondary-sidebar > div:not(.ui-resizable-handle),
+.admin-ui-navigable-region.interface-interface-skeleton__secondary-sidebar .editor-list-view-sidebar,
+.interface-complementary-area__fill > .interface-complementary-area.editor-sidebar,
+.interface-complementary-area__fill > .interface-complementary-area.editor-sidebar .editor-list-view-sidebar {
+    width: 100% !important;
+}
+        
+
+.admin-ui-navigable-region.interface-interface-skeleton__secondary-sidebar {
+    min-width: 350px;
+}
+
+
+
+.block-editor-list-view-actions {
+  display: flex;
+  align-items: center;
+}
+.block-editor-list-view-actions .components-button svg {
+  stroke: currentColor;
+}

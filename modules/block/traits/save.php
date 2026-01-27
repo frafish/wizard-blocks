@@ -268,6 +268,16 @@ trait Save {
                 $example['attributes']['preview'] = "file:./".$media_dir."/".$image_name;
             }
         }
+        if (empty($example)) {
+            if (!empty($attributes)) {
+                $example['attributes'] = [];
+                foreach ($attributes as $akey => $attribute) {
+                    if (!empty($attribute['default'])) {
+                        $example['attributes'][$akey] = $attribute['default'];
+                    }
+                }
+            }
+        }
         
         // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
         $json = [

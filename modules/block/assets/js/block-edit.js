@@ -600,7 +600,7 @@ jQuery(document).ready(function ($) {
 
         attr_editor.on('click', '.attr_toggle, .attr_name', function () {
             //console.log('toggle');
-            jQuery(this).closest('.attr_ops').siblings('.attr_data').toggle();
+            //jQuery(this).closest('.attr_ops').siblings('.attr_data').toggle();
         });
 
         attr_editor.on('click', '.attr_up', function () {
@@ -609,6 +609,7 @@ jQuery(document).ready(function ($) {
             if (row.eq()) {
                 row.insertBefore(row.prev());
             }
+            return false;
         });
 
         attr_editor.on('click', '.attr_down', function () {
@@ -617,6 +618,7 @@ jQuery(document).ready(function ($) {
             if (!row.is(':last-child')) {
                 row.insertAfter(row.next());
             }
+            return false;
         });
 
         attr_editor.on('click', '.attr_clone', function () {
@@ -626,6 +628,7 @@ jQuery(document).ready(function ($) {
             let clone = row.clone();
             clone.insertAfter(row);
             clone.find('.attr_toggle').trigger('click');
+            return false;
         });
 
         attr_editor.on('click', '.attr_remove', function () {
@@ -634,6 +637,7 @@ jQuery(document).ready(function ($) {
                 let row = jQuery(this).closest('.repeat_attr');
                 row.remove();
             }
+            return false;
         });
 
 

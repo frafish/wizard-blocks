@@ -17,14 +17,16 @@ class Media extends Module_Base {
 
         add_action('add_meta_boxes', [$this, 'add_media_meta_box']);
 
-        add_action('init', function () {
-            $wb = \WizardBlocks\Modules\Block\Block::instance();
-            if ($wb->is_block_edit()) {
-                //die();
-                $this->enqueue_style('block-media', 'assets/css/block-media.css');
-                $this->enqueue_script('block-media', 'assets/js/block-media.js', ['jquery']);
-            }
-        });
+        if (is_admin()) {
+            add_action('init', function () {
+                $wb = \WizardBlocks\Modules\Block\Block::instance();
+                if ($wb->is_block_edit()) {
+                    //die();
+                    $this->enqueue_style('block-media', 'assets/css/block-media.css');
+                    $this->enqueue_script('block-media', 'assets/js/block-media.js', ['jquery']);
+                }
+            });
+        }
 
         add_action('save_post', [$this, 'save_medias'], 10, 3);
 

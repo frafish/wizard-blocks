@@ -36,6 +36,36 @@ Trait Attributes {
         return $attributes_panel;
     }
     
+    
+    public function get_default_attributes($block) {
+        $attributes = [];
+        if ($block && !empty($block['attributes'])) {
+            $attributes_keys = array_keys($block['attributes']);
+            foreach ($attributes_keys as $attr) {
+                if (isset($block['example']['attributes'][$attr])) {
+                    $attributes[$attr] = $block['example']['attributes'][$attr];
+                } else if (isset($block['attributes'][$attr]['default'])) {
+                    $attributes[$attr] = $block['attributes'][$attr]['default'];
+                } else {
+                    switch ($block['attributes'][$attr]['type']) {
+                        case 'boolean':
+                            $attributes[$attr] = false;
+                            break;
+                        case 'string':
+                        default:
+                            $attributes[$attr] = '';
+                            break;
+                    }
+                }
+            }
+            if (isset($attributes['preview'])) {
+                unset($attributes['preview']);
+            }
+            //$attributes = wp_json_encode($attributes);
+        }
+        return $attributes;
+    }
+    
     public function has_inner_blocks($args) {
         if (!empty($args['attributes'])) {
             foreach ($args['attributes'] as $key => $attr) {

@@ -67,21 +67,27 @@ Trait Icons {
         }
     }
 
-    function save_block_icon($block_name) {
+    function save_block_icon($block_name, $icon_name = 'icon', $folder = '') {
         //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
         $icon = '';
-        if (!empty($_POST['_block_icon'])) {
-            $icon = sanitize_key(wp_unslash($_POST['_block_icon']));
+        $input = '_block';
+        if ($folder) {
+            if ($folder == 'variations') {
+                $input = 'variation';
+            }
+        }
+        if (!empty($_POST[$input.'_icon'])) {
+            $icon = sanitize_key(wp_unslash($_POST[$input.'_icon']));
         } else {
-            if (!empty($_POST['_block_icon_src'])) {
-                $icon_name = 'icon.svg'; //basename($icon_url);
+            if (!empty($_POST[$input.'_icon_src'])) {
+                $icon_name = $icon_name.'.svg'; //basename($icon_url);
                 list($block_textdomain, $block_slug) = explode('/', $block_name);
                 $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
-                $medias_dir = $basepath;  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
+                $medias_dir = $basepath.DIRECTORY_SEPARATOR.$folder;  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
                 //var_dump($_POST['_block_icon_src']); die();
-                if (str_starts_with($_POST['_block_icon_src'], 'http')) {
+                if (str_starts_with($_POST[$input.'_icon_src'], 'http')) {
                     // svg image url
-                    $icon_url = sanitize_url($_POST['_block_icon_src']);
+                    $icon_url = sanitize_url($_POST[$input.'_icon_src']);
                     if (!str_starts_with($icon_url, site_url())) {
                         if (str_ends_with(strtolower($icon_url), '.svg')) {
                             //var_dump($icon_url); var_dump(site_url()); die();
@@ -107,7 +113,7 @@ Trait Icons {
                 } else {
                     // other...like <svg code
                     //$_block_icon_src = sanitize_textarea_field(wp_unslash($_POST['_block_icon_src']));
-                    $_block_icon_src = wp_unslash($_POST['_block_icon_src']);
+                    $_block_icon_src = wp_unslash($_POST[$input.'_icon_src']);
                     $icon = $_block_icon_src;
                     $icon = str_replace(PHP_EOL, "", $icon);
                     $icon = str_replace('"', "'", $icon);

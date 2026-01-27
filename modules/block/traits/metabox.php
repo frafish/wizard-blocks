@@ -651,16 +651,16 @@ trait Metabox {
                 <p><textarea id="_block_attributes_condition" name="_block_attributes_condition"><?php echo esc_textarea(empty($attributes_condition) ? '' : wp_json_encode($attributes_condition, JSON_PRETTY_PRINT)); ?></textarea></p>	
             </div>
 
-            <div id="_block_attributes_editor">
+            <div id="_block_attributes_editor" class="repeat_wrapper">
                 <div class="repeat_attrs">
-                    <div class="repeat_attr">
-                        <div class="attr_ops d-flex">
+                    <details class="repeat_attr">
+                        <summary class="attr_ops d-flex">
                             <span class="attr_name dashicons-before dashicons-editor-expand"> <?php esc_attr_e('Add an attribute KEY', 'wizard-blocks'); ?></span>
                             <abbr title="<?php esc_attr_e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php esc_attr_e('Up', 'wizard-blocks'); ?>" class="button attr_up pull-right"><span class="dashicons dashicons-arrow-up-alt"></span></abbr>
                             <abbr title="<?php esc_attr_e('Down', 'wizard-blocks'); ?>" class="button attr_down pull-right"><span class="dashicons dashicons-arrow-down-alt"></span></abbr>
                             <abbr title="<?php esc_attr_e('Clone', 'wizard-blocks'); ?>" class="button attr_clone pull-right"><span class="dashicons dashicons-admin-page"></span></abbr>
-                        </div>
+                        </summary>
                         <div class="attr_data">
                             <label for="key"><?php esc_attr_e('Key', 'wizard-blocks'); ?>*: <input type="text" class="key"></label>
                             <label for="label"><?php esc_attr_e('Label', 'wizard-blocks'); ?> <a class="dashicons-before dashicons-info-outline" href="https://wordpress.github.io/gutenberg/?path=/docs/components-textcontrol--docs" target="_blank"></a>: <input type="text" class="label"></label>
@@ -707,7 +707,7 @@ trait Metabox {
                             <label for="extra"><?php esc_attr_e('Extra', 'wizard-blocks'); ?>: <textarea class="extra" placeholder='{ "var": "value" }'></textarea></label>
                             <label for="condition"><?php esc_attr_e('Condition', 'wizard-blocks'); ?>: <textarea class="condition" placeholder="attributes.fieldKey == true && attributes['field-key'] == 'blue'"></textarea></label>
                         </div>
-                    </div>
+                    </details>
                 </div>
                 <span class="dashicons-before dashicons-plus button button-primary attr_add">Add</span>
             </div>
@@ -875,7 +875,7 @@ trait Metabox {
                 ?>" /></p>	           
 
             <h3><label for="_block_supports"><?php esc_attr_e('Supports', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/"><span class="dashicons dashicons-info-outline"></span></a></h3>
-            <div class="block-supports" style="height: 180px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
+            <div class="block-supports" style="height: 280px; overflow: auto; border: 1px solid #eee; padding: 0 10px;">
                 <?php
                 $custom = [];
                 $supports_array = [];
@@ -967,6 +967,14 @@ trait Metabox {
             <p class="block-supports-custom"><textarea rows="10" id="_block_supports_custom" name="_block_supports_custom" style="width: 100%;" placeholder='{ "spacing": { "margin": [ "top", "bottom" ] } }'><?php echo esc_textarea($custom); ?></textarea></p>
 
             <?php
+            if (isset($json['example'])) {
+                if (isset($json['example']['attributes'])) {
+                    unset($json['example']['attributes']);
+                }
+                if (empty($json['example'])) {
+                    unset($json['example']);
+                }
+            }
             $extra = $json;
             foreach (self::$fields as $field) {
                 $tmp = explode('.', $field, 2);
@@ -980,13 +988,13 @@ trait Metabox {
                     }
                 }
             }
-            $extra_transien = get_post_meta($post->ID, '_transient_block_extra', true);
-            if ($extra_transien) {
+            $extra_transient = get_post_meta($post->ID, '_transient_block_extra', true);
+            if ($extra_transient) {
                 //warn
                 $this->_notice(__('Extra are not saved! Please <a href="#extra">fix it</a> and resave block.', 'wizard-blocks'), 'danger error');
                 $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
             }
-            $extra = empty($extra) ? $extra_transien : wp_json_encode($extra, JSON_PRETTY_PRINT);
+            $extra = empty($extra) ? $extra_transient : wp_json_encode($extra, JSON_PRETTY_PRINT);
             ?>
             <h3><label id="extra" for="_block_extra"><b><?php esc_attr_e('Extra', 'wizard-blocks'); ?></b></label></h3>
             <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;"><?php echo esc_textarea($extra); ?></textarea>

@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 class Preview extends Module_Base {
 
     public function __construct() {
-
+        
         if (isset($_GET['post'])) {
             add_action('init', function () {
                 $wb = \WizardBlocks\Modules\Block\Block::instance();
@@ -55,6 +55,8 @@ class Preview extends Module_Base {
             add_action("registered_post_type_" . $cpt_name, [$this, 'registered_post_type_block'], 10, 2);
 
             add_filter('the_content', [$this, 'the_content']);
+            //global $wp_query;
+            //var_dump($wp_query);
         }
     }
 
@@ -91,25 +93,14 @@ class Preview extends Module_Base {
     function the_content($content) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $post = get_queried_object();
+        //var_dump($post); die();
         if ($post && get_class($post) == 'WP_Post' && $post->post_type == $wb::get_cpt_name()) {
             $block_json = $wb->get_block_json($post->post_name);
             //var_dump($block_json);
             $block = \WP_Block_Type_Registry::get_instance()->get_registered($block_json['name']);
             if ($block && $block->is_dynamic()) {
                 //$content = do_shortcode($content);
-                $attributes = [];
-                if (!empty($block_json['attributes'])) {
-                    foreach ($block_json['attributes'] as $aid => $attr) {
-                        if (isset($attr['default'])) {
-                            $attributes[$aid] = $attr['default'];
-                        }
-                    }
-                }
-                if (!empty($block_json['example']['preview']['attributes'])) {
-                    foreach ($block_json['example']['preview']['attributes'] as $aid => $value) {
-                        $attributes[$aid] = $value;
-                    }
-                }
+                $attributes = $wb->get_default_attributes($block_json);
                 //var_dump($attributes);
                 $block_content = $wb->render($attributes, $content, $block);
 

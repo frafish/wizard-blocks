@@ -132,6 +132,7 @@ class Block extends Module_Base {
             return $blocks;
         });
         
+        // allow upload js and css
         if ($this->is_block_edit()) {
             add_filter( 'upload_mimes', [$this, 'add_mime_types'] );
         }
@@ -141,6 +142,7 @@ class Block extends Module_Base {
         //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
         add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
         
+        // add specific columns on admin archive tables
         add_filter('manage_block_posts_columns', [$this, 'add_block_columns']);
         add_action('manage_block_posts_custom_column', [$this, 'populate_block_columns'], 10, 2);
         
