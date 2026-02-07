@@ -16,10 +16,9 @@ class Block extends Module_Base {
     use Traits\Filesystem;
     use Traits\Metabox;
     use Traits\Attributes;
-    use Traits\Pages;
-    use Traits\Actions;
     use Traits\Icons;
     use Traits\Save;
+    use Traits\Registry;
     
     public static $instance = null;
     
@@ -76,10 +75,6 @@ class Block extends Module_Base {
         add_action('add_meta_boxes', [$this, 'meta_fields_add_meta_box']);
         add_action('save_post', [$this, 'meta_fields_save_meta_box_data'], 10, 3);
         
-        if (is_admin() && isset($_GET['post_type']) && $_GET['post_type'] == self::$cpt_name) {
-            add_filter( 'gettext', [$this, 'gettext'], 10, 3);
-        }
-        
         add_filter('block_type_metadata_settings', function($settings, $metadata) {
             if (isset($metadata['file']) && !isset($settings['file'])) {
                 $settings['file'] = $metadata['file'];
@@ -112,8 +107,6 @@ class Block extends Module_Base {
             }
         }, 10, 2);
 
-        add_action('admin_menu', [$this, 'admin_menu_action']);
-
         // autoload blocks folder
         add_filter('wizard/blocks/dirs', [$this, 'get_blocks_dirs']);
 
@@ -138,9 +131,6 @@ class Block extends Module_Base {
         }
         add_filter( 'wp_check_filetype_and_ext', [$this, '_add_mime_types'], 10, 5);
         
-        
-        //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
-        add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
         
         // add specific columns on admin archive tables
         add_filter('manage_block_posts_columns', [$this, 'add_block_columns']);
@@ -221,48 +211,6 @@ class Block extends Module_Base {
 
         $this->enqueue_block_assets($block);
         return $block_content;
-    }
-    
-    public function allowed_block_types($allowed_block_types, $block_editor_context) {
-        if (!isset($_GET['post_type']) || $_GET['post_type'] != 'block') {
-            $blocks_disabled = get_option(self::$blocks_disabled_key);
-            //var_dump($blocks_disabled); die();
-            if (!empty($blocks_disabled)) {
-                $registered_blocks = \WP_Block_Type_Registry::get_instance()->get_all_registered();
-                if (is_bool($allowed_block_types)) $allowed_block_types = [];
-                foreach ($registered_blocks as $name => $block_obj) {
-                    if (!in_array($name, $blocks_disabled)) {
-                        $allowed_block_types[] = $name;
-                    }
-                }
-            }
-        }
-        //var_dump($allowed_block_types); die();
-        return $allowed_block_types;
-    }
-    
-    public function unregister_blocks_disabled() {
-        if ($this->is_block_edit()) {
-            $blocks_disabled = get_option(self::$blocks_disabled_key);
-            if (!empty($blocks_disabled)) {
-                foreach ($blocks_disabled as $block_name) {
-                    if (\WP_Block_Type_Registry::get_instance()->is_registered($block_name)) {
-                        $registered_blocks = \WP_Block_Type_Registry::get_instance()->unregister($block_name);
-                    }
-                }
-                add_filter( "get_user_metadata", function($value, $object_id, $meta_key, $single, $meta_type ) use ($blocks_disabled) {
-                    if ($meta_key == 'wp_persisted_preferences') {
-                        global $wpdb;
-                        $value = $wpdb->get_var($wpdb->prepare('SELECT meta_value FROM %i WHERE user_id = %d AND meta_key = %s', $wpdb->usermeta, $object_id, $meta_key));
-                        $value = maybe_unserialize($value);
-                        $value['core']['hiddenBlockTypes'] = empty($value['core']['hiddenBlockTypes']) ? $blocks_disabled : array_merge($value['core']['hiddenBlockTypes'], $blocks_disabled);
-                        //echo '<pre>';var_dump($blocks_disabled); var_dump($value); die();
-                        return [$value];
-                    }
-                    return $value;
-                }, 10, 5);
-            }
-        }
     }
     
     public function is_block_edit() {

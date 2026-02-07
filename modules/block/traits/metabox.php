@@ -367,6 +367,7 @@ trait Metabox {
 
         if ($this->is_block_edit()) {
             $this->enqueue_style('block-edit', 'assets/css/block-edit.css');
+            $this->enqueue_style('block-ai', 'assets/css/ai.css');
             $this->enqueue_script('block-edit', 'assets/js/block-edit.js');
             $php = wp_enqueue_code_editor(array('type' => 'text/html'));
             $css = wp_enqueue_code_editor(array('type' => 'text/css'));
@@ -381,31 +382,6 @@ trait Metabox {
             wp_enqueue_script('jquery-ui-resizable');
             wp_enqueue_style('wp-jquery-ui-dialog');
 
-            add_action('post_submitbox_start', function ($post) {
-                if ($post && $post->post_name) {
-                    $json = $this->get_json_data($post->post_name);
-                    //var_dump($json);
-                    ?>
-                    <div id="export-action">
-                        <a class="button button-secondary button-large dashicons-before dashicons-database-export d-block" target="_blank" href="<?php echo esc_url($this->get_action_url('action=download&block=' . $this->get_block_textdomain($json) . '/' . $post->post_name)); ?>">
-                            <?php esc_html_e('Export', 'wizard-blocks'); ?>
-                        </a>
-                    </div>
-                    <?php
-                    //$revisione = $this->get_block_revision();
-                    /* $revisions_url = wp_get_post_revisions_url($post->ID);
-                      if ($revisions_url) {
-                      echo '<div id="revision-action" style="float: left; margin-right: 5px;"><a class="button button-secondary button-large" href="' . esc_url($revisions_url) . '">' . esc_html__('Revisions', 'wizard-blocks') . '</a></div>';
-                      } */
-                    ?>
-                    <hr style="clear:both;">
-                    <?php
-                } else { ?>
-                    <button class="button-ai">
-                       <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
-                    </button>
-                <?php }
-            });
         }
     }
 

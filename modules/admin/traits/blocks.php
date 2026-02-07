@@ -1,10 +1,10 @@
 <?php
 
-namespace WizardBlocks\Modules\Block\Traits;
+namespace WizardBlocks\Modules\Admin\Traits;
 
-trait Pages {
+trait Blocks {
 
-    public function admin_menu_action() {
+    public function admin_menu_blocks() {
 
         add_submenu_page(
                 'edit.php?post_type=block',
@@ -14,90 +14,34 @@ trait Pages {
                 'wblocks',
                 [$this, 'wizard_blocks'] //callback function
         );
-
-        add_submenu_page(
-                'edit.php?post_type=block',
-                __('Tools', 'wizard-blocks'),
-                __('Tools', 'wizard-blocks'),
-                'manage_options',
-                'wtools',
-                [$this, 'wizard_tools'] //callback function
-        );
+        
+        if (is_admin() && isset($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
+            add_filter( 'gettext', [$this, 'gettext'], 10, 3);
+        }
+        
     }
-
-    public function _notice($message, $type = 'success') {
-        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . wp_kses($message, 'post') . '</p></div>';
-    }
-
-    public function wizard_tools() {
-        $this->execute_actions();
-        ?>
-
-        <div class="wrap">
-            <h1><?php esc_html_e('Wizard Tools', 'wizard-blocks'); ?></h1>
-
-            <div class="card-row" style="display: flex;">
-                <div class="card upload-block" style="width: 100%;">
-                    <h2><?php esc_html_e('IMPORT', 'wizard-blocks'); ?></h2>
-                    <p><?php esc_html_e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php esc_html_e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
-                    <form class="wp-upload-form" action="<?php echo esc_url($this->get_action_url("action=import")); ?>" method="POST" enctype="multipart/form-data">
-                        <input type="file" name="zip">
-                        <button class="btn button" type="submit"><?php esc_html_e('Import', 'wizard-blocks'); ?></button>
-                    </form>
-                </div>
-
-                <div class="card export-blocks" style="width: 100%;">
-                    <h2><?php esc_html_e('EXPORT', 'wizard-blocks'); ?></h2>
-                    <p><?php esc_html_e('Download all your Custom Blocks for a quick backup.', 'wizard-blocks'); ?><br><?php esc_html_e('You can then install them as native blocks.', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/"><span class="dashicons dashicons-info"></span></a></p>
-                    <a class="btn button" href="<?php echo esc_url($this->get_action_url("action=export")); ?>"><?php esc_html_e('Export', 'wizard-blocks'); ?></a>
-                </div>
-            </div>
-
-            <?php
-            $code = '/* Wizard Blocks */' . PHP_EOL;
-            $wizard_blocks = $this->get_blocks();
-            foreach ($wizard_blocks as $ablock) {
-                $json = $ablock . DIRECTORY_SEPARATOR . 'block.json';
-                $code_block = 'register_block_type("' . $json . '");' . PHP_EOL;
-                $code_block = apply_filters('wizard/blocks/code/block', $code_block, $json, $code);
-                $code .= $code_block;
-            }
-            $code = apply_filters('wizard/blocks/code', $code);
-            ?>
-            <hr>
-            <h2><?php esc_html_e('Get code', 'wizard-blocks'); ?></h2>
-            <p><?php esc_html_e('Copy these lines of PHP code into your Theme (or Child theme) at the end of the functions.php file. After that you could switch off this plugin.', 'wizard-blocks'); ?></p>
-            <textarea style="width:100%;" rows="<?php echo substr_count($code, PHP_EOL) + 2; ?>" data-blocks="<?php echo count($wizard_blocks); ?>"><?php echo esc_html($code); ?></textarea>
-            <?php do_action('wizard/blocks/tools', $this); ?>
-        </div>
-        <?php
-        wp_enqueue_style('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules/block/assets/css/import.css', [], '1.2.0');
-    }
-
-    public function get_action_url($args = '') {
-        $nonce = wp_create_nonce('wizard-blocks-nonce');
-        $page = isset($_GET['page']) ? sanitize_title(wp_unslash($_GET['page'])) : 'wblocks';
-        return esc_url(admin_url("edit.php?post_type=block&page=" . $page . "&nonce=" . $nonce . ($args ? "&" . $args : '')));
-    }
+    
 
     public function wizard_blocks() {
         $this->execute_actions();
+        
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
 
         $blocks_dir = apply_filters('wizard/dirs', []);
-        $blocks = $this->get_registered_blocks();
+        $blocks = $wb->get_registered_blocks();
         $blocks_count = [];
         foreach ($blocks as $name => $block) {
-            $textdomain = $this->get_block_textdomain($block);
+            $textdomain = $wb->get_block_textdomain($block);
             $blocks_count[$textdomain] = empty($blocks_count[$textdomain]) ? 1 : ++$blocks_count[$textdomain];
-            $block_slug = $this->get_block_slug($name);
-            if ($block_post = $this->get_block_post($block_slug)) {
+            $block_slug = $wb->get_block_slug($name);
+            if ($block_post = $wb->get_block_post($block_slug)) {
                 $blocks[$name]['post'] = $block_post;
-                if ($block_dir = $this->get_blocks_dir($block_slug)) {
+                if ($block_dir = $wb->get_blocks_dir($block_slug)) {
                     $blocks[$name]['file'] = $block_dir . DIRECTORY_SEPARATOR . 'block.json';
                 }
             }
             if (!empty($blocks[$name]['file']) && file_exists($blocks[$name]['file'])) {
-                $json = $this->get_filesystem()->get_contents($blocks[$name]['file']);
+                $json = $wb->get_filesystem()->get_contents($blocks[$name]['file']);
                 $block_json = json_decode($json, true);
                 foreach ($block_json as $key => $value) {
                     if (!isset($blocks[$name][$key])) {
@@ -106,9 +50,9 @@ trait Pages {
                 }
             }
         }
-        $blocks_usage = $this->get_blocks_usage();
+        $blocks_usage = $wb->get_blocks_usage();
         
-        $blocks_disabled = get_option(self::$blocks_disabled_key);
+        $blocks_disabled = get_option(\WizardBlocks\Modules\Admin\Admin::$blocks_disabled_key);
         //var_dump($blocks_disabled);
 
         $block_editor_context = new \WP_Block_Editor_Context(
@@ -132,7 +76,7 @@ trait Pages {
             <ul class="subsubsub blocks-filter">
                 <li class="all"><a class="current" href="#"><?php esc_html_e('All', 'wizard-blocks'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
-                    | <li class><a href="#<?php echo esc_attr($textdomain); ?>"><?php echo esc_html(ucfirst(str_replace('-', ' ', $textdomain))); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
+                    | <li class><a href="#<?php esc_attr_e($textdomain); ?>"><?php echo esc_html(ucfirst(str_replace('-', ' ', $textdomain))); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
                 <?php } ?>
             </ul>
             <hr style="clear: both; padding-top: 10px;">
@@ -168,30 +112,30 @@ trait Pages {
                             $block_slug = $block_name;
                             if (!empty($block['folder'])) {
                                 $block_slug = basename($block['folder']);
-                                $block['post'] = $block_post = $this->get_block_post($block_slug);
+                                $block['post'] = $block_post = $wb->get_block_post($block_slug);
                             }
                             $block['slug'] = $block_slug;
                             ?>
-                            <tr id="post-<?php echo esc_attr($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php echo esc_attr($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
+                            <tr id="post-<?php esc_attr_e($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php esc_attr_e($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
                                 <td class="icon column-icon" data-colname="<?php esc_attr_e('Icon', 'wizard-blocks'); ?>">
                                     <?php
                                     if (empty($block['icon'])) {
                                         $block['icon'] = 'block-default';
                                     }
-                                    $this->the_block_thumbnail($block_name, $block['icon'], ['width' => '30']);
+                                    $wb->the_block_thumbnail($block_name, $block['icon'], ['width' => '30']);
                                     ?>
                                 </td>
                                 <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
                                     <strong>
                                         <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
-                                            <abbr title="<?php echo esc_attr($block_name); ?>"><?php echo esc_html($this->get_block_title($block, $block_post)); ?></abbr>
+                                            <abbr title="<?php esc_attr_e($block_name); ?>"><?php echo esc_html($wb->get_block_title($block, $block_post)); ?></abbr>
                                             <?php if ($block_post) { ?></a><?php } ?>
-                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($block_name); ?> <span class="dashicons dashicons-clipboard"></span></small>
+                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php esc_attr_e($block_name); ?> <span class="dashicons dashicons-clipboard"></span></small>
                                     </strong>
                                 </td>
                                 <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
                                     <label class="switch">
-                                        <input type="checkbox" name="blocks_disabled[<?php echo esc_attr($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
+                                        <input type="checkbox" name="blocks_disabled[<?php esc_attr_e($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
@@ -292,117 +236,6 @@ trait Pages {
         wp_enqueue_script('wizard-blocks-all', WIZARD_BLOCKS_URL.'modules'. DIRECTORY_SEPARATOR.'block'. DIRECTORY_SEPARATOR.'assets'. DIRECTORY_SEPARATOR.'js'. DIRECTORY_SEPARATOR.'all-blocks.js', [], '1.0.1', true);
     }
 
-    function get_registered_block($name = '') {
-        if ($name) {
-            //return \WP_Block_Type_Registry::get_instance()->get_registered($slug);
-            $blocks = $this->get_registered_blocks();
-            if (isset($blocks[$name])) {
-                return $blocks[$name];
-            }
-        }
-        return false;
-    }
-
-    function get_registered_blocks() {
-
-        $blocks = [];
-
-        $blocks_dir = apply_filters('wizard/blocks/dirs', []);
-        unset($blocks_dir['plugin']);
-
-        // get_theme_update_available
-        // wp_update_themes
-        /* if ($update) {
-          unset($blocks_dir['theme']);
-          }
-         */
-
-        $icons_block = $this->get_icons_block();
-        $icons_core = $this->get_icons_core();
-        //var_dump($icons_core);
-        $icons_block = $icons_block + $icons_core['blocks'];
-
-        $registered_blocks = \WP_Block_Type_Registry::get_instance()->get_all_registered();
-        //echo '<pre>';var_dump($registered_blocks);die();
-        foreach ($registered_blocks as $name => $block_obj) {
-            $block_json = wp_json_encode($block_obj);
-            $block = json_decode($block_json, true);
-            $block['textdomain'] = $this->get_block_textdomain($block);
-            $blocks[$name] = $block;
-            list($textdomain, $slug) = explode('/', $name, 2);
-            if (empty($block['icon'])) {
-                
-                if (!empty($icons_block[$name])) {
-                    $icon_slug = str_replace('library_', '', $icons_block[$name]);
-                    if (!empty($icons_block[$icon_slug])) {
-                        $blocks[$name]['icon'] = $icons_block[$icon_slug];
-                    }
-                }                
-                if ($textdomain == 'core' && isset($icons_block[$slug])) {
-                    //var_dump($slug);
-                    $blocks[$name]['icon'] = $icons_block[$slug];
-                }
-                if (isset($icons_core['library_' . $slug])) {
-                    $blocks[$name]['icon'] = $icons_core['library_' . $slug];
-                }
-                $slug_underscore = str_replace('-', '_', $slug);
-                if (isset($icons_core[$slug_underscore])) {
-                    $blocks[$name]['icon'] = $icons_core[$slug_underscore];
-                }
-                if ($block['textdomain'] == 'woocommerce') {
-                    $blocks[$name]['icon'] = $this->get_icons_woo($block);
-                }
-
-                if (!empty($icons_block[$name]) && !empty($icons_core[$icons_block[$name]])) {
-                    $blocks[$name]['icon'] = $icons_core[$icons_block[$name]];
-                }
-            }
-        }
-
-        $wizard_blocks = $this->get_blocks();
-        foreach ($wizard_blocks as $ablock) {
-            $block_slug = basename($ablock);
-            $block = $this->get_json_data($block_slug);
-            $block['folder'] = $ablock;
-            if (!empty($block['name'])) {
-                $blocks[$block['name']] = $block;
-                //var_dump($ablock);
-                $blocks[$block['name']]['file'] = $ablock . DIRECTORY_SEPARATOR . 'block.json';
-            } else {
-                // TODO: no name?!
-                //var_dump($block);
-            }
-        }
-
-        return $blocks;
-    }
-
-    private function get_blocks_usage($block = '') {
-        global $wpdb;
-        $block_init = '<!-- wp:';
-        if ($block) {
-            $block_init .= $block;
-        }
-        $block_count = [];
-        $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE %s AND post_status = "publish"', $wpdb->posts, '%<!-- wp:%'));
-        foreach ($posts as $post) {
-            $tmp = explode($block_init, $post->post_content);
-            foreach ($tmp as $key => $block) {
-                if ($key) {
-                    list($block_name, $more) = explode(' ', $block, 2);
-                    $block_count[$block_name]['count'] = empty($block_count[$block_name]) ? 1 : ++$block_count[$block_name]['count'];
-                    if (empty($block_count[$block_name]['posts']) || !in_array($post->ID, $block_count[$block_name]['posts'])) {
-                        $block_count[$block_name]['posts'][] = $post->ID;
-                    }
-                }
-            }
-        }
-        if (!empty($block_count) && $block) {
-            return reset($block_count);
-        }
-        return $block_count;
-    }
-    
     function gettext($translation, $text, $domain ) {
         if ($text == 'No Blocks found.') {
             ob_start();

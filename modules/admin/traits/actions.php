@@ -1,14 +1,14 @@
 <?php
 
-namespace WizardBlocks\Modules\Block\Traits;
+namespace WizardBlocks\Modules\Admin\Traits;
 
 Trait Actions {
-
-    static public $blocks_disabled_key = 'blocks_disabled';
 
     function execute_actions() {
         
         if (!empty($_REQUEST['action'])) {
+            
+            $wb = \WizardBlocks\Modules\Block\Block::instance();
 
             $blocks_dir = apply_filters('wizard/blocks/dirs', []);
             $dirs = wp_upload_dir();
@@ -83,10 +83,10 @@ Trait Actions {
                                 if (!empty($_GET['block'])) {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
                                     list($domain, $slug) = explode('/', $block, 2);
-                                    $block_post = $this->get_block_post($slug);
+                                    $block_post = $wb->get_block_post($slug);
                                     if (!$block_post) {
-                                        $args = $this->get_json_data($slug);
-                                        $block_post_id = $this->insert_block_post($slug, $args);
+                                        $args = $wb->get_json_data($slug);
+                                        $block_post_id = $wb->insert_block_post($slug, $args);
                                     }
                                     $this->_notice(__('Block imported!', 'wizard-blocks'));
                                 }
@@ -159,8 +159,9 @@ Trait Actions {
     }
 
     public function filter_block_json($jsons = []) {
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
         foreach ($jsons as $jkey => $json) {
-            $json_code = $this->get_filesystem()->get_contents($json);
+            $json_code = $wb->get_filesystem()->get_contents($json);
             $args = json_decode($json_code, true);
             if (empty($args) || empty($args['name']) || empty($args['title'])) {
                 // not valid block json
@@ -173,8 +174,9 @@ Trait Actions {
 
     public function generate_block_zip($block, $folder = 'zip', $filename = '') {
 
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
         $dirs = wp_upload_dir();
-        $basedir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
+        $basedir = $wb->get_blocks_dir() . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
         wp_mkdir_p($basedir);
 
         // Make sure our zipping class exists
@@ -198,7 +200,7 @@ Trait Actions {
             die(esc_html('Failed to create zip at ' . $filepath));
         }
 
-        $block_dir = $this->get_blocks_dir($block_slug, $block_textdomain) . DIRECTORY_SEPARATOR;
+        $block_dir = $wb->get_blocks_dir($block_slug, $block_textdomain) . DIRECTORY_SEPARATOR;
 
         $this->add_files_to_zip($block_dir, $zip);
 
@@ -245,12 +247,13 @@ Trait Actions {
     }
 
     public function get_block_zip_filename($block, $basename = false) {
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
         if (is_array($block))
             $block = $block['name'];
         list($block_textdomain, $block_slug) = explode('/', $block);
-        $block_json = $this->get_block_json($block_slug, $block_textdomain);
+        $block_json = $wb->get_block_json($block_slug, $block_textdomain);
         // Set the system path for our zip file
-        $filename = 'block_' . $this->get_block_textdomain($block_json) . '_' . $block_slug;
+        $filename = 'block_' . $wb->get_block_textdomain($block_json) . '_' . $block_slug;
         if (!$basename) {
             $filename = $filename . (empty($block_json['version']) ? '' : '_' . $block_json['version']) . '.zip';
         }
