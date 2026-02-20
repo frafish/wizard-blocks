@@ -194,6 +194,73 @@ jQuery(document).ready(function ($) {
         // Finally, open the modal on click
         frame.open();
     });
+    
+    // ADD EXAMPLE IMAGE
+    jQuery('#set-block-example-thumbnail').on('click', function (event) {
+        event.preventDefault();
+        let frame;
+        let btn = jQuery(this);
+        // If the media frame already exists, reopen it.
+        if (frame) {
+            frame.open();
+            return;
+        }
+        // Create a new media frame
+        frame = wp.media({
+            title: wp.i18n.__('Select or Upload Media', 'wizard-blocks'),
+            button: {
+                text: wp.i18n.__('Set this Preview', 'wizard-blocks')
+            },
+            multiple: false  // Set to true to allow multiple files to be selected
+        });
+        // When an image is selected in the media frame...
+        frame.on('select', () => {
+            // Get media attachment details from the frame state
+            //console.log(frame.state().get('selection'));
+            frame.state().get('selection').each((attachment, index) => {
+                //console.log(index);
+                //console.log(attachment);
+                let asset = attachment.toJSON();
+                //console.log(asset);
+                let input = jQuery('#_block_preview');
+                // Send the attachment URL to our custom image input field.
+                input.val(asset.url);
+                // Send the attachment id to our hidden input
+                //input.val(asset.id);
+                jQuery('#set-block-example-thumbnail .set-block-example-thumbnail-label').hide();
+                jQuery('#set-block-example-thumbnail img').remove();
+                jQuery('#set-block-example-thumbnail').append('<img class="block-example-thumbnail" src="'+asset.url+'">');
+                jQuery('#remove-block-example-thumbnail').show();
+                jQuery('#set-block-example-thumbnail-desc').show();
+                jQuery('#_block_example-preview').prop('disabled', true);
+            });
+        });
+        // Finally, open the modal on click
+        frame.open();
+    });
+    
+    jQuery('#remove-block-example-thumbnail').on('click', function () {
+        if (confirm(wp.i18n.__('Are you sure to remove this Example thumbnail?', 'wizard-blocks'))) {
+            let input = jQuery('#_block_preview');
+            input.val('');
+            jQuery('#set-block-example-thumbnail img').remove();
+            jQuery('#set-block-example-thumbnail .set-block-example-thumbnail-label').show();
+            jQuery(this).hide();
+            jQuery('#set-block-example-thumbnail-desc').hide();
+            jQuery('#_block_example-preview').prop('disabled', false);
+        }
+        return false;
+    });
+    let input = jQuery('#_block_preview');
+    if (input.val()) {
+        jQuery('#set-block-example-thumbnail .set-block-example-thumbnail-label').hide();
+        jQuery('#set-block-example-thumbnail-desc').show();
+        jQuery('#remove-block-example-thumbnail').show();
+        jQuery('#_block_example-preview').prop('disabled', true);
+    } else {
+        jQuery('#set-block-example-thumbnail-desc').hide();
+        jQuery('#remove-block-example-thumbnail').hide();
+    }
 
     /**************************************************************************/
 

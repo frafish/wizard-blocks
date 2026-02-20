@@ -4,6 +4,8 @@ namespace WizardBlocks\Modules\Block\Traits;
 
 use WizardBlocks\Core\Utils;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Metabox {
 
     // block JSON properties
@@ -345,6 +347,16 @@ trait Metabox {
                 [$this, 'meta_fields_build_attributes_callback'],
                 'block'
         );
+        
+        add_meta_box(
+                'example_meta_box',
+                esc_html__('Example', 'wizard-blocks'),
+                [$this, 'meta_fields_build_example_callback'],
+                'block',
+                'side',
+                'default'
+        );
+        
         add_meta_box(
                 'meta_fields_side_meta_box',
                 esc_html__('Info', 'wizard-blocks'),
@@ -472,7 +484,7 @@ trait Metabox {
                 $assets = $this->assets_merge($assets, $default);
                 foreach ($assets as $key => $asset) {
                     ?>
-                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo basename($asset); ?></a>
+                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo esc_attr(basename($asset)); ?></a>
             <?php } ?>
             </nav>
             <?php } ?>
@@ -486,7 +498,7 @@ trait Metabox {
                 $asset_name = end($tmp);
                 ?>
                 <p class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
-                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo ($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
                 </p>              
             <?php }
         ?>
@@ -611,8 +623,8 @@ trait Metabox {
             $attributes = get_post_meta($post->ID, '_transient_block_attributes', true);
             if ($attributes) {
                 //warn
-                $this->_notice(__('Attributes are not saved! Please <a href="#attributes">fix them</a> and resave block.', 'wizard-blocks'), 'danger error');
-                $this->_notice(esc_html__('Please verify that Attributes is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
+                Utils::_notice(__('Attributes are not saved! Please <a href="#attributes">fix them</a> and resave block.', 'wizard-blocks'), 'danger error');
+                Utils::_notice(esc_html__('Please verify that Attributes is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
             }
         }
         ?>
@@ -742,7 +754,7 @@ trait Metabox {
             <h3><label for="_block_usage"><?php esc_attr_e('Usage', 'wizard-blocks'); ?></label></h3>
             <p><?php 
             /* translators: 1: Block used times. */
-            printf( esc_attr__('Used %s times in this site', 'wizard-blocks'), $block_usage_count); ?></p>           
+            printf( esc_attr__('Used %s times in this site', 'wizard-blocks'), esc_attr($block_usage_count)); ?></p>           
             <?php if ($block_usage_count) { ?>
             <div class="block-usage-posts-list"><ul>
             <?php
@@ -934,8 +946,8 @@ trait Metabox {
             $custom_transient = get_post_meta($post->ID, '_transient_block_supports_custom', true);
             if ($custom_transient) {
                 //warn
-                $this->_notice(__('Custom Supports are not saved! Please <a href="#supports_custom">fix it</a> and resave block.', 'wizard-blocks'), 'danger error');
-                $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
+                Utils::_notice(__('Custom Supports are not saved! Please <a href="#supports_custom">fix it</a> and resave block.', 'wizard-blocks'), 'danger error');
+                Utils::_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
             }
             $custom = empty($custom) ? $custom_transient : wp_json_encode($custom, JSON_PRETTY_PRINT);
             ?>
@@ -967,14 +979,121 @@ trait Metabox {
             $extra_transient = get_post_meta($post->ID, '_transient_block_extra', true);
             if ($extra_transient) {
                 //warn
-                $this->_notice(__('Extra are not saved! Please <a href="#extra">fix it</a> and resave block.', 'wizard-blocks'), 'danger error');
-                $this->_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
+                Utils::_notice(__('Extra are not saved! Please <a href="#extra">fix it</a> and resave block.', 'wizard-blocks'), 'danger error');
+                Utils::_notice(esc_html__('Please verify that Custom Supports is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
             }
             $extra = empty($extra) ? $extra_transient : wp_json_encode($extra, JSON_PRETTY_PRINT);
             ?>
             <h3><label id="extra" for="_block_extra"><b><?php esc_attr_e('Extra', 'wizard-blocks'); ?></b></label></h3>
             <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;"><?php echo esc_textarea($extra); ?></textarea>
         </div>
+        <?php
+    }
+    
+    public function meta_fields_build_example_callback($post, $metabox) {
+        //var_dump($post);
+        $block = $post ? $this->get_block_json($post->post_name) : [];
+        $upload_link = '';
+        $example_preview_url = false;
+        if ($post) {
+            $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
+            $block_textdomain = $this->get_block_textdomain($block);
+            $basepath = $this->get_blocks_dir($post->post_name, $block_textdomain);
+            $example_preview = empty($block['example']['attributes']['preview']) ? '' : $block['example']['attributes']['preview'];
+            if ($example_preview) {
+                $example_preview_path = $this->get_asset_file($block, $example_preview, $basepath);
+                //var_dump($example_preview_path);
+                if (file_exists($example_preview_path)) {
+                    $example_preview_url = \WizardBlocks\Core\Helper::path_to_url($example_preview_path);
+                }
+            }
+        }
+        ?>
+        <div class="inside">
+            
+                <h3><label id="_block_preview_label" for="_block_preview"><b><?php esc_attr_e('Preview Image', 'wizard-blocks'); ?></b></label></h3>
+            
+                <p class="hide-if-no-js">
+                    <a href="<?php echo esc_url($upload_link); ?>" id="set-block-example-thumbnail" aria-describedby="set-block-thumbnail-desc" class="thickbox d-block">
+                        <span class="set-block-example-thumbnail-label"><?php esc_attr_e('Set cover image', 'wizard-blocks'); ?></span>
+                        <?php if ($example_preview_url) { ?>
+                            <img class="block-example-thumbnail" src="<?php echo esc_url($example_preview_url); ?>">
+                        <?php } ?>
+                    </a>
+                </p>
+                <p class="hide-if-no-js howto" id="set-block-example-thumbnail-desc"><?php esc_attr_e('Click the image to edit or update', 'wizard-blocks'); ?></p>
+                <p class="hide-if-no-js"><a href="#" id="remove-block-example-thumbnail" class="text-danger"><?php esc_attr_e('Remove cover image', 'wizard-blocks'); ?></a></p>
+                <input placeholder="file:./preview.png" type="text" id="_block_preview" name="_block_preview" value="<?php echo $example_preview; ?>">
+                
+                
+                <?php if ($post && !empty($block['attributes']) && (count($block['attributes']) > 1 || !isset($block['attributes']['preview']))) { ?>
+                <div class="_block_example_values">
+                <hr>
+                
+                <h3><label id="_block_example_label" for="_block_example"><b><?php esc_attr_e('Example Values', 'wizard-blocks'); ?></b></label></h3>
+                
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                <h2><?php esc_attr_e('Optional example values', 'wizard-blocks'); ?>
+                                    <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#example"><span class="dashicons dashicons-info-outline"></span></a>
+                                </h2>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($block['attributes'] as $akey => $attr) { 
+                        if (isset($block['example']['attributes'][$akey])) {
+                            $attr['default'] = $block['example']['attributes'][$akey];
+                        }
+                        $this->_e_attribute_row($attr, $akey, '_block_example', $block);
+                    } ?> 
+                    </tbody>
+                </table>
+                </div>
+                <?php } ?>
+                    
+        </div>
+        <?php
+        
+    }
+    
+    function _e_attribute_row($attr, $akey, $field, $block) {
+        $id = $field.'-'.$akey;
+        ?>
+        <tr>
+            <td>
+                <abbr title="<?php echo $akey; ?>">
+                    <label for="<?php echo esc_attr($id); ?>">
+                    <?php echo empty($attr['label']) ? $akey : $attr['label']; ?>
+                    </label>
+                </abbr>
+                <?php if (!empty($attr['help'])) { ?>
+                <p class="hint"><i><?php echo $attr['help']; ?></i></p>
+                <?php } ?>
+            </td>
+            <?php
+            switch ($attr['type']) {
+                case 'boolean': ?>
+                    <td><input type="checkbox" id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]"<?php echo esc_attr(!empty($attr['default']) ? ' checked' : ''); ?>></td>
+                    <?php
+                    break;
+                case 'number':
+                case 'integer': ?>
+                    <td><input type="number" id="<?php echo $id ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>" value="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : ''); ?>"></td>
+                    <?php
+                    break;
+                case 'string':
+                    //if ($akey == 'preview') break;
+                default: ?>
+                    <td><textarea id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>"><?php echo empty($attr['default']) ? '' : $attr['default']; ?></textarea></td>
+              
+                <?php  
+                /*default: ?>
+                    <td><input type="text" id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($field['default']) ? $field['default'] : $akey); ?>" value=""></td>
+            <?php */ } ?>
+        </tr>
         <?php
     }
 }

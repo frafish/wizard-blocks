@@ -1,6 +1,8 @@
 <?php
 namespace WizardBlocks\Modules\Block\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 Trait Attributes {
     
     public function is_editor() {
@@ -295,19 +297,38 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
     <?php }
     } ?>
     edit(props) {
-        <?php if (!empty($args['example']['attributes']['preview'])) { 
-        $image_url = $args['example']['attributes']['preview'];
-        // TODO: need to convert file:../ to current block folder via js
-        $script_id = sanitize_title($args['name']).'-editor-script-js';    
-        //document.getElementById("?php echo $script_id; ?").src
-        ?>
-        if ( props.attributes.preview ) {
-            return wp.element.createElement('img', {
-                width: "100%",
-                height: "auto",
-                src: '<?php echo esc_url($image_url); ?>'
-            });	
-	}
+        <?php 
+        //var_dump($args); die();
+        if (!empty($args['example']['attributes']['preview'])) { 
+            $image_url = $args['example']['attributes']['preview'];
+            if (substr($image_url, 0, 7) == 'file:./') {
+                $tmp = explode('/', $args['name']);
+                $block_slug = end($tmp);
+                $block_path = $this->get_ensure_blocks_dir($block_slug, $args['textdomain']);
+                $example_preview_path = $this->get_asset_file($args, $image_url, $block_path);
+                //var_dump($example_preview_path);
+                if (file_exists($example_preview_path)) {
+                    $image_url = \WizardBlocks\Core\Helper::path_to_url($example_preview_path);
+                }
+            }
+            // need to convert file:../ to current block folder via js
+            $script_id = sanitize_title($args['name']).'-editor-script-js';    
+            //document.getElementById("?php echo $script_id; ?").src
+            ?>
+            if ( props.attributes.preview ) {
+                let $preview_url = '<?php echo esc_url($image_url); ?>';
+                let scriptTag = document.getElementById('<?php echo $script_id; ?>');
+                if (scriptTag) {
+                    let fullUrl = scriptTag.src;
+                    let folderPath = fullUrl.substring(0, fullUrl.lastIndexOf('/'));
+                    $preview_url = folderPath + props.attributes.preview.replace('file:.','');
+                }
+                return wp.element.createElement('img', {
+                    width: "100%",
+                    height: "auto",
+                    src: $preview_url
+                });	
+            }
         <?php } ?>
         
         const blockProps = wp.blockEditor.useBlockProps();

@@ -59,7 +59,7 @@ final class Modules {
                 $this->modules[$module_name] = $full_class_name::instance();
             } else {
                 if (WP_DEBUG_LOG) {
-                    error_log(esc_html('ERROR loading module: ') . $full_class_name . ' (' . esc_url(WP_PLUGIN_DIR . '/' . Utils::camel_to_slug($domain) . '/modules/' . $module_name . '/' . $module_name . '.php') . ')');
+                    //error_log(esc_html('ERROR loading module: ') . $full_class_name . ' (' . esc_url(WP_PLUGIN_DIR . '/' . Utils::camel_to_slug($domain) . '/modules/' . $module_name . '/' . $module_name . '.php') . ')');
                 }
             }
         }

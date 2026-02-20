@@ -31,10 +31,6 @@ class Admin extends Module_Base {
         add_action('admin_menu', [$this, 'admin_menu_tools']);
 
     }
-    
-    public function _notice($message, $type = 'success') {
-        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . wp_kses($message, 'post') . '</p></div>';
-    }
 
     public function get_action_url($args = '') {
         $nonce = wp_create_nonce('wizard-blocks-nonce');

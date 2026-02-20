@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Admin\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Tools {
 
     public function admin_menu_tools() {
@@ -16,7 +18,7 @@ trait Tools {
         );
         
         add_action('post_submitbox_start', function ($post) {
-            if ($post && $post->post_name) {
+            if ($post && $post->post_name && isset($_GET['post_type']) && $_GET['post_type'] == 'block') {
                 $wb = \WizardBlocks\Modules\Block\Block::instance();
                 $json = $wb->get_json_data($post->post_name);
                 //var_dump($json);
@@ -35,11 +37,15 @@ trait Tools {
                 ?>
                 <hr style="clear:both;">
                 <?php
-            } else { ?>
-                <button class="button-ai">
-                   <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
-                </button>
+            } else { 
+                if (isset($_GET['post_type']) && $_GET['post_type'] == 'block') { ?>
+                <div id="ai-action">
+                    <button class="button-ai">
+                       <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
+                    </button>
+                </div>
             <?php }
+            }
         });
         
     }
@@ -87,7 +93,7 @@ trait Tools {
             <hr>
             <h2><?php esc_html_e('Get code', 'wizard-blocks'); ?></h2>
             <p><?php esc_html_e('Copy these lines of PHP code into your Theme (or Child theme) at the end of the functions.php file. After that you could switch off this plugin.', 'wizard-blocks'); ?></p>
-            <textarea style="width:100%;" rows="<?php echo substr_count($code, PHP_EOL) + 2; ?>" data-blocks="<?php echo count($wizard_blocks); ?>"><?php echo esc_html($code); ?></textarea>
+            <textarea style="width:100%;" rows="<?php echo esc_attr(substr_count($code, PHP_EOL) + 2); ?>" data-blocks="<?php echo count($wizard_blocks); ?>"><?php echo esc_html($code); ?></textarea>
             <?php do_action('wizard/blocks/tools', $this); ?>
         </div>
         <?php

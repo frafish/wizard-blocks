@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Admin\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Blocks {
 
     public function admin_menu_blocks() {
@@ -76,7 +78,7 @@ trait Blocks {
             <ul class="subsubsub blocks-filter">
                 <li class="all"><a class="current" href="#"><?php esc_html_e('All', 'wizard-blocks'); ?> <span class="count">(<?php echo count($blocks); ?>)</span></a></li>
                 <?php foreach ($blocks_count as $textdomain => $bc) { ?>
-                    | <li class><a href="#<?php esc_attr_e($textdomain); ?>"><?php echo esc_html(ucfirst(str_replace('-', ' ', $textdomain))); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
+                    | <li class><a href="#<?php echo esc_attr($textdomain); ?>"><?php echo esc_html(ucfirst(str_replace('-', ' ', $textdomain))); ?> <span class="count">(<?php echo esc_html($bc); ?>)</span></a></li>
                 <?php } ?>
             </ul>
             <hr style="clear: both; padding-top: 10px;">
@@ -116,7 +118,7 @@ trait Blocks {
                             }
                             $block['slug'] = $block_slug;
                             ?>
-                            <tr id="post-<?php esc_attr_e($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php esc_attr_e($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
+                            <tr id="post-<?php echo esc_attr($block_post ? $block_post->ID : 'xxx'); ?>" class="iedit author-self type-block status-publish hentry block-<?php echo esc_attr($block['textdomain']); ?><?php echo in_array($block['textdomain'], ['core', 'wizard', 'wizard-blocks']) ? '' : ' block-extra'; ?>">
                                 <td class="icon column-icon" data-colname="<?php esc_attr_e('Icon', 'wizard-blocks'); ?>">
                                     <?php
                                     if (empty($block['icon'])) {
@@ -128,14 +130,14 @@ trait Blocks {
                                 <td class="title column-title has-row-actions column-primary page-title" data-colname="<?php esc_attr_e('Title', 'wizard-blocks'); ?>">
                                     <strong>
                                         <?php if ($block_post) { ?><a class="row-title" href="<?php echo esc_url(get_edit_post_link($block_post->ID)); ?>" aria-label=""><?php } ?>
-                                            <abbr title="<?php esc_attr_e($block_name); ?>"><?php echo esc_html($wb->get_block_title($block, $block_post)); ?></abbr>
+                                            <abbr title="<?php echo esc_attr($block_name); ?>"><?php echo esc_html($wb->get_block_title($block, $block_post)); ?></abbr>
                                             <?php if ($block_post) { ?></a><?php } ?>
-                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php esc_attr_e($block_name); ?> <span class="dashicons dashicons-clipboard"></span></small>
+                                        <br><small class="block-title" onClick="navigator.clipboard.writeText(this.innerText);"><?php echo esc_attr($block_name); ?> <span class="dashicons dashicons-clipboard"></span></small>
                                     </strong>
                                 </td>
                                 <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'wizard-blocks'); ?>">
                                     <label class="switch">
-                                        <input type="checkbox" name="blocks_disabled[<?php esc_attr_e($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
+                                        <input type="checkbox" name="blocks_disabled[<?php echo esc_attr($block['name']); ?>]"<?php echo (!empty($blocks_disabled) && in_array($block['name'], $blocks_disabled)) ? ' checked' : ''; ?>>
                                         <span class="slider round"></span>
                                     </label>
                                 </td>
@@ -243,7 +245,7 @@ trait Blocks {
             <div style="text-align: center;">
                 <span class="dashicons dashicons-warning"></span>
                 <br>
-                <h2><?php echo $translation; ?></h2>
+                <h2><?php echo esc_attr($translation); ?></h2>
                 <br>
                 <a href="<?php echo esc_url(admin_url('post-new.php?post_type='.self::$cpt_name)); ?>" class="button dashicons-before dashicons-plus-alt components-button has-text has-icon"><?php esc_html_e('Add your first Block', 'wizard-blocks'); ?></a>
                 or 

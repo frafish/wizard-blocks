@@ -4,6 +4,8 @@ namespace WizardBlocks\Modules\Block\Traits;
 
 use WizardBlocks\Core\Utils;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 Trait Assets {
     
     public function enqueue_block_assets($block) {
@@ -109,9 +111,13 @@ Trait Assets {
     
     
     public function get_asset_file($json, $asset, $basepath = '') {
-        $type = self::$assets[$asset];
-        $asset_file = $asset.'.'.$type;
-        $asset_file_min = $asset.'.min.'.$type;
+        if (!empty(self::$assets[$asset])) {
+            $type = self::$assets[$asset];
+            $asset_file = $asset.'.'.$type;
+            $asset_file_min = $asset.'.min.'.$type;
+        } else {
+            $asset_file = $asset;
+        }
         if (!empty($json[$asset])) {
             //var_dump($json[$asset]); die();
             $asset_files = $json[$asset];
@@ -152,11 +158,17 @@ Trait Assets {
                     $asset_file = $unmin;
                 }
             }
-            $asset_file = str_replace('file:', '', $asset_file);
-            $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
-            //var_dump($asset_file); die();
+        }
+        
+        $asset_file = str_replace('file:', '', $asset_file);
+        $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
+        //var_dump($asset_file); die();
+        if ($basepath && !str_ends_with($basepath, DIRECTORY_SEPARATOR)) {
+            $basepath .= DIRECTORY_SEPARATOR;
         }
         $asset_file = $basepath . $asset_file;
+        $asset_file = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $asset_file);
+        $asset_file = str_replace(DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $asset_file);
         return $asset_file;
     }
     

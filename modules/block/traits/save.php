@@ -3,6 +3,8 @@
 namespace WizardBlocks\Modules\Block\Traits;
 use WizardBlocks\Core\Utils;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Save {
 
     // save metadata
@@ -238,46 +240,62 @@ trait Save {
             $category = sanitize_title(wp_unslash($_POST['_block_category']));
         }
         
-        $example = false;
-        $preview = get_post_meta($post_id, '_thumbnail_id', true);
+        $example = [];
+        //$preview = get_post_meta($post_id, '_thumbnail_id', true);
+        $preview = empty($_POST['_block_preview']) ? false : $_POST['_block_preview'];
         if ($preview) {
-            $image_src = wp_get_attachment_image_url($preview, 'full');
-            $preview_src = wp_get_attachment_image_url($preview, 'medium');
-            //var_dump($preview_src); die();
-            if (empty($attributes['preview'])) {
-                $attributes['preview'] = [
-                    'type' => 'string'
-                ];
+            //$image_src = wp_get_attachment_image_url($preview, 'full');
+            //$preview_src = wp_get_attachment_image_url($preview, 'medium');
+            $preview_src = $preview;
+            if (str_starts_with($preview_src, 'http')) {
+                if (!is_dir($basepath)) {
+                    wp_mkdir_p($basepath); 
+                }
+                $image_path = \WizardBlocks\Core\Helper::url_to_path($preview_src);
+                $path_parts = pathinfo($image_path);
+                $image_name = 'preview.'.$path_parts['extension'];
+                //$image = $this->get_filesystem()->get_contents($image_path);
+                //copy image inside block folder  
+                //$image_name = basename($image_src);
+                if ($this->get_filesystem()->copy($image_path, $basepath.$image_name, true)) {
+                    $preview_src = "file:./".$image_name;
+                }
             }
-            if (empty($example)) {
-                $example = [];
+            if ($preview_src) { //empty($example)) {
+                if (empty($attributes['preview'])) {
+                    $attributes['preview'] = [
+                        'type' => 'string'
+                    ];
+                }
                 $example['attributes']['preview'] = $preview_src;
             }
-            //copy image inside block folder  
-            $media_dir = \WizardBlocks\Modules\Media\Media::FOLDER.DIRECTORY_SEPARATOR;
-            $image_name = basename($image_src);
-            if (!is_dir($basepath.$media_dir)) {
-                wp_mkdir_p($basepath.$media_dir); 
-            }
-            $image_path = \WizardBlocks\Core\Helper::url_to_path($image_src);
-            //var_dump($image_path); var_dump($basepath.$media_dir.$image_name); die();
-            $image = $this->get_filesystem()->get_contents($image_path);
-            //var_dump($image); die();
-            if ($this->get_filesystem()->copy($image_path, $basepath.$media_dir.$image_name, true)) {
-            //if (file_put_contents($basepath.$media_dir.$image_name, $image)) {
-                $example['attributes']['preview'] = "file:./".$media_dir."/".$image_name;
-            }
         }
-        if (empty($example)) {
+        //if (empty($example)) {
             if (!empty($attributes)) {
-                $example['attributes'] = [];
+                if (!isset($example['attributes'])) {
+                    $example['attributes'] = [];
+                }
                 foreach ($attributes as $akey => $attribute) {
-                    if (!empty($attribute['default'])) {
+                    if (!empty($_POST['_block_example'][$akey])) {
+                        $value = sanitize_text_field($_POST['_block_example'][$akey]);
+                        switch($attribute['type']) {
+                            case 'boolean':
+                                $example['attributes'][$akey] = true;
+                                break;
+                            case 'integer':
+                            case 'number':
+                                $example['attributes'][$akey] = floatval($value);
+                                break;
+                            case 'string':
+                            default:
+                                $example['attributes'][$akey] = $value;
+                        }
+                    } else if (!empty($attribute['default'])) {
                         $example['attributes'][$akey] = $attribute['default'];
                     }
                 }
             }
-        }
+        //}
         
         // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
         $json = [
@@ -340,8 +358,8 @@ trait Save {
             }
             if ($asset == 'editorScript') {
                 // ignore if there is another js file which contain registerBlockType
-                /*$registered = false;
-                if (!empty($json_old[$asset])) {
+                $registered = false;
+                /*if (!empty($json_old[$asset])) {
                     $editorScripts = $this->get_asset_files($json_old, $asset, $basepath);
                     foreach ($editorScripts as $editorScript) {
                         $editorScriptCode = $this->get_filesystem()->get_contents($editorScript);

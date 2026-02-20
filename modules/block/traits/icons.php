@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Block\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 Trait Icons {
     
     public function _block_icon_selector($block_icon, $block_name = '', $input_name = '_block_icon') {
@@ -27,7 +29,7 @@ Trait Icons {
             ?></select>
             <p class="d-flex<?php if ($is_dash) { ?> d-none<?php } ?> assets block-icon-src-wrapper" id="<?php echo esc_attr($input_name_attr); ?>-src-wrapper">
                 <textarea id="<?php echo esc_attr($input_name_attr); ?>_src" name="<?php echo esc_attr($input_name_attr); ?>_src" placeholder="<svg ...>...</svg>"><?php if (!empty($block_icon) && !$is_dash) echo esc_textarea($block_icon); ?></textarea>
-                <a title="<?php esc_attr_e('Upload new Icon', 'wizard-blocks'); ?>" class="dashicons-before dashicons-plus button button-primary upload-icon" href="http://localhost/wp-admin/media-upload.php?post_id=<?php echo get_the_ID(); ?>&amp;type=image&amp;TB_iframe=1" target="_blank"></a>
+                <a title="<?php esc_attr_e('Upload new Icon', 'wizard-blocks'); ?>" class="dashicons-before dashicons-plus button button-primary upload-icon" href="<?php echo esc_url( admin_url( 'media-upload.php?post_id='.get_the_ID().'&amp;type=image&amp;TB_iframe=1')); ?>" target="_blank"></a>
             </p>
             <p id="<?php echo esc_attr($input_name_attr); ?>_current">
                 <?php

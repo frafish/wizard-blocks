@@ -1,3 +1,7 @@
+.button.dashicons-before:before {
+  margin-top: 4px;
+}
+
 .inside input[type="text"], 
 .inside input[type="number"], 
 .inside textarea, 
@@ -209,4 +213,22 @@
 }
 .text-decoration-none {
     text-decoration: none;
+}
+
+.text-danger {
+    color: #b32d2e;
+}
+
+._block_example_values .widefat td {
+    display: block;
+}
+._block_example_values .widefat td input[type="text"],
+._block_example_values .widefat td input[type="url"],
+._block_example_values .widefat td input[type="email"],
+._block_example_values .widefat td input[type="number"],
+._block_example_values .widefat td select,
+._block_example_values .widefat td textarea
+{
+    width: 100%;
+    display: block;
 }

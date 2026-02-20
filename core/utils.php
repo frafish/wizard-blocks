@@ -147,5 +147,9 @@ class Utils {
     public static function get_wp_plugin_dir() {        
         return \WizardBlocks\Core\Helper::get_wp_plugin_dir();
     }
+    
+    public static function _notice($message, $type = 'success') {
+        echo '<div class="notice is-dismissible notice-' . esc_attr($type) . ' notice-alt"><p>' . wp_kses($message, 'post') . '</p></div>';
+    }
 
 }

@@ -3,6 +3,8 @@
 namespace WizardBlocks\Modules\Block\Traits;
 use WizardBlocks\Core\Utils;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Registry {
 
 function get_registered_block($name = '') {

@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Block\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 Trait Filesystem {
     
     /**
@@ -129,9 +131,8 @@ Trait Filesystem {
 
         if (!$wp_filesystem) {
             require_once( ABSPATH . DIRECTORY_SEPARATOR . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'file.php' ); // phpcs:ignore WPThemeReview.CoreFunctionality.FileInclude.FileIncludeFound
-            $context = apply_filters('request_filesystem_credentials_context', false);
-            $creds = request_filesystem_credentials(site_url(), '', false, $context, null);
-            \WP_Filesystem($creds, $context);
+            $creds = request_filesystem_credentials(site_url());
+            \WP_Filesystem($creds);
         }
         //var_dump($wp_filesystem);
         return $wp_filesystem;

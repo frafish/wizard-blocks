@@ -2,6 +2,10 @@
 
 namespace WizardBlocks\Modules\Admin\Traits;
 
+use WizardBlocks\Core\Utils;
+
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 Trait Actions {
 
     function execute_actions() {
@@ -25,7 +29,7 @@ Trait Actions {
                                     $keys = array_keys(array_map('sanitize_key', wp_unslash($_POST[self::$blocks_disabled_key])));
                                     $disabled = array_map('sanitize_key', $keys);
                                     update_option(self::$blocks_disabled_key, $disabled);
-                                    $this->_notice(__('Blocks disabled settings has been saved!', 'wizard-blocks'));
+                                    Utils::_notice(__('Blocks disabled settings has been saved!', 'wizard-blocks'));
                                 }
                                 break;
                         }
@@ -44,13 +48,13 @@ Trait Actions {
                                     $disabled = get_option(self::$blocks_disabled_key);
                                     $disabled = empty($disabled) ? [$block_name] : array_merge($disabled, $block_name);
                                     update_option(self::$blocks_disabled_key, $disabled);
-                                    $this->_notice(__('Block disabled!', 'wizard-blocks'));
+                                    Utils::_notice(__('Block disabled!', 'wizard-blocks'));
                                 }
                                 break;
 
                             case 'reset':
                                 delete_option(self::$blocks_disabled_key);
-                                $this->_notice(__('Block disabled settings has been resetted!', 'wizard-blocks'));
+                                Utils::_notice(__('Block disabled settings has been resetted!', 'wizard-blocks'));
                                 break;
 
                             case 'import':
@@ -77,7 +81,7 @@ Trait Actions {
                                         // clean tmp
                                         wp_delete_file($target_file);
                                     } else {
-                                        $this->_notice($movefile['error'], 'error');
+                                        Utils::_notice($movefile['error'], 'error');
                                     }
                                 }
                                 if (!empty($_GET['block'])) {
@@ -88,7 +92,7 @@ Trait Actions {
                                         $args = $wb->get_json_data($slug);
                                         $block_post_id = $wb->insert_block_post($slug, $args);
                                     }
-                                    $this->_notice(__('Block imported!', 'wizard-blocks'));
+                                    Utils::_notice(__('Block imported!', 'wizard-blocks'));
                                 }
 
                                 break;
@@ -130,7 +134,7 @@ Trait Actions {
                                 $zip->close();
 
                                 $download_url = $dirs['baseurl'] . '/' . $filename;
-                                $this->_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
+                                Utils::_notice(__('Blocks exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                 // Simulate an HTTP redirect:
                                 //wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
                                 echo "<script>setTimeout(() => { window.location.replace('" . esc_url($download_url) . "'); }, 1000);</script>";
@@ -142,7 +146,7 @@ Trait Actions {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
 
                                     $download_url = $this->generate_block_zip($block);
-                                    $this->_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
+                                    Utils::_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                     // Simulate an HTTP redirect:
                                     //wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
                                     echo "<script>setTimeout(() => { window.location.replace('" . esc_url($download_url) . "'); }, 1000);</script>";
@@ -151,7 +155,7 @@ Trait Actions {
                         }
                         do_action('wizard/blocks/action', $this);
                     } else {
-                        $this->_notice(__('Security nonce not valid!', 'wizard-blocks'), 'error');
+                        Utils::_notice(__('Security nonce not valid!', 'wizard-blocks'), 'error');
                     }
                 }
             }
@@ -261,15 +265,16 @@ Trait Actions {
     }
 
     public function extract_block_zip($target_file, $notice = true) {
-        $tmpdir = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
-        if ( class_exists( 'ZipArchive', false ) && apply_filters( 'unzip_file_use_ziparchive', true ) ) {
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
+        $tmpdir = $wb->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
+        if ( class_exists( 'ZipArchive', false ) ) {
             //if (file_exists($target_file) && unzip_file($target_file, $tmpdir)) {
             $zip = new \ZipArchive;
             if ($zip->open($target_file) === TRUE) {
                 $zip->extractTo($tmpdir);
                 $zip->close();
                 $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
-                $jsons = $this->filter_block_json($jsons);
+                $jsons = $wb->filter_block_json($jsons);
                 if (empty($jsons)) {
                     if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
                         $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
@@ -290,7 +295,7 @@ Trait Actions {
                     if ($block == 'src') {
                         continue;
                     }
-                    $json_code = $this->get_filesystem()->get_contents($json);
+                    $json_code = $wb->get_filesystem()->get_contents($json);
                     $args = json_decode($json_code, true);
                     //var_dump($args); die();
                     //if (!empty($args['$schema'])) {
@@ -298,25 +303,25 @@ Trait Actions {
                         //var_dump($args); die();
                         // is a valid block
                         list($domain, $slug) = explode('/', $args['name'], 2);
-                        $dest = $this->get_ensure_blocks_dir($slug, $domain);
+                        $dest = $wb->get_ensure_blocks_dir($slug, $domain);
                         //var_dump($jfolder); var_dump($dest); die();
                         $this->copy_dir($jfolder, $dest);
-                        $block_post = $this->get_block_post($slug);
+                        $block_post = $wb->get_block_post($slug);
                         if (!$block_post) {
-                            $block_post_id = $this->insert_block_post($slug, $args);
+                            $block_post_id = $wb->insert_block_post($slug, $args);
                             $block_post = $block_post_id;
                         }
                     }
                     //}
                 }
             }
-            $this->dir_delete($tmpdir); // MAYBE NOT?!
+            $wb->dir_delete($tmpdir); // MAYBE NOT?!
         }
         if ($notice) {
             if (!empty($block_post)) {
-                $this->_notice(__('Blocks imported!', 'wizard-blocks'));
+                Utils::_notice(__('Blocks imported!', 'wizard-blocks'));
             } else {
-                $this->_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
+                Utils::_notice(__('No Blocks found!', 'wizard-blocks'), 'warning');
             }
         }
     }

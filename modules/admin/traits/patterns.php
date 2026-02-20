@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Admin\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Patterns {
 
     public function admin_menu_patterns() {
@@ -55,14 +57,14 @@ trait Patterns {
                     if ($db_patterns) {
                         foreach ($db_patterns as $post) {
                             $sync_status = get_post_meta($post->ID, 'wp_pattern_sync_status', true);
-                            $slug = apply_filters('wizard/blocks/pattern/slug', $post->post_name, $post->ID);
+                            $slug = apply_filters('wizard/blocks/pattern/slug', esc_attr($post->post_name), $post->ID);
                             ?>
                             <tr>
                                 <td class="title column-title has-row-actions column-primary">
                                     <strong><a class="row-title" href="<?php echo esc_url(get_edit_post_link($post->ID)); ?>"><?php echo esc_html($post->post_title); ?></a></strong>
                                     <p class="description"><code><?php echo $slug; ?></code></p>
                                 </td>
-                                <td><?php echo $post->ID; ?></td>
+                                <td><?php echo esc_attr($post->ID); ?></td>
                                 <td><small><?php echo esc_html($post->post_excerpt ?: ''); ?></small></td>
                                 <td>
                                     <?php
@@ -76,12 +78,11 @@ trait Patterns {
                                 </td>
                                 <td>
                                 <?php
-                                if (empty($patterns_usage[$post->ID])) {
-                                ?>0<?php } else {
+                                if (empty($patterns_usage[$post->ID])) { ?>0<?php } else {
                                     if (!empty($patterns_usage[$post->ID]['posts'])) {
-                                        echo '<abbr title="'.implode(', ', $patterns_usage[$post->ID]['posts']).'">';
+                                        echo '<abbr title="'.esc_attr(implode(', ', $patterns_usage[$post->ID]['posts'])).'">';
                                     }
-                                    echo $patterns_usage[$post->ID]['count'];
+                                    echo esc_attr($patterns_usage[$post->ID]['count']);
                                     if (!empty($patterns_usage[$post->ID]['posts'])) {
                                         echo '</abbr>';
                                     }
@@ -122,7 +123,7 @@ trait Patterns {
 
                     if (!empty($sys_patterns)) {
                         foreach ($sys_patterns as $p) {
-                            $slug = apply_filters('wizard/blocks/pattern/slug', $p['name']);
+                            $slug = apply_filters('wizard/blocks/pattern/slug', esc_attr($p['name']));
                             $is_theme_pattern = (strpos($slug, $current_theme . '/') === 0 || strpos($slug, 'core/') === false);
                             $file_slug = strpos($slug, '/') !== false ? substr($p['name'], strpos($p['name'], '/') + 1) : $slug;
                             ?>
@@ -136,7 +137,7 @@ trait Patterns {
                                 <td>
                                     <?php echo $is_theme_pattern ? esc_html__('Theme', 'wizard-blocks') : esc_html__('Core / Plugin', 'wizard-blocks'); ?>
                                 </td>
-                                <td><?php echo $patterns_usage[$p['name']] ?? '0'; ?></td>
+                                <td><?php echo esc_attr(empty($patterns_usage[$p['name']]) ? '0' : $patterns_usage[$p['name']]); ?></td>
                                 <td class="column-actions">
                                     <?php
                                     if ($is_theme_pattern) {

@@ -2,6 +2,8 @@
 
 namespace WizardBlocks\Modules\Block\Traits;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 trait Type {
 
     public $revision;
@@ -58,7 +60,7 @@ trait Type {
             'has_archive' => false,
             'hierarchical' => false,
             'menu_position' => null,
-            'supports' => array('title', 'author', 'excerpt', 'thumbnail', 'revisions'), // 'editor', 'page-attributes'
+            'supports' => array('title', 'author', 'excerpt', 'revisions'), // 'thumbnail', 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
             'show_in_rest' => true,
                 //'rest_base' => self::get_cpt_name().'s',
@@ -191,7 +193,7 @@ trait Type {
      */
     public function save_block_revision($revision_id, $post_id) {
         $post = get_post($post_id);
-        if ($post->post_type == self::get_cpt_name()) {
+        if ($post->post_name && $post->post_type == self::get_cpt_name()) {
             $json = $this->get_block_json($post->post_name);
             $zip = $this->get_block_revision($json['name'], $this->revision);
             if ($zip) {
