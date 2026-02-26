@@ -8,12 +8,36 @@
   line-height: 1;
 }
 
+.nav-tab-assets {
+    display: flex;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+}
+.nav-tab-assets label {
+    cursor: pointer;
+}
+.nav-tab-assets > .nav-tab {
+    width: 100%;
+}
+.nav-tab-assets > .nav-tab:first-child {
+    margin-left: 0;
+}
+/*
+.block-asset:not(:last-child) {
+    padding-bottom: 10px;
+    border-bottom: 1px solid;
+    margin-bottom: 10px;
+}
+*/
+
 .inside input[type="text"], 
 .inside input[type="number"], 
 .inside textarea, 
 .inside select {
     width: 100%;
 }
+
 .CodeMirror {
     border: 1px solid #ddd;
     width: 100% !important;

@@ -29,20 +29,28 @@ class Preview extends Module_Base {
         if ($wb->is_block_edit()) {
 
             if (isset($_GET['post'])) {
-                add_action('add_meta_boxes', [$this, 'add_preview_meta_box']);
+                $post = get_post(intval($_GET['post']));
+                
+                if (WP_DEBUG || SCRIPT_DEBUG) {
+                    add_action('add_meta_boxes', [$this, 'add_json_meta_box']);
+                }
+                
+                if (get_post_status(intval($_GET['post'])) == 'publish') {
 
-
-                add_action('post_submitbox_start', function ($post) {
-                //add_action('wizard/block/edit/render', function ($block_json, $post, $wb) {
-                    ?>
-                    <p>
-                        <a href="#block-preview" class="dashicons-before dashicons-welcome-view-site button d-block"> <?php esc_html_e('Check Block Preview', 'wizard-blocks'); ?>*</a> <small>* <?php esc_html_e('For an optimal Preview please add Default values to Block Attributes and Save your Block.', 'wizard-blocks'); ?></small>
-                        <?php /*<br><label for="block-instant-preview"><input id="block-instant-preview" type="checkbox"> <?php esc_html_e('Enable Instant Block Preview update', 'wizard-blocks'); ?></label> */ ?>
-                    </p>
-                    <hr>
-                    <?php
-                //}, 10, 3);
-                });
+                    add_action('add_meta_boxes', [$this, 'add_preview_meta_box']);
+                    
+                    add_action('post_submitbox_start', function ($post) {
+                    //add_action('wizard/block/edit/render', function ($block_json, $post, $wb) {
+                        ?>
+                        <p>
+                            <a href="#block-preview" class="dashicons-before dashicons-welcome-view-site button d-block"> <?php esc_html_e('Check Block Preview', 'wizard-blocks'); ?>*</a> <small>* <?php esc_html_e('For an optimal Preview please add Default values to Block Attributes and Save your Block.', 'wizard-blocks'); ?></small>
+                            <?php /*<br><label for="block-instant-preview"><input id="block-instant-preview" type="checkbox"> <?php esc_html_e('Enable Instant Block Preview update', 'wizard-blocks'); ?></label> */ ?>
+                        </p>
+                        <hr>
+                        <?php
+                    //}, 10, 3);
+                    });
+                }
             }
 
         }
@@ -133,6 +141,16 @@ class Preview extends Module_Base {
         }
     }
 
+        
+    function add_json_meta_box() {
+        add_meta_box(
+                'block_json_box',
+                esc_html__('Json', 'wizard-blocks'),
+                [$this, 'block_json_box_callback'],
+                'block',
+        );
+    }
+    
     function add_preview_meta_box() {
         add_meta_box(
                 'block_preview_box',
@@ -142,6 +160,22 @@ class Preview extends Module_Base {
         );
     }
 
+    
+    public function block_json_box_callback($post, $metabox) {
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
+        $block_json = $post ? $wb->get_json_data($post->post_name) : [];
+        $block_textdomain = $wb->get_block_textdomain($block_json);
+        $block_slug = $post->post_name;
+        $basepath = $wb->get_blocks_dir($block_slug, $block_textdomain);
+        $json_path = $basepath.DIRECTORY_SEPARATOR.'block.json';
+        //var_dump($json_path);
+        $json_url = \WizardBlocks\Core\Helper::path_to_url($json_path);
+        ?>
+        <a href="<?php echo esc_url($json_url); ?>" target="_blank"><?php echo esc_attr($json_path); ?></a>
+        <textarea id="block-json" width="100%" rows="10" readonly><?php echo wp_json_encode($block_json, JSON_PRETTY_PRINT); ?></textarea>
+        <?php
+    }
+    
     public function block_preview_box_callback($post, $metabox) {
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
@@ -152,7 +186,7 @@ class Preview extends Module_Base {
         //$src = '/wp-json/wp/v2/block-renderer/' . $block_textdomain . '/' . $block_slug . '?context=edit&attributes[color]=red&attributes[asd]=Testo&post_id=2&_locale=user';
         /* <a href="<?php echo $src; ?>" target="_blank"><?php echo $src; ?></a> */
         ?>
-        <iframe id="block-preview" width="100%" height="600" src="<?php echo esc_url(get_permalink($post).'?context=preview'); ?>"></iframe>
+        <iframe id="block-preview" width="100%" height="600" src="<?php echo esc_url(add_query_arg('context','preview',get_permalink($post))); ?>"></iframe>
         <?php
     }
 }

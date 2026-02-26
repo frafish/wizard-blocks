@@ -772,39 +772,66 @@ jQuery(document).ready(function ($) {
     jQuery('.handlediv.to-close').trigger('click');
     jQuery('.handlediv.to-close').removeClass('to-close');
     
-    
+    // Beautify Code
     jQuery( ".wb-codemirror-js, .wb-codemirror-css" ).each(function() {
         jQuery(this).siblings('.CodeMirror').prepend('<button type="button" class="button dashicons-before dashicons-editor-outdent beautify" style="margin-bottom: 5px;" title="'+wp.i18n.__('Beautify Code', 'wizard-blocks')+'"></button>');
-
     });
     jQuery(document).on('click', '.beautify', function(e) {
         e.preventDefault();
-        var $textarea = jQuery(this).parent().siblings('textarea');
-        var editorElement = jQuery(this).parent('.CodeMirror')[0];
-        var cmInstance = editorElement ? editorElement.CodeMirror : null;
+        let $textarea = jQuery(this).parent().siblings('textarea');
+        let editorElement = jQuery(this).parent('.CodeMirror')[0];
+        let cmInstance = editorElement ? editorElement.CodeMirror : null;
         if (cmInstance) {
-            var uglyCode = cmInstance.getValue();
-            var mode = cmInstance.getOption('mode');
+            let uglyCode = cmInstance.getValue();
+            let mode = cmInstance.getOption('mode');
             console.log(mode);
-            var beautifiedCode = "";
-            var options = { 
+            let beautifiedCode = "";
+            let options = { 
                 indent_size: 2, 
                 space_in_empty_paren: true,
                 preserve_newlines: true
             };
             if (mode === 'javascript' || mode === 'application/ld+json' || mode === 'json') {
-                // Gestisce JS e JSON
                 beautifiedCode = js_beautify(uglyCode, options);
             } else if (mode === 'css') {
-                // Gestisce CSS (richiede beautify-css.js)
                 beautifiedCode = css_beautify(uglyCode, options);
             }
             cmInstance.setValue(beautifiedCode);
         } else {
-            var ugly = $textarea.val();
+            let ugly = $textarea.val();
             $textarea.val(js_beautify(ugly));
         }
     });
+    
+    
+    // assets tabs
+    jQuery('#css_meta_box .inside').prepend('<nav id="nav-tab-css" class="nav-tab-wrapper wb-nav-tab-wrapper nav-tab-assets"></nav>');
+    jQuery('#css_meta_box .block-asset').each(function(){
+       jQuery('#nav-tab-css').append('<div class="nav-tab wb-nav-tab" data-asset="'+jQuery(this).attr('id')+'">'+ jQuery(this).find('h3').html() + '</div>');
+       jQuery(this).find('h3').hide();
+    });
+    
+    jQuery('#js_meta_box .inside').prepend('<nav id="nav-tab-js" class="nav-tab-wrapper wb-nav-tab-wrapper nav-tab-assets"></nav>');
+    jQuery('#js_meta_box .block-asset').each(function(){
+       jQuery('#nav-tab-js').append('<div class="nav-tab wb-nav-tab" data-asset="'+jQuery(this).attr('id')+'">'+ jQuery(this).find('h3').html() + '</div>');
+       jQuery(this).find('h3').hide();
+    });
+    
+    jQuery('.nav-tab-assets .wb-nav-tab').on('click', function(){
+        jQuery(this).closest('.inside').find('.block-asset').hide();
+        jQuery('#'+jQuery(this).data('asset')).show();
+        jQuery(this).siblings('.nav-tab-active').removeClass('nav-tab-active');
+        jQuery(this).addClass('nav-tab-active');
+    });
+    jQuery('.block-asset').hide();
+    
+    jQuery('#css_meta_box .block-asset').first().show();
+    jQuery('#nav-tab-css .nav-tab').first().addClass('nav-tab-active');
+    
+    jQuery('#js_meta_box .block-asset').first().show();
+    jQuery('#nav-tab-js .nav-tab').first().addClass('nav-tab-active');
+    
+    
 });
 
 document.addEventListener('DOMContentLoaded', function() {

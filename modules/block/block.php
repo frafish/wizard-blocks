@@ -49,7 +49,9 @@ class Block extends Module_Base {
         "provides",
         "usesContext",
         "supports",
-        "providesContext"
+        "providesContext",
+        "example",
+        "variatios"
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
     public static $apiVersions = [
