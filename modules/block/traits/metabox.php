@@ -167,36 +167,23 @@ trait Metabox {
             $json = $this->get_json_data($post->post_name);
             $basepath = $this->get_blocks_dir($post->post_name) . DIRECTORY_SEPARATOR;
         }
-        ?>
-
-        <div class="block-asset" id="block-asset-style">
-        <h3><label for="_block_style"><?php esc_attr_e('Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type frontend and editor styles definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'style';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
-
-        <div class="block-asset" id="block-asset-viewStyle">
-        <h3><label for="_block_viewStyle"><?php esc_attr_e('View Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type frontend styles definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'viewStyle';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
-
-        <div class="block-asset" id="block-asset-editorStyle">
-        <h3><label for="_block_editorStyle"><?php esc_attr_e('Editor Style', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-style"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type editor styles definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'editorStyle';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
         
-        <?php
+        $css_assets = [
+            'style' => __('Block type frontend and editor styles definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'),
+            'viewStyle' => __('Block type frontend styles definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'),
+            'editorStyle' => __('Block type editor styles definition. They will only be enqueued in the context of the editor.', 'wizard-blocks')
+        
+        ];
+        
+        foreach ($css_assets as $asset => $hint) { ?>
+        <div class="block-asset" id="block-asset-<?php echo esc_attr($asset); ?>">
+            <h3><label for="_block_<?php echo esc_attr($asset); ?>"><?php echo esc_attr(ucwords(\WizardBlocks\Core\Helper::camel_to_slug($asset, ' '))); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#<?php echo esc_attr(\WizardBlocks\Core\Helper::camel_to_slug($asset)); ?>"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php echo esc_attr($hint); ?></i></p>
+            <?php
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
+        </div>
+        <?php }
     }
 
     public function meta_fields_build_js_callback($post, $metabox) {
@@ -216,43 +203,25 @@ trait Metabox {
 
         // Get WordPress' media upload URL
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
-        ?>
-        <div class="block-asset" id="block-asset-editorScript">
-        <h3><label for="_block_editorScript"><?php esc_attr_e('Editor Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#editor-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type editor scripts definition. They will only be enqueued in the context of the editor.', 'wizard-blocks'); ?></i></p>
-        <?php
-        // ' style="background-color: white; cursor: not-allowed;" rows="15" readonly'
-        $asset = 'editorScript';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
+        
+        $js_assets = [
+            'script' => __('Block type frontend and editor scripts definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'),
+            'viewScript' => __('Block type frontend scripts definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'),
+            'viewScriptModule' => __('Block type frontend script module definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'),
+            'editorScript' => __('Block type editor scripts definition. They will only be enqueued in the context of the editor.', 'wizard-blocks')
+        
+        ];
+        
+        foreach ($js_assets as $asset => $hint) { ?>
+        <div class="block-asset" id="block-asset-<?php echo esc_attr($asset); ?>">
+            <h3><label for="_block_<?php echo esc_attr($asset); ?>"><?php echo esc_attr(ucwords(\WizardBlocks\Core\Helper::camel_to_slug($asset, ' '))); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#<?php echo esc_attr(\WizardBlocks\Core\Helper::camel_to_slug($asset)); ?>"><span class="dashicons dashicons-info-outline"></span></a></h3>
+            <p class="hint"><i><?php echo esc_attr($hint); ?></i></p>
+            <?php
+            $this->asset_form($json, $asset, $basepath, $post);
+            ?>
         </div>
+        <?php } ?>
 
-        <div class="block-asset" id="block-asset-script">
-        <h3><label for="_block_script"><?php esc_attr_e('Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type frontend and editor scripts definition. They will be enqueued both in the editor and when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'script';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
-
-        <div class="block-asset" id="block-asset-viewScript">
-        <h3><label for="_block_viewScript"><?php esc_attr_e('View Script', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type frontend scripts definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'viewScript';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
-
-        <div class="block-asset" id="block-asset-viewScriptModule">
-        <h3><label for="_block_viewScriptModule"><?php esc_attr_e('View Script Module', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#view-script-module"><span class="dashicons dashicons-info-outline"></span></a></h3>
-        <p class="hint"><i><?php esc_attr_e('Block type frontend script module definition. They will be enqueued only when viewing the content on the front of the site.', 'wizard-blocks'); ?></i></p>
-        <?php
-        $asset = 'viewScriptModule';
-        $this->asset_form($json, $asset, $basepath, $post);
-        ?>
-        </div>
         <?php
     }
 
