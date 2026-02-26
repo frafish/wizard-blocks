@@ -27,7 +27,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #135e96;
+    background: var(--wp-admin-theme-color-darker-10, #135e96);
     -webkit-transition: .4s;
     transition: .4s;
 }

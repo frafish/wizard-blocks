@@ -98,6 +98,9 @@ jQuery(document).ready(function ($) {
     var _block_blockHooks = wp.codeEditor.initialize(jQuery('#_block_blockHooks'), editorSettings);
     var _block_extra = wp.codeEditor.initialize(jQuery('#_block_extra'), editorSettings);
 
+    jQuery('.block-supports .support input').on('change', function(){
+       jQuery(this).closest('.support').addClass('text-accent'); 
+    });
 
     jQuery( ".CodeMirror" ).resizable({
         handles: 'se, s' // Only allow resizing from the top and bottom
@@ -351,14 +354,14 @@ jQuery(document).ready(function ($) {
                         delete(element.help);
                     }
                     if (element.hasOwnProperty('default')) {
-                        if (row.find('.type').val() == 'object') {
+                        if (['object', 'array'].includes(row.find('.type').val())) {
                             element.default = JSON.stringify(element.default);
                         }
                         row.find('.default').val(element.default);
                         delete(element.default);
                     }
                     if (element.hasOwnProperty('selected')) {
-                        row.find('.default').val(element.selected);
+                        row.find('.default').val(element.selected);// ???
                         delete(element.selected);
                     }
                     /*if (element.hasOwnProperty('template')) {
@@ -494,13 +497,13 @@ jQuery(document).ready(function ($) {
                 }
                 if (row.find('.default').val()) {
                     let defa = row.find('.default').val();
-                    if (attributes[key]['type'] == 'number' || attributes[key]['type'] == 'integer') {
+                    if (['number', 'integer'].includes(attributes[key]['type'])) {
                         defa = parseFloat(defa);
                     }
                     if (attributes[key]['type'] == 'boolean') {
-                        defa = defa == 'true';
+                        defa == 'true';
                     }
-                    if (attributes[key]['type'] == 'object') {
+                    if (['object', 'array'].includes(attributes[key]['type'])) {
                         defa = JSON.parse(defa);
                     }
                     if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
@@ -768,6 +771,40 @@ jQuery(document).ready(function ($) {
     jQuery('.wb-hide').hide();
     jQuery('.handlediv.to-close').trigger('click');
     jQuery('.handlediv.to-close').removeClass('to-close');
+    
+    
+    jQuery( ".wb-codemirror-js, .wb-codemirror-css" ).each(function() {
+        jQuery(this).siblings('.CodeMirror').prepend('<button type="button" class="button dashicons-before dashicons-editor-outdent beautify" style="margin-bottom: 5px;" title="'+wp.i18n.__('Beautify Code', 'wizard-blocks')+'"></button>');
+
+    });
+    jQuery(document).on('click', '.beautify', function(e) {
+        e.preventDefault();
+        var $textarea = jQuery(this).parent().siblings('textarea');
+        var editorElement = jQuery(this).parent('.CodeMirror')[0];
+        var cmInstance = editorElement ? editorElement.CodeMirror : null;
+        if (cmInstance) {
+            var uglyCode = cmInstance.getValue();
+            var mode = cmInstance.getOption('mode');
+            console.log(mode);
+            var beautifiedCode = "";
+            var options = { 
+                indent_size: 2, 
+                space_in_empty_paren: true,
+                preserve_newlines: true
+            };
+            if (mode === 'javascript' || mode === 'application/ld+json' || mode === 'json') {
+                // Gestisce JS e JSON
+                beautifiedCode = js_beautify(uglyCode, options);
+            } else if (mode === 'css') {
+                // Gestisce CSS (richiede beautify-css.js)
+                beautifiedCode = css_beautify(uglyCode, options);
+            }
+            cmInstance.setValue(beautifiedCode);
+        } else {
+            var ugly = $textarea.val();
+            $textarea.val(js_beautify(ugly));
+        }
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -788,3 +825,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+

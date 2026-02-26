@@ -69,15 +69,9 @@ Trait Icons {
         }
     }
 
-    function save_block_icon($block_name, $icon_name = 'icon', $folder = '') {
+    function save_block_icon($block_name, $icon_name = 'icon', $folder = '', $input = '_block') {
         //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
         $icon = '';
-        $input = '_block';
-        if ($folder) {
-            if ($folder == 'variations') {
-                $input = 'variation';
-            }
-        }
         if (!empty($_POST[$input.'_icon'])) {
             $icon = sanitize_key(wp_unslash($_POST[$input.'_icon']));
         } else {

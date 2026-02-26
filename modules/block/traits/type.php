@@ -201,7 +201,7 @@ trait Type {
                 //update_post_meta($revision_id, 'zip', $this->revision);
             }
             // create new zip with new block folder
-            //$this->generate_block_zip($json['name'], 'revision');
+            //self::generate_block_zip($json['name'], 'revision');
         }
     }
 
@@ -227,15 +227,15 @@ trait Type {
 
                 //var_dump($post); die();
                 $this->revision = strtotime($latest_revision->post_modified); //date('U');
-                $filename = $this->get_block_zip_filename($json['name'], true) . '_' . $this->revision . '.zip';
-                $this->generate_block_zip($json['name'], 'revision', $filename);
+                $filename = \WizardBlocks\Modules\Admin\Admin::get_block_zip_filename($json['name'], true) . '_' . $this->revision . '.zip';
+                \WizardBlocks\Modules\Admin\Admin::generate_block_zip($json['name'], 'revision', $filename);
             }
         }
         return $json;
     }
 
     public function get_block_revision($block, $revision = '') {
-        $basename = $this->get_block_zip_filename($block, true);
+        $basename = \WizardBlocks\Modules\Admin\Admin::get_block_zip_filename($block, true);
         $filename = $this->get_blocks_dir() . DIRECTORY_SEPARATOR . 'revision' . DIRECTORY_SEPARATOR . $basename . ($revision ? '_' . $revision : '_*') . '.zip';
         //var_dump($filename);
         $zip = glob($filename);

@@ -103,10 +103,10 @@ class Preview extends Module_Base {
                 $attributes = $wb->get_default_attributes($block_json);
                 //var_dump($attributes);
                 $block_content = $wb->render($attributes, $content, $block);
-
+                $block_class = $wb->get_block_class($block_json);
                 //if (isset($_GET['context']) && $_GET['context'] == 'preview') {
                 if (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe') {
-                    $block_content .= '<style>header,footer,#wpadminbar,.wp-block-post-title{display:none !important;}html,body,main{margin:0 !important;padding:0 !important;}</style>';
+                    $block_content .= '<style>header,footer,#wpadminbar,.wp-block-group:not(main) > *:not(.'.$block_class.'){display:none !important;}html,body,main{margin:0 !important;padding:0 !important;}</style>';
                 }
 
                 $content = $block_content;

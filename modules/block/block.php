@@ -22,6 +22,316 @@ class Block extends Module_Base {
     
     public static $instance = null;
     
+    // block JSON properties
+    public static $fields = [
+        "\$schema",
+        "apiVersion",
+        "name",
+        "title",
+        "category",
+        "keywords",
+        "parent",
+        "ancestor",
+        "allowedBlocks",
+        "icon",
+        "description",
+        "version",
+        "textdomain",
+        "attributes",
+        "viewScript",
+        "editorScript",
+        "editorScriptModule",
+        "editorStyle",
+        "script",
+        "style",
+        "viewStyle",
+        "render",
+        "provides",
+        "usesContext",
+        "supports",
+        "providesContext"
+    ];
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
+    public static $apiVersions = [
+        1,
+        2,
+        3
+    ];
+    // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category
+    public static $categories = [
+        'text',
+        'media',
+        'design',
+        'widgets',
+        'theme',
+        'embed'
+    ];
+    // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+    public static $supports = [
+        'allowedBlocks' => false,
+        'anchor' => false,
+        'autoRegister' => false,
+        'align' => false,
+        'alignWide' => true,
+        'ariaLabel' => false,
+        'background.backgroundImage' => false, // Enable background image control.
+        'background.backgroundSize' => false, // Enable background image + size control.
+        //'background.backgroundPosition' => false,
+        'className' => true,
+        'color.background' => true,
+        'color.button' => false,
+        'color.enableContrastChecker' => true,
+        'color.gradients' => false,
+        'color.heading' => false,
+        'color.link' => false,
+        'color.text' => true,
+        'customClassName' => true,
+        'dimensions.aspectRatio' => true,
+        'dimensions.minHeight' => false,
+        'filter.duotone' => false,
+        'html' => true,
+        'inserter' => true,
+        'interactivity.clientNavigation' => false,
+        'interactivity.interactive' => false,
+        'layout.allowSwitching' => false,
+        'layout.allowEditing' => true,
+        'layout.allowInheriting' => true,
+        'layout.allowSizingOnChildren' => false,
+        'layout.allowVerticalAlignment' => true,
+        'layout.allowJustification' => true,
+        'layout.allowOrientation' => true,
+        'layout.allowCustomContentAndWideSize' => true,
+        'lock' => true,
+        'multiple' => true,
+        'position.sticky' => false,
+        'renaming' => true,
+        'reusable' => true,
+        'shadow' => false,
+        'spacing.margin' => false,
+        'spacing.padding' => false,
+        'spacing.blockGap' => false,
+        'typography.fontSize' => false,
+        'typography.lineHeight' => false,
+        'typography.textAlign' => false,
+        'splitting' => false
+    ];
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
+    public static $attributes_type = [
+        '' => 'Auto',
+        'string' => 'String',
+        'boolean' => 'Boolean',
+        'number' => 'Number',
+        'integer' => 'Integer',
+        'array' => 'Array',
+        'null' => 'Null',
+        'object' => 'Object',
+    ];
+    //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
+    //https://developer.wordpress.org/news/2023/06/02/using-block-inspector-sidebar-groups/
+    public static $attributes_position = [
+        "default" => 'Settings Sidebar - Panel Content',
+        //"settings" => 'Settings Sidebar',
+        //"color" => 'Settings Sidebar - Panel Content',
+        //"typography" => 'Settings Sidebar - Panel Typography',
+        //"dimensions" => 'Settings Sidebar - Panel Dimensions',
+        //"border" => 'Settings Sidebar - Panel Border',
+        "advanced" => 'Settings Sidebar - Panel Advanced',
+        //"position" => 'Settings Sidebar - Panel Position',
+        "style" => 'Settings Sidebar - Panel Style',
+        //"list" => 'Settings Sidebar - Children List',
+        "toolbar" => 'Block Toolbar',
+        //"menu" => 'Block Toolbar - Dropdown Menu',
+        "block" => 'Block Content canvas',
+    ];
+    //https://developer.wordpress.org/block-editor/reference-guides/components/
+    //https://wp-gb.com/
+    //https://wordpress.github.io/gutenberg/
+    public static $attributes_component = [
+        'AlignmentMatrixControl' => 'Alignment Matrix',
+        'AnglePickerControl' => 'Angle',
+        //'BaseControl' => 'Base',
+        //'BorderBoxControl' => 'Border Box',
+        //'BorderControl' => 'Border',
+        'BoxControl' => 'Box Sizing',
+        'ButtonGroup' => 'Buttons',
+        'CheckboxControl' => 'Checkbox',
+        'ComboboxControl' => 'Combobox',
+        'ColorPicker' => 'Color',
+        'DatePicker' => 'Date',
+        'DateTimePicker' => 'DateTime',
+        //'Divider' => 'Divider', // same of HorizontalRule
+        //'Dropdown' => 'Dropdown',
+        //'DuotonePicker' => 'Duotone',
+        'ExternalLink' => 'External Link',
+        'FocalPointPicker' => 'Focal Point',
+        'FontSizePicker' => '​Font Size',
+        //'FormToggle' => 'Toggle',
+        //'GradientPicker' => 'Gradient',
+        'InnerBlocks' => 'Inner Blocks',
+        //'InputControl' => 'Email', //experimental
+        //'Heading' => 'Heading',
+        'HorizontalRule' => '​Horizontal Rule',
+        //'InputControl' => 'InputControl', //experimental
+        'MediaUpload' => 'Media',
+        //'NumberControl' => 'Number', //experimental
+        'RadioControl' => 'Radio',
+        //'RadioGroup' => 'RadioGroup', //experimental
+        //'RichText' => 'RichText', //replaced by InnerBlocks, TODO
+        'SelectControl' => 'Select',
+        //'InputControl' => 'Tel', //experimental
+        'TextareaControl' => 'TextArea',
+        'TextControl' => 'Text',
+        'TimePicker' => 'Time',
+        'ToggleControl' => 'Toggle',
+            //'InputControl' => 'URL', //experimental
+
+            /*
+             * TODO - wp.components
+              AlignmentMatrixControl:
+              AnglePickerControl:
+              Animate:
+              Autocomplete:
+              BaseControl:
+              BlockQuotation:
+              BorderBoxControl:
+              BorderControl:
+              BoxControl:
+              Button:
+              ButtonGroup:
+              Card:
+              CardBody:
+              CardDivider:
+              CardFooter:
+              CardHeader:
+              CardMedia:
+              CheckboxControl:
+              Circle:
+              ClipboardButton:
+              ColorIndicator:
+              ColorPalette:
+              ColorPicker:
+              ComboboxControl:
+              Composite:
+              CustomGradientPicker:
+              CustomSelectControl:
+              Dashicon:
+              DatePicker:
+              DateTimePicker:
+              Disabled:
+              Draggable:
+              DropZone:
+              DropZoneProvider:
+              Dropdown:
+              DropdownMenu:
+              DuotonePicker:
+              DuotoneSwatch:
+              ExternalLink:
+              Fill:
+              Flex:
+              FlexBlock:
+              FlexItem:
+              FocalPointPicker:
+              FocusReturnProvider:
+              FocusableIframe:
+              ​FontSizePicker:
+              ​FormFileUpload:
+              FormToggle:
+              FormTokenField:
+              G:
+              GradientPicker:
+              Guide:
+              GuidePage:
+              ​HorizontalRule:
+              Icon:
+              ​IconButton:
+              ​IsolatedEventContainer:
+              ​KeyboardShortcuts:
+              ​Line:
+              ​MenuGroup:
+              ​MenuItem:
+              ​MenuItemsChoice:
+              ​Modal:
+              ​NavigableMenu:
+              ​Navigator:
+              ​Notice:
+              ​NoticeList:
+              ​Panel:
+              ​PanelBody:
+              ​PanelHeader:
+              ​PanelRow:
+              ​Path:
+              ​Placeholder:
+              ​Polygon:
+              ​Popover:
+              ​ProgressBar:
+              ​QueryControls:
+              ​RadioControl:
+              ​RangeControl:
+              ​Rect:
+              ​ResizableBox:
+              ​ResponsiveWrapper:
+              ​SVG:
+              ​SandBox:
+              ​ScrollLock:
+              ​SearchControl:
+              ​SelectControl:
+              ​Slot:
+              ​SlotFillProvider:
+              Snackbar:
+              ​SnackbarList:
+              ​Spinner:
+              ​TabPanel:
+              ​TabbableContainer:
+              ​TextControl:
+              ​TextHighlight:
+              ​TextareaControl:
+              ​TimePicker:
+              ​Tip:
+              ​ToggleControl:
+              ​Toolbar:
+              ​ToolbarButton:
+              ​ToolbarDropdownMenu:
+              ​ToolbarGroup:
+              ​ToolbarItem:
+              ​Tooltip:
+              ​TreeSelect:
+              ​VisuallyHidden:
+             */
+    ];
+    //https://www.w3schools.com/html/html_form_input_types.asp
+    public static $attributes_input_type = [
+        'text',
+        //'button',
+        'checkbox',
+        'color',
+        'date',
+        //'datetime-local',
+        'email',
+        //'file',
+        //'hidden',
+        //'image',
+        'month',
+        'number',
+        'password',
+        //'radio',
+        'range',
+        //'reset',
+        //'search',
+        //'submit',
+        'tel',
+        'time',
+        'url',
+        'week',
+    ];
+    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#value-source
+    public static $attributes_source = [
+        'attribute' => 'Attribute',
+        'text' => 'Text',
+        'html' => 'HTML',
+        'query' => 'Query',
+        'meta' => 'Meta (deprecated)'
+    ];
+    
     public static $assets = [
             'script' => 'js',
             'viewScript' => 'js',
@@ -31,6 +341,13 @@ class Block extends Module_Base {
             'viewStyle' => 'css',
             'editorStyle' => 'css',
             'render' => 'php'
+        ];
+    
+    public static $assets_alias = [
+            'style.css' => 'style-index.css',
+            'editorStyle.css' => 'index.css',
+            'editorScript.js' => 'index.js',
+            'viewScript.js' => 'view.js'
         ];
 
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
@@ -306,6 +623,17 @@ class Block extends Module_Base {
             return end($tmp);
         }
         return 'block';
+    }
+    
+    public function get_block_class($block) {
+        if (!empty($block['name'])) {
+            $block_name = $block['name'];
+        }
+        if (is_string($block)) {
+            $block_name = $block;
+        }
+        $class = str_replace('/','-',$block_name);
+        return 'wp-block-'.$class;
     }
     
     public function get_block_textdomain($block) {

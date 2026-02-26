@@ -1,4 +1,7 @@
-
+.wp-core-ui .button-ai > .button:hover,
+.wp-core-ui .button-ai > .button {    
+    background-color: white;
+}
 .button-ai {
   position: relative;
   padding: 2px; /* Spessore del bordo luminoso */

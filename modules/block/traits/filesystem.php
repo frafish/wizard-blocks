@@ -49,7 +49,7 @@ Trait Filesystem {
      * it is created and has protection files
      * @return string
      */
-    private function get_ensure_blocks_dir($slug = '', $textdomain = '*') {
+    public function get_ensure_blocks_dir($slug = '', $textdomain = '*') {
         //var_dump($slug); var_dump($textdomain);
         $path = $this->get_blocks_dir($slug, $textdomain);
         if ($slug) {
@@ -145,7 +145,25 @@ Trait Filesystem {
             $asset_file = $this->get_asset_file($json, $asset, $basepath);
         }
         if (file_exists($asset_file)) {
-            return $this->get_filesystem()->get_contents($asset_file);
+            $content = $this->get_filesystem()->get_contents($asset_file);
+            //var_dump($asset);
+            /*
+            if (isset(self::$assets[$asset])) {
+                switch(self::$assets[$asset]) {
+                    case 'css':
+                        $content = \Shopping24\CSSBeautifier\CSSBeautifier::run($content); 
+                        break;
+                    case 'js':
+                        $content = str_replace('...','___SPREAD_OPERATOR___', $content);
+                        $obj = new \JSBeautify\JSBeautify($content);
+                        $content = $obj->getResult();
+                        $content = str_replace('= >', '=>', $content);
+                        $content = str_replace('___SPREAD_OPERATOR___', '...', $content);
+                        break;
+                }
+            }
+            */
+            return $content;
         }
         return '';
     }

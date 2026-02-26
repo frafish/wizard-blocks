@@ -8,316 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 trait Metabox {
 
-    // block JSON properties
-    public static $fields = [
-        "\$schema",
-        "apiVersion",
-        "name",
-        "title",
-        "category",
-        "keywords",
-        "parent",
-        "ancestor",
-        "allowedBlocks",
-        "icon",
-        "description",
-        "version",
-        "textdomain",
-        "attributes",
-        "viewScript",
-        "editorScript",
-        "editorScriptModule",
-        "editorStyle",
-        "script",
-        "style",
-        "viewStyle",
-        "render",
-        "provides",
-        "usesContext",
-        "supports",
-        "providesContext"
-    ];
-    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
-    public static $apiVersions = [
-        1,
-        2,
-        3
-    ];
-    // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category
-    public static $categories = [
-        'text',
-        'media',
-        'design',
-        'widgets',
-        'theme',
-        'embed'
-    ];
-    // https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
-    public static $supports = [
-        'allowedBlocks' => false,
-        'anchor' => false,
-        'auto_register' => false,
-        'align' => false,
-        'alignWide' => true,
-        'ariaLabel' => false,
-        'background.backgroundImage' => false, // Enable background image control.
-        'background.backgroundSize' => false, // Enable background image + size control.
-        //'background.backgroundPosition' => false,
-        'className' => true,
-        'color.background' => true,
-        'color.button' => false,
-        'color.enableContrastChecker' => true,
-        'color.gradients' => false,
-        'color.heading' => false,
-        'color.link' => false,
-        'color.text' => true,
-        'customClassName' => true,
-        'dimensions.aspectRatio' => true,
-        'dimensions.minHeight' => false,
-        'filter.duotone' => false,
-        'html' => true,
-        'inserter' => true,
-        'interactivity.clientNavigation' => false,
-        'interactivity.interactive' => false,
-        'layout.allowSwitching' => false,
-        'layout.allowEditing' => true,
-        'layout.allowInheriting' => true,
-        'layout.allowSizingOnChildren' => false,
-        'layout.allowVerticalAlignment' => true,
-        'layout.allowJustification' => true,
-        'layout.allowOrientation' => true,
-        'layout.allowCustomContentAndWideSize' => true,
-        'lock' => true,
-        'multiple' => true,
-        'position.sticky' => false,
-        'renaming' => true,
-        'reusable' => true,
-        'shadow' => false,
-        'spacing.margin' => false,
-        'spacing.padding' => false,
-        'spacing.blockGap' => false,
-        'typography.fontSize' => false,
-        'typography.lineHeight' => false,
-        'typography.textAlign' => false,
-        'splitting' => false
-    ];
-    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
-    public static $attributes_type = [
-        '' => 'Auto',
-        'string' => 'String',
-        'boolean' => 'Boolean',
-        'number' => 'Number',
-        'integer' => 'Integer',
-        'array' => 'Array',
-        'null' => 'Null',
-        'object' => 'Object',
-    ];
-    //https://make.wordpress.org/core/2023/03/07/introduction-of-block-inspector-tabs/
-    //https://developer.wordpress.org/news/2023/06/02/using-block-inspector-sidebar-groups/
-    public static $attributes_position = [
-        "default" => 'Settings Sidebar - Panel Content',
-        //"settings" => 'Settings Sidebar',
-        //"color" => 'Settings Sidebar - Panel Content',
-        //"typography" => 'Settings Sidebar - Panel Typography',
-        //"dimensions" => 'Settings Sidebar - Panel Dimensions',
-        //"border" => 'Settings Sidebar - Panel Border',
-        "advanced" => 'Settings Sidebar - Panel Advanced',
-        //"position" => 'Settings Sidebar - Panel Position',
-        "style" => 'Settings Sidebar - Panel Style',
-        //"list" => 'Settings Sidebar - Children List',
-        "toolbar" => 'Block Toolbar',
-        //"menu" => 'Block Toolbar - Dropdown Menu',
-        "block" => 'Block Content canvas',
-    ];
-    //https://developer.wordpress.org/block-editor/reference-guides/components/
-    //https://wp-gb.com/
-    //https://wordpress.github.io/gutenberg/
-    public static $attributes_component = [
-        'AlignmentMatrixControl' => 'Alignment Matrix',
-        'AnglePickerControl' => 'Angle',
-        //'BaseControl' => 'Base',
-        //'BorderBoxControl' => 'Border Box',
-        //'BorderControl' => 'Border',
-        'BoxControl' => 'Box Sizing',
-        'ButtonGroup' => 'Buttons',
-        'CheckboxControl' => 'Checkbox',
-        'ComboboxControl' => 'Combobox',
-        'ColorPicker' => 'Color',
-        'DatePicker' => 'Date',
-        'DateTimePicker' => 'DateTime',
-        //'Divider' => 'Divider', // same of HorizontalRule
-        //'Dropdown' => 'Dropdown',
-        //'DuotonePicker' => 'Duotone',
-        'ExternalLink' => 'External Link',
-        'FocalPointPicker' => 'Focal Point',
-        'FontSizePicker' => '​Font Size',
-        //'FormToggle' => 'Toggle',
-        //'GradientPicker' => 'Gradient',
-        'InnerBlocks' => 'Inner Blocks',
-        //'InputControl' => 'Email', //experimental
-        //'Heading' => 'Heading',
-        'HorizontalRule' => '​Horizontal Rule',
-        //'InputControl' => 'InputControl', //experimental
-        'MediaUpload' => 'Media',
-        //'NumberControl' => 'Number', //experimental
-        'RadioControl' => 'Radio',
-        //'RadioGroup' => 'RadioGroup', //experimental
-        //'RichText' => 'RichText', //replaced by InnerBlocks, TODO
-        'SelectControl' => 'Select',
-        //'InputControl' => 'Tel', //experimental
-        'TextareaControl' => 'TextArea',
-        'TextControl' => 'Text',
-        'TimePicker' => 'Time',
-        'ToggleControl' => 'Toggle',
-            //'InputControl' => 'URL', //experimental
-
-            /*
-             * TODO - wp.components
-              AlignmentMatrixControl:
-              AnglePickerControl:
-              Animate:
-              Autocomplete:
-              BaseControl:
-              BlockQuotation:
-              BorderBoxControl:
-              BorderControl:
-              BoxControl:
-              Button:
-              ButtonGroup:
-              Card:
-              CardBody:
-              CardDivider:
-              CardFooter:
-              CardHeader:
-              CardMedia:
-              CheckboxControl:
-              Circle:
-              ClipboardButton:
-              ColorIndicator:
-              ColorPalette:
-              ColorPicker:
-              ComboboxControl:
-              Composite:
-              CustomGradientPicker:
-              CustomSelectControl:
-              Dashicon:
-              DatePicker:
-              DateTimePicker:
-              Disabled:
-              Draggable:
-              DropZone:
-              DropZoneProvider:
-              Dropdown:
-              DropdownMenu:
-              DuotonePicker:
-              DuotoneSwatch:
-              ExternalLink:
-              Fill:
-              Flex:
-              FlexBlock:
-              FlexItem:
-              FocalPointPicker:
-              FocusReturnProvider:
-              FocusableIframe:
-              ​FontSizePicker:
-              ​FormFileUpload:
-              FormToggle:
-              FormTokenField:
-              G:
-              GradientPicker:
-              Guide:
-              GuidePage:
-              ​HorizontalRule:
-              Icon:
-              ​IconButton:
-              ​IsolatedEventContainer:
-              ​KeyboardShortcuts:
-              ​Line:
-              ​MenuGroup:
-              ​MenuItem:
-              ​MenuItemsChoice:
-              ​Modal:
-              ​NavigableMenu:
-              ​Navigator:
-              ​Notice:
-              ​NoticeList:
-              ​Panel:
-              ​PanelBody:
-              ​PanelHeader:
-              ​PanelRow:
-              ​Path:
-              ​Placeholder:
-              ​Polygon:
-              ​Popover:
-              ​ProgressBar:
-              ​QueryControls:
-              ​RadioControl:
-              ​RangeControl:
-              ​Rect:
-              ​ResizableBox:
-              ​ResponsiveWrapper:
-              ​SVG:
-              ​SandBox:
-              ​ScrollLock:
-              ​SearchControl:
-              ​SelectControl:
-              ​Slot:
-              ​SlotFillProvider:
-              Snackbar:
-              ​SnackbarList:
-              ​Spinner:
-              ​TabPanel:
-              ​TabbableContainer:
-              ​TextControl:
-              ​TextHighlight:
-              ​TextareaControl:
-              ​TimePicker:
-              ​Tip:
-              ​ToggleControl:
-              ​Toolbar:
-              ​ToolbarButton:
-              ​ToolbarDropdownMenu:
-              ​ToolbarGroup:
-              ​ToolbarItem:
-              ​Tooltip:
-              ​TreeSelect:
-              ​VisuallyHidden:
-             */
-    ];
-    //https://www.w3schools.com/html/html_form_input_types.asp
-    public static $attributes_input_type = [
-        'text',
-        //'button',
-        'checkbox',
-        'color',
-        'date',
-        //'datetime-local',
-        'email',
-        //'file',
-        //'hidden',
-        //'image',
-        'month',
-        'number',
-        'password',
-        //'radio',
-        'range',
-        //'reset',
-        //'search',
-        //'submit',
-        'tel',
-        'time',
-        'url',
-        'week',
-    ];
-    //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#value-source
-    public static $attributes_source = [
-        'attribute' => 'Attribute',
-        'text' => 'Text',
-        'html' => 'HTML',
-        'query' => 'Query',
-        'meta' => 'Meta (deprecated)'
-    ];
-
 // register meta box
     public function meta_fields_add_meta_box() {
         add_meta_box(
@@ -454,67 +144,6 @@ trait Metabox {
         <?php
     }
 
-    public function assets_merge($assets, $default) {
-
-        // add default
-        if (!in_array($default, $assets)) {
-            array_unshift($assets, $default);
-        }
-
-        // remove minified version
-        $pieces = explode('.', $default);
-        $min = array_pop($pieces);
-        $min = implode('.', $pieces) . '.min.' . $min;
-        //var_dump($min);
-        if ($key = array_search($min, $assets)) {
-            unset($assets[$key]);
-        }
-        //var_dump($assets);
-        return $assets;
-    }
-
-    public function asset_form($json, $asset_file, $basepath, $post) {
-        $default = $this->get_asset_default_file($json, $asset_file, $basepath);
-        $assets = $this->get_asset_files($json, $asset_file, $basepath);
-        //var_dump($assets);
-        if (count($assets) > 1 || (count($assets) == 1 && reset($assets) != $default)) {
-            ?> 
-            <nav class="nav-tab-wrapper wb-nav-tab-wrapper">
-                <?php
-                $assets = $this->assets_merge($assets, $default);
-                foreach ($assets as $key => $asset) {
-                    ?>
-                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo esc_attr(basename($asset)); ?></a>
-            <?php } ?>
-            </nav>
-            <?php } ?>
-
-        <div class="wb-files">
-            <?php
-            $assets = $this->assets_merge($assets, $default);
-            foreach ($assets as $key => $asset) {
-                //var_dump($asset);
-                $tmp = explode(DIRECTORY_SEPARATOR, $asset);
-                $asset_name = end($tmp);
-                ?>
-                <p class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
-                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
-                </p>              
-            <?php }
-        ?>
-        </div>
-        <?php
-        // Get WordPress' media upload URL
-        $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
-        $txt = empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file]);
-        ?>
-        <p class="d-flex assets">
-            <input type="text" id="_block_<?php echo esc_attr($asset_file); ?>" name="_block_<?php echo esc_attr($asset_file); ?>" value="<?php echo esc_attr($txt); ?>" placeholder="file:./<?php echo esc_attr($asset_file); ?>.<?php echo esc_attr(self::$assets[$asset_file]); ?>">
-            <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
-        </p>
-        <?php
-    }
-
     // build meta box
     public function meta_fields_build_css_callback($post, $metabox) {
         $plugin_name = $this->get_plugin_slug();
@@ -567,6 +196,9 @@ trait Metabox {
             //$is_editor_script_generated = strpos($this->get_asset_file_contents($json, 'editorScript', $basepath), 'generated by ' . $plugin_name);
             //var_dump($is_editor_script_generated);
         }
+        
+        $this->enqueue_script('js-beautify', 'assets/lib/js-beautify/beautify-js.min.js', array(), '1.15.1', true);
+        $this->enqueue_script('css-beautify', 'assets/lib/js-beautify/beautify-css.min.js', array(), '1.15.1', true);    
 
         // Get WordPress' media upload URL
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
@@ -627,6 +259,7 @@ trait Metabox {
                 Utils::_notice(esc_html__('Please verify that Attributes is a valid JSON data!', 'wizard-blocks'), 'danger error inline');
             }
         }
+        //var_dump($json['attributes']);
         ?>
         <div class="inside">
 
@@ -869,45 +502,50 @@ trait Metabox {
                 $supports_array = [];
                 foreach (self::$supports as $sup => $default) {
                     $sup = esc_attr($sup);
+
+                    $value = $default;
+                    if (!empty($json['supports'])) {
+                        if (isset($json['supports'][$sup])) {
+                            if (is_bool($json['supports'][$sup])) {
+                                $value = $json['supports'][$sup];
+                            } else {
+                                $custom[$sup] = $value;
+                            }
+                        } else {
+                            $tmp = explode('.', $sup, 2);
+                            if (count($tmp) > 1) {
+                                $supports_array[reset($tmp)] = reset($tmp);
+                                if (isset($json['supports'][reset($tmp)][end($tmp)])) {
+                                    if (is_bool($json['supports'][reset($tmp)][end($tmp)])) {
+                                        $value = $json['supports'][reset($tmp)][end($tmp)];
+                                    } else {
+                                        $custom[reset($tmp)][end($tmp)] = $value;
+                                    }
+                                } else {
+                                    // like interactive which can be bool or obj
+                                    if (isset($json['supports'][reset($tmp)])) {
+                                        if (is_bool($json['supports'][reset($tmp)])) {
+                                            $value = $json['supports'][reset($tmp)];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                        
+                    $changed = '';
+                    if ($value != $default) {
+                        $changed = ' text-accent';
+                    }
                     ?>
-                    <p>
+                    <p class="support support-<?php echo esc_attr($sup); ?><?php echo esc_attr($changed); ?>">
                         <label for="_block_supports_<?php echo esc_attr($sup); ?>"><b><?php echo esc_html($sup); ?></b></label><br>
                         <!-- <input type="checkbox" id="_block_supports_<?php echo esc_attr($sup); ?>" name="_block_supports[<?php echo esc_attr($sup); ?>]"<?php
                         if (!empty($json['supports']) && in_array($sup, $json['supports'])) {
                             echo ' checked';
                         }
                         ?>> <b><?php echo esc_attr($sup); ?></b></label> -->
-                        <?php
-                        $value = $default;
-                        if (!empty($json['supports'])) {
-                            if (isset($json['supports'][$sup])) {
-                                if (is_bool($json['supports'][$sup])) {
-                                    $value = $json['supports'][$sup];
-                                } else {
-                                    $custom[$sup] = $value;
-                                }
-                            } else {
-                                $tmp = explode('.', $sup, 2);
-                                if (count($tmp) > 1) {
-                                    $supports_array[reset($tmp)] = reset($tmp);
-                                    if (isset($json['supports'][reset($tmp)][end($tmp)])) {
-                                        if (is_bool($json['supports'][reset($tmp)][end($tmp)])) {
-                                            $value = $json['supports'][reset($tmp)][end($tmp)];
-                                        } else {
-                                            $custom[reset($tmp)][end($tmp)] = $value;
-                                        }
-                                    } else {
-                                        // like interactive which can be bool or obj
-                                        if (isset($json['supports'][reset($tmp)])) {
-                                            if (is_bool($json['supports'][reset($tmp)])) {
-                                                $value = $json['supports'][reset($tmp)];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        ?>
+                        
                         <input type="radio" id="_block_supports_<?php echo esc_attr($sup); ?>_true" name="_block_supports[<?php echo esc_attr($sup); ?>]" value="true"<?php
                         if ($value) {
                             echo ' checked';
@@ -1084,6 +722,9 @@ trait Metabox {
                     <td><input type="number" id="<?php echo $id ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>" value="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : ''); ?>"></td>
                     <?php
                     break;
+                case 'array':
+                case 'object':
+                    $attr['default'] = wp_json_encode($attr['default'], JSON_PRETTY_PRINT); 
                 case 'string':
                     //if ($akey == 'preview') break;
                 default: ?>

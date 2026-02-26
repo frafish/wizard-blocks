@@ -77,7 +77,7 @@ Trait Actions {
                                         $target_file = str_replace('/', DIRECTORY_SEPARATOR, $movefile['file']);
                                         //if (move_uploaded_file($_FILES["zip"]["tmp_name"], $target_file)) {
                                         //var_dump($target_file); die();
-                                        $this->extract_block_zip($target_file);
+                                        self::extract_block_zip($target_file);
                                         // clean tmp
                                         wp_delete_file($target_file);
                                     } else {
@@ -145,7 +145,7 @@ Trait Actions {
                                 if (!empty($_GET['block'])) {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
 
-                                    $download_url = $this->generate_block_zip($block);
+                                    $download_url = self::generate_block_zip($block);
                                     Utils::_notice(__('Block exported!', 'wizard-blocks') . ' <a href="' . $download_url . '"><span class="dashicons dashicons-download"></span></a>');
                                     // Simulate an HTTP redirect:
                                     //wp_add_inline_script('wizard-blocks-export-redirect', 'setTimeout(() => { window.location.replace(' . esc_url($download_url) . '); }, 1000);');
@@ -162,7 +162,7 @@ Trait Actions {
         }
     }
 
-    public function filter_block_json($jsons = []) {
+    public static function filter_block_json($jsons = []) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         foreach ($jsons as $jkey => $json) {
             $json_code = $wb->get_filesystem()->get_contents($json);
@@ -176,7 +176,7 @@ Trait Actions {
         return $jsons;
     }
 
-    public function generate_block_zip($block, $folder = 'zip', $filename = '') {
+    public static function generate_block_zip($block, $folder = 'zip', $filename = '') {
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $dirs = wp_upload_dir();
@@ -190,7 +190,7 @@ Trait Actions {
 
         $zip = new \ZipArchive();
 
-        $filename = $filename ? $filename : $this->get_block_zip_filename($block);
+        $filename = $filename ? $filename : self::get_block_zip_filename($block);
         $filepath = $basedir . $filename;
         list($block_textdomain, $block_slug) = explode('/', $block);
 
@@ -206,7 +206,7 @@ Trait Actions {
 
         $block_dir = $wb->get_blocks_dir($block_slug, $block_textdomain) . DIRECTORY_SEPARATOR;
 
-        $this->add_files_to_zip($block_dir, $zip);
+        self::add_files_to_zip($block_dir, $zip);
 
         /*
           $block_basedir = $this->get_blocks_dir($block_slug) . DIRECTORY_SEPARATOR;
@@ -225,7 +225,7 @@ Trait Actions {
         return $download_url;
     }
 
-    public function add_files_to_zip($folder, &$zip, $parentFolder = '') {
+    public static function add_files_to_zip($folder, &$zip, $parentFolder = '') {
         $handle = opendir($folder);
         if (!$handle) {
             return false;
@@ -240,7 +240,7 @@ Trait Actions {
                 // Add directory to zip
                 $zip->addEmptyDir($localPath);
                 // Recurse into subdirectory
-                $this->add_files_to_zip($filePath, $zip, $localPath . '/');
+                self::add_files_to_zip($filePath, $zip, $localPath . '/');
             } else {
                 // Add file to zip
                 $zip->addFile($filePath, $localPath);
@@ -250,7 +250,7 @@ Trait Actions {
         return true;
     }
 
-    public function get_block_zip_filename($block, $basename = false) {
+    public static function get_block_zip_filename($block, $basename = false) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         if (is_array($block))
             $block = $block['name'];
@@ -264,7 +264,7 @@ Trait Actions {
         return $filename;
     }
 
-    public function extract_block_zip($target_file, $notice = true) {
+    public static function extract_block_zip($target_file, $notice = true) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $tmpdir = $wb->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
         if ( class_exists( 'ZipArchive', false ) ) {
@@ -274,7 +274,7 @@ Trait Actions {
                 $zip->extractTo($tmpdir);
                 $zip->close();
                 $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
-                $jsons = $wb->filter_block_json($jsons);
+                $jsons = self::filter_block_json($jsons);
                 if (empty($jsons)) {
                     if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
                         $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
@@ -284,7 +284,7 @@ Trait Actions {
                 }
                 //var_dump($tmpdir); var_dump($jsons); die();
                 $block_post = false;
-                $jsons = $this->filter_block_json($jsons);
+                $jsons = self::filter_block_json($jsons);
                 //var_dump($jsons); die();
                 foreach ($jsons as $json) {
                     //var_dump($json);
@@ -305,7 +305,7 @@ Trait Actions {
                         list($domain, $slug) = explode('/', $args['name'], 2);
                         $dest = $wb->get_ensure_blocks_dir($slug, $domain);
                         //var_dump($jfolder); var_dump($dest); die();
-                        $this->copy_dir($jfolder, $dest);
+                        $wb->copy_dir($jfolder, $dest);
                         $block_post = $wb->get_block_post($slug);
                         if (!$block_post) {
                             $block_post_id = $wb->insert_block_post($slug, $args);

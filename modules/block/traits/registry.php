@@ -77,7 +77,7 @@ function get_registered_block($name = '') {
         $wizard_blocks = $this->get_blocks();
         foreach ($wizard_blocks as $ablock) {
             $block_slug = basename($ablock);
-            $block = $this->get_json_data($block_slug);
+            $block = $this->get_block_json($block_slug);
             $block['folder'] = $ablock;
             if (!empty($block['name'])) {
                 $blocks[$block['name']] = $block;

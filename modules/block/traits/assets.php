@@ -57,10 +57,14 @@ Trait Assets {
                         $asset_file = $unmin;
                     }
                     $asset_file = str_replace('file:', '', $asset_file);
+                    //$asset_file = str_replace('/./', DIRECTORY_SEPARATOR, $asset_file);
                     $asset_file = str_replace('/', DIRECTORY_SEPARATOR, $asset_file);
+                    //var_dump($asset_file);
                     $asset_file = $basepath . $asset_file;
-                    
+                    $asset_file = str_replace(DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $asset_file);
+                    //var_dump($asset_file);
                     if (file_exists($asset_file)) {
+                        //var_dump($asset_file);
                         // asset file in block folder
                         $asset_files[$key] = $asset_file;
                     } else {
@@ -71,6 +75,7 @@ Trait Assets {
             }            
             $asset_files = array_unique($asset_files); //die();
         }
+        //var_dump($asset_files);
         return $asset_files;
     }
     
@@ -145,7 +150,14 @@ Trait Assets {
                 }
             } else {
                 if (strpos($asset_files, 'file:./') !== false) {
-                    $asset_file = $asset_files;
+                    $file_name = str_replace('file:./', '', $asset_files);
+                    if ($ass = array_search($file_name, self::$assets_alias)) {
+                        // force native name?
+                        $asset_file = 'file:./'.$ass;
+                        //var_dump($asset_file); die();
+                    } else {
+                        $asset_file = $asset_files;
+                    }
                 }
             }
             if ($type != 'php') {
@@ -170,6 +182,78 @@ Trait Assets {
         $asset_file = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $asset_file);
         $asset_file = str_replace(DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $asset_file);
         return $asset_file;
+    }
+    
+    public function assets_merge($assets, $default) {
+
+        // add default
+        if (!in_array($default, $assets)) {
+            array_unshift($assets, $default);
+        }
+
+        // remove minified version
+        $pieces = explode('.', $default);
+        $min = array_pop($pieces);
+        $min = implode('.', $pieces) . '.min.' . $min;
+        //var_dump($min);
+        if ($key = array_search($min, $assets)) {
+            unset($assets[$key]);
+        }
+        //var_dump($assets);
+        return $assets;
+    }
+
+    public function asset_form($json, $asset_file, $basepath, $post) {
+        $default = $this->get_asset_default_file($json, $asset_file, $basepath);
+        $assets = $this->get_asset_files($json, $asset_file, $basepath);
+        //var_dump($assets); var_dump($default); var_dump($json[$asset_file]);
+        if (count($assets) > 1 || (count($assets) == 1 && reset($assets) != $default)) {
+            ?> 
+            <nav class="nav-tab-wrapper wb-nav-tab-wrapper">
+                <?php
+                $assets = $this->assets_merge($assets, $default);
+                foreach ($assets as $key => $asset) {
+                    ?>
+                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo esc_attr(basename($asset)); ?></a>
+            <?php } ?>
+            </nav>
+        <?php } ?>
+
+        <div class="wb-files">
+            <?php
+            $assets = $this->assets_merge($assets, $default);
+            //var_dump($assets);
+            foreach ($assets as $key => $asset) {
+                //var_dump($asset);
+                $tmp = explode(DIRECTORY_SEPARATOR, $asset);
+                $asset_name = end($tmp);
+                ?>
+                <p class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
+                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                </p>              
+            <?php }
+        ?>
+        </div>
+        <?php
+        // Get WordPress' media upload URL
+        $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
+        $block_assets = [];
+        foreach ($assets as $asset) {
+            $block_assets[] = $this->get_asset_local($asset);
+        }
+        $txt = empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file]);
+        $txt = empty($block_assets) ? '' : Utils::implode($block_assets);
+        $block_assets
+        ?>
+        <p class="d-flex assets">
+            <input type="text" id="_block_<?php echo esc_attr($asset_file); ?>" name="_block_<?php echo esc_attr($asset_file); ?>" value="<?php echo esc_attr($txt); ?>" placeholder="file:./<?php echo esc_attr($asset_file); ?>.<?php echo esc_attr(self::$assets[$asset_file]); ?>">
+            <a title="<?php esc_attr_e('Upload new asset', 'wizard-blocks') ?>" class="dashicons-before dashicons-plus button button-primary upload-assets" href="<?php echo esc_url($upload_link); ?>" target="_blank"></a>
+        </p>
+        <?php
+    }
+    
+    function get_asset_local($asset) {
+        return 'file:./'.basename($asset);
     }
     
 }

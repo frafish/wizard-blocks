@@ -1,5 +1,11 @@
+#major-publishing-actions {
+    display: block;
+}
 .button.dashicons-before:before {
-  margin-top: 4px;
+  margin-top: 8px;
+}
+.wp-core-ui .button > .dashicons {
+  line-height: 1;
 }
 
 .inside input[type="text"], 
@@ -33,6 +39,20 @@
     color: #2271b1;
     opacity: 1;
     font-size: 20px;
+}
+
+.CodeMirror .beautify {
+  position: absolute;
+  z-index: 1;
+  padding: 5px;
+  bottom: 20px;
+  right: 10px;
+  line-height: 1;
+  min-height: 0;
+  background-color: white !important;
+}
+.CodeMirror .beautify:before {
+    margin: 0 !important;
 }
 
 .select2-results__option {
@@ -184,6 +204,9 @@
   border-left-color: #dba617;
 }
 
+.text-accent {
+    color: var(--wp-admin-theme-color); 
+}
 .text-warning {
     color: orangered; 
     line-height: 1;
