@@ -836,7 +836,7 @@ jQuery(document).ready(function ($) {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
-        console.log(e);
+        //console.log(e);
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             let saveButton = document.querySelector('#publish, #save-post');

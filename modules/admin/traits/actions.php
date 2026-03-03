@@ -88,11 +88,14 @@ Trait Actions {
                                     $block = sanitize_text_field(wp_unslash($_GET['block']));
                                     list($domain, $slug) = explode('/', $block, 2);
                                     $block_post = $wb->get_block_post($slug);
+                                    $msg = __('Block imported!', 'wizard-blocks');
                                     if (!$block_post) {
                                         $args = $wb->get_json_data($slug);
                                         $block_post_id = $wb->insert_block_post($slug, $args);
+                                    } else {
+                                        $msg = __('Block updated!', 'wizard-blocks');
                                     }
-                                    Utils::_notice(__('Block imported!', 'wizard-blocks'));
+                                    Utils::_notice($msg);
                                 }
 
                                 break;

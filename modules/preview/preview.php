@@ -31,9 +31,9 @@ class Preview extends Module_Base {
             if (isset($_GET['post'])) {
                 $post = get_post(intval($_GET['post']));
                 
-                if (WP_DEBUG || SCRIPT_DEBUG) {
+                //if (WP_DEBUG || SCRIPT_DEBUG) {
                     add_action('add_meta_boxes', [$this, 'add_json_meta_box']);
-                }
+                //}
                 
                 if (get_post_status(intval($_GET['post'])) == 'publish') {
 

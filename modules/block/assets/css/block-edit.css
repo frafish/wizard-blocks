@@ -23,6 +23,10 @@
 .nav-tab-assets > .nav-tab:first-child {
     margin-left: 0;
 }
+.nav-tab-assets .nav-tab-active, .nav-tab-assets .nav-tab-active:hover {
+  background-color: #1e1e1e;
+  color: white;
+}
 /*
 .block-asset:not(:last-child) {
     padding-bottom: 10px;
