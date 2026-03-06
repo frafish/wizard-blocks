@@ -287,3 +287,7 @@
     width: 100%;
     display: block;
 }
+
+.block-icon {
+    height: auto;
+}

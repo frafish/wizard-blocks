@@ -361,6 +361,10 @@ jQuery(document).ready(function ($) {
                         row.find('.default').val(element.default);
                         delete(element.default);
                     }
+                    if (element.hasOwnProperty('checked')) {
+                        row.find('.default').val(element.checked);
+                        delete(element.checked);
+                    }
                     if (element.hasOwnProperty('selected')) {
                         row.find('.default').val(element.selected);// ???
                         delete(element.selected);
@@ -498,6 +502,8 @@ jQuery(document).ready(function ($) {
                 }
                 if (row.find('.default').val()) {
                     let defa = row.find('.default').val();
+                    //console.log(defa);
+                    //console.log(typeof defa);
                     if (['number', 'integer'].includes(attributes[key]['type'])) {
                         defa = parseFloat(defa);
                     }
@@ -508,7 +514,7 @@ jQuery(document).ready(function ($) {
                         defa = JSON.parse(defa);
                     }
                     if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
-                        attributes[key]['checked'] = true;
+                        attributes[key]['checked'] = defa == "false" ? false : true;
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'RadioControl') {
                         attributes[key]['selected'] = row.find('.default').val();
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {
