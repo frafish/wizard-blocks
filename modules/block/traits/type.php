@@ -205,8 +205,8 @@ trait Type {
         }
     }
 
-    public function generate_block_zip_for_revision($json, $post, $update) {
-        if ($this->has_block_changed(false, $post, $post)) {
+    public function generate_block_zip_for_revision($json, $post, $update, $changed = false) {
+        if ($changed || $this->has_block_changed(false, $post, $post)) {
             //var_dump($json); die();
             // create new zip with previous block folder
 

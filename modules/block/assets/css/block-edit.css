@@ -42,6 +42,7 @@
     width: 100%;
 }
 
+
 .CodeMirror {
     border: 1px solid #ddd;
     width: 100% !important;
@@ -69,15 +70,18 @@
     font-size: 20px;
 }
 
-.CodeMirror .beautify {
+.CodeMirror > .button {
   position: absolute;
   z-index: 1;
-  padding: 5px;
+  padding: 0;
   bottom: 20px;
   right: 10px;
   line-height: 1;
   min-height: 0;
-  background-color: white !important;
+  display: none;
+}
+.CodeMirror:hover > .button {
+  display: block;
 }
 .CodeMirror .beautify:before {
     margin: 0 !important;
@@ -91,7 +95,7 @@
 .editorscript-js > .CodeMirror,
 .viewscript-js > .CodeMirror,
 .script-js > .CodeMirror,
-.editorstyle-css > .CodeMirror,
+.editorstyle-css > .CodespanMirror,
 .viewstyle-css > .CodeMirror,
 .style-css > .CodeMirror {
     height: 200px;   

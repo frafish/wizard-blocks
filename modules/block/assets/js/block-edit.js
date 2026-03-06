@@ -106,11 +106,12 @@ jQuery(document).ready(function ($) {
         handles: 'se, s' // Only allow resizing from the top and bottom
     });
     
-    jQuery( ".CodeMirror" ).prepend('<span class="dashicons dashicons-fullscreen-alt toggle-distraction-free"></span>');
+    jQuery( ".CodeMirror" ).prepend('<button class="button dashicons dashicons-fullscreen-alt toggle-distraction-free"></button>');
     jQuery( ".toggle-distraction-free" ).on('click', function(){
        jQuery(this).parent().toggleClass('distraction-free'); 
        jQuery(this).toggleClass('dashicons-fullscreen-alt');
        jQuery(this).toggleClass('dashicons-fullscreen-exit-alt');
+       return false;
     });
 
     /**************************************************************************/

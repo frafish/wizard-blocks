@@ -58,7 +58,6 @@ Trait Actions {
                                 break;
 
                             case 'import':
-                                // TODO: add Telex compatibility (need to manage zip block structure, src/build)
                                 if (!empty($_FILES["zip"]["tmp_name"]) && !empty($_FILES["zip"]["name"])) {
                                     //var_dump($_FILES); die();
                                     //$target_file = $basedir . basename(sanitize_key($_FILES["zip"]["name"]));
@@ -270,6 +269,7 @@ Trait Actions {
     public static function extract_block_zip($target_file, $notice = true) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $tmpdir = $wb->get_blocks_dir() . DIRECTORY_SEPARATOR . 'tmp';
+        //var_dump($tmpdir); die();
         if ( class_exists( 'ZipArchive', false ) ) {
             //if (file_exists($target_file) && unzip_file($target_file, $tmpdir)) {
             $zip = new \ZipArchive;
@@ -306,6 +306,24 @@ Trait Actions {
                         //var_dump($args); die();
                         // is a valid block
                         list($domain, $slug) = explode('/', $args['name'], 2);
+                        
+                        $folder = $wb->get_blocks_dir($slug, $domain);
+                        //var_dump($folder); die();
+                        if (is_dir($folder)) {
+                            //var_dump($folder); die();
+                            // overwrite
+                            $block_post = $wb->get_block_post($slug);
+                            // create new revision
+                            $block_json = $wb->get_block_json($slug, $domain);
+                            if (!empty($block_post) && !empty($block_json)) {
+                                $_POST['revision'] = true; // force changed
+                                $wb->generate_block_zip_for_revision($block_json, $block_post, true, true);
+                            }
+                            // cleanup - delete folder
+                            $wb->get_filesystem()->delete($folder, true);
+                            //var_dump($folder); die();
+                        }
+                        
                         $dest = $wb->get_ensure_blocks_dir($slug, $domain);
                         //var_dump($jfolder); var_dump($dest); die();
                         $wb->copy_dir($jfolder, $dest);
