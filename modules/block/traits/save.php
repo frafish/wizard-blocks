@@ -216,7 +216,6 @@ trait Save {
         if (!empty($allowedBlocks)) {
             $supports['allowedBlocks'] = true;
         }
-        $supports['auto_register'] = true;
         
         if (!empty($_POST['_block_supports_custom']) && $_POST['_block_supports_custom'] != '{}') {            
             $custom_json = $this->unescape(sanitize_textarea_field(wp_unslash($_POST['_block_supports_custom'], '"')));
