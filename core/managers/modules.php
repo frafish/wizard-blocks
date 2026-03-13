@@ -17,11 +17,12 @@ final class Modules {
 
     public function __construct($dir) {
         $this->register($dir);
-        do_action('wizard-blocks/modules');
+        do_action('wizard-blocks/modules/after');
     }
     
     public function register($dir, $domain = '') {
         $modules = $this->find_modules($dir);
+        $modules = apply_filters('wizard-blocks/modules', $modules, $dir);
         $this->add_modules($modules, $domain);
     }
 
