@@ -29,7 +29,7 @@ trait Editor {
         //$path = $wb->get_blocks_dir($post->post_name);
         //$path_variations = $path . DIRECTORY_SEPARATOR . self::VARIATIONS_FOLDER . DIRECTORY_SEPARATOR;
         ?>       
-        <h3><?php esc_html_e('Block Variation', 'wizard-block'); ?></h3>
+        <h3><?php esc_html_e('Block Variation', 'wizard-block'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/"><span class="dashicons dashicons-info-outline"></span></a></h3>
 
         <span class="dashicons-before dashicons-plus button button-primary attr_add"><?php esc_html_e('Add new Block Variation', 'wizard-block'); ?></span>
 
@@ -39,7 +39,7 @@ trait Editor {
             <p class="hint"><i><?php esc_html_e('A unique and machine-readable name.', 'wizard-block'); ?></i></p>
             <p><input type="text" name="variation[name]" id="variation-name" placeholder="<?php echo esc_attr($post->post_name); ?>"></p>
 
-            <label for="variation-name"><b>Title</b> (optional, type string)</label>
+            <label for="variation-title"><b>Title</b> (optional, type string)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
             <p class="hint"><i><?php esc_html_e('A human-readable variation title.', 'wizard-block'); ?></i></p>
             <p><input type="text" name="variation[title]" id="variation-title" placeholder="<?php echo esc_attr($block['title']); ?>"></p>

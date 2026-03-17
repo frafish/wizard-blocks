@@ -51,7 +51,8 @@ class Block extends Module_Base {
         "supports",
         "providesContext",
         "example",
-        "variatios"
+        "variatios",
+        "styles"
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
     public static $apiVersions = [
