@@ -838,6 +838,14 @@ jQuery(document).ready(function ($) {
     jQuery('#js_meta_box .block-asset').first().show();
     jQuery('#nav-tab-js .nav-tab').first().addClass('nav-tab-active');
     
+    jQuery('.add-asset').on('click', function() {
+        let $input = jQuery(this).closest('.inside').find('.block-asset:visible .assets input');
+        let $asset = jQuery(this).data('asset');
+        $input.val($input.val()+', '+$asset);
+        //jQuery(this).closest('li').hide();
+        return false;
+    });
+    
     
 });
 

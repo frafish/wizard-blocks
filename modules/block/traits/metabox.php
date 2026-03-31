@@ -183,7 +183,25 @@ trait Metabox {
             $this->asset_form($json, $asset, $basepath, $post);
             ?>
         </div>
-        <?php }
+        <?php } 
+        
+        /*
+        $css_core = [
+            'wp-block-library' => __('Contains the base styles for all core blocks. Your block should inherit from or respect these classes for visual consistency.', 'wizard-blocks'),
+            'dashicons' => __('If your block displays system icons (like arrows or user icons), using this library saves you from adding heavy SVG files or external fonts.', 'wizard-blocks')
+        ];
+        $wp_styles = wp_styles(); 
+        ?>
+        <p class="text-center"><small><?php esc_attr_e('These are the handles WordPress usually loads by default, but you should know them to avoid conflicts or to extend them:', 'wizard-blocks'); ?></small></p>
+        <ul class="core-assets">
+        <?php foreach ($css_core as $handler => $desc) { 
+            $url = !empty($wp_styles->registered[ $handler ]) ? \WizardBlocks\Core\Helper::path_to_url($wp_styles->registered[ $handler ]->src) : ''; ?>
+            <li><i><a href="#" class="add-asset" data-asset="<?php echo esc_attr($handler); ?>"><span class="dashicons dashicons-plus-alt"></span></a> <abbr title="<?php echo esc_attr($desc); ?>"><?php echo esc_html($handler); ?></abbr></i><?php if ($url) { ?> <a href="<?php echo esc_url($url); ?>" target="_blank"><span class="dashicons dashicons-external"></span></a><?php } ?></li>
+        <?php } ?>
+        </ul>
+        <?php
+         * 
+         */
     }
 
     public function meta_fields_build_js_callback($post, $metabox) {
@@ -220,9 +238,31 @@ trait Metabox {
             $this->asset_form($json, $asset, $basepath, $post);
             ?>
         </div>
+        <?php }
+        /*
+        $js_core = [
+            'jquery' => __('Only if strictly necessary for legacy compatibility. In 2026, it is highly recommended to stick to Vanilla JS or the Interactivity API.', 'wizard-blocks'),
+            'wp-api-fetch' => __('Essential if your block needs to retrieve data dynamically from the database (e.g., latest posts, metadata) without a page refresh.', 'wizard-blocks'),
+            'wp-url' => __('Very useful for cleanly managing and parsing URL parameters on the client side.', 'wizard-blocks'),
+            'wp-i18n' => __('Use this if your frontend script contains text strings that need to be translatable via WordPress .mo / .json files.', 'wizard-blocks'),
+            'wp-hooks' => __('If you want to allow other plugins (or your own) to extend your block\'s JS behavior using a system similar to PHP filters and actions.', 'wizard-blocks'),
+        ];
+        $wp_scripts = wp_scripts();
+        foreach ($wp_scripts->registered as $handle => $script) {
+            //var_dump($handle);
+            $js_core[$handle] = '';
+        }
+        ?>
+        <p class="text-center"><small><?php esc_attr_e('Unless your block is purely static (only HTML/CSS), you might need these specific handles already registered on this site:', 'wizard-blocks'); ?></small></p>
+        <ul class="core-assets">
+        <?php foreach ($js_core as $handler => $desc) { 
+            $url = !empty($wp_scripts->registered[ $handler ]) ? \WizardBlocks\Core\Helper::path_to_url($wp_scripts->registered[ $handler ]->src) : ''; ?>
+        <li><i><a href="#" class="add-asset" data-asset="<?php echo esc_attr($handler); ?>"><span class="dashicons dashicons-plus-alt"></span></a> <?php if ($desc) { ?><abbr title="<?php echo esc_attr($desc); ?>"><?php } ?><?php echo esc_html($handler); ?><?php if ($desc) { ?></abbr><?php } ?></i><?php if ($url) { ?> <a href="<?php echo esc_url($url); ?>" target="_blank"><span class="dashicons dashicons-external"></span></a><?php } ?></li>
         <?php } ?>
-
+        </ul>
         <?php
+         * 
+         */
     }
 
     public function meta_fields_build_attributes_callback($post, $metabox) {
@@ -399,6 +439,8 @@ trait Metabox {
         );
         $block_categories = get_block_categories($block_editor_context);
         //var_dump($block_categories);
+
+        // TODO: Preview Background Color 
         ?>
         <h3><label for="_block_category"><?php esc_attr_e('Category', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#category"><span class="dashicons dashicons-info-outline"></span></a></h3>
         <p><select type="text" id="_block_category" name="_block_category"><?php
@@ -416,7 +458,6 @@ trait Metabox {
             echo esc_attr(is_array($json['keywords']) ? implode(', ', $json['keywords']) : $json['keywords']);
         }
         ?>" /></p>	           
-
         <?php
     }
 

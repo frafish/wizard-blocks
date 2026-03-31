@@ -1,7 +1,7 @@
 <?php
 
 namespace WizardBlocks\Modules\Styles\Traits;
-
+if ( ! defined( 'ABSPATH' ) ) exit;
 trait Save {
 
     function update_styles($block_json, $post, $update) {

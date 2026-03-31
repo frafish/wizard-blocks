@@ -261,7 +261,11 @@ trait Type {
 
         $json_from = $this->get_block_revision_json($compare_from);
         $json_to = $this->get_block_revision_json($compare_to);
-        //var_dump($compare_to);
+        
+        //var_dump($compare_from);
+        $zip = $this->get_revision_zip($compare_to);
+        //va
+        //var_dump($zip);
 
         /*
           $return[] = [
@@ -302,7 +306,6 @@ trait Type {
                 die('Cannot find class ZipArchive');
             }
             $file = 'zip://' . $zip . '#block.json';
-            //var_dump($file);
             $json = $this->get_filesystem()->get_contents($file);
             if ($json) {
                 $json = json_decode($json, true);

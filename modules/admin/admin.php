@@ -30,6 +30,9 @@ class Admin extends Module_Base {
         add_action('admin_menu', [$this, 'admin_menu_patterns']);
         add_action('admin_menu', [$this, 'admin_menu_tools']);
 
+        // Ajax export for non-admin users with edit_posts capability
+        add_action('wp_ajax_wizard_blocks_download_block', [$this, 'ajax_download_block']);
+
     }
 
     public function get_action_url($args = '') {

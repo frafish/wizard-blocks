@@ -23,13 +23,66 @@ trait Tools {
                     $wb = \WizardBlocks\Modules\Block\Block::instance();
                     $json = $wb->get_json_data($post->post_name);
                     //var_dump($json);
+                    /*
                     ?>
                     <div id="export-action">
                         <a class="button button-secondary button-large dashicons-before dashicons-database-export d-block" target="_blank" href="<?php echo esc_url($this->get_action_url('action=download&block=' . $wb->get_block_textdomain($json) . '/' . $post->post_name)); ?>">
-                            <?php esc_html_e('Export', 'wizard-blocks'); ?>
+                            <?php esc_html_e('Export as zip', 'wizard-blocks'); ?>
                         </a>
                     </div>
+                    <?php */
+
+                    if (current_user_can('edit_posts')) :
+                        $ajax_nonce = wp_create_nonce('wizard-blocks-nonce');
+                        $block_identifier = esc_attr($wb->get_block_textdomain($json) . '/' . $post->post_name);
+                    ?>
+                    <div id="export-action" style="margin-top:8px;">
+                        <button id="wb-ajax-export" type="button" class="button button-secondary button-large dashicons-before dashicons-database-export d-block" data-block="<?php echo $block_identifier; ?>" data-nonce="<?php echo esc_attr( $ajax_nonce ); ?>" style="width:100%;">
+                            <?php esc_html_e('Export as ZIP', 'wizard-blocks'); ?>
+                        </button>
+                    </div>
+                    <script>
+                    (function(){
+                        var button = document.getElementById('wb-ajax-export');
+                        if (!button) return;
+
+                        button.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            var block = button.getAttribute('data-block');
+                            var nonce = button.getAttribute('data-nonce');
+                            if (!block) {
+                                alert('<?php echo esc_js(__('Block identifier not available.', 'wizard-blocks')); ?>');
+                                return;
+                            }
+                            var url = ajaxurl + '?action=wizard_blocks_download_block&block=' + encodeURIComponent(block) + '&nonce=' + encodeURIComponent(nonce);
+
+                            fetch(url, { method: 'GET', credentials: 'same-origin' })
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        throw new Error('HTTP ' + response.status);
+                                    }
+                                    return response.blob();
+                                })
+                                .then(function(blob) {
+                                    var downloadUrl = window.URL.createObjectURL(blob);
+                                    var a = document.createElement('a');
+                                    a.href = downloadUrl;
+                                    a.download = block.split('/').pop() + '.zip';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    a.remove();
+                                    window.URL.revokeObjectURL(downloadUrl);
+                                })
+                                .catch(function(error) {
+                                    console.error(error);
+                                    alert('<?php echo esc_js(__('Export failed. Please try again.', 'wizard-blocks')); ?>');
+                                });
+                        });
+                    })();
+                    </script>
+                    <?php endif; ?>
                     <?php
+
                     //$revisione = $this->get_block_revision();
                     /* $revisions_url = wp_get_post_revisions_url($post->ID);
                       if ($revisions_url) {

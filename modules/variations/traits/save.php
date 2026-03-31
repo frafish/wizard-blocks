@@ -2,50 +2,20 @@
 
 namespace WizardBlocks\Modules\Variations\Traits;
 
+if (!defined('ABSPATH'))
+    exit;
+
 trait Save {
 
     function update_variations($block_json, $post, $update) {
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
 
-        //if (!empty($_POST['_block_name']) && !empty($_POST['_block_textdomain'])) {
         $block_textdomain = $wb->get_block_textdomain($block_json); //sanitize_key(wp_unslash($_POST['_block_textdomain']));
-        //$block_slug = $wb->get_block_slug($block_json); //sanitize_key(wp_unslash($_POST['_block_name']));
-        // TODO: Store in FILE instead of main JSON?
-        //$block_json = $wb->get_block_json($block_slug, $block_textdomain);
-        //$basepath = $wb->get_blocks_dir($block_slug, $block_textdomain);
-        //$var_dir = $basepath . DIRECTORY_SEPARATOR . self::VARIATIONS_FOLDER;
-        /*
-          if (!empty($_POST['variations']['delete'])) {
-          foreach ($_POST['variations']['delete'] as $var_name => $val) {
-          $var_file = $var_dir . DIRECTORY_SEPARATOR . $var_name . '.json';
-          if (file_exists($var_file)) {
-          wp_delete_file($var_file);
-          $icon_file = $var_dir . DIRECTORY_SEPARATOR . $var_name . '.svg';
-          if (file_exists($icon_file)) {
-          wp_delete_file($icon_file);
-          }
-          }
-          }
-          if (count(glob($var_dir.DIRECTORY_SEPARATOR."*")) === 0) {
-          $wp->get_filesystem()->dir_delete($var_dir);
-          }
-          }
-         */
-
         // add/edit variation
         $var_json = false;
         if (!empty($_POST['variation']['name'])) {
             $var_name = sanitize_title(wp_unslash($_POST['variation']['name']));
-
-            /*
-              // create variations folder
-              if (!file_exists($var_dir)) {
-              mkdir($var_dir, 0777, true);
-              }
-              $var_file = $var_dir . DIRECTORY_SEPARATOR . $var_name . '.json';
-             */
-
             $var_title = sanitize_text_field(wp_unslash($_POST['variation']['title']));
             $var_description = sanitize_textarea_field(wp_unslash($_POST['variation']['description']));
 

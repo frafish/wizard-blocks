@@ -19,6 +19,8 @@ trait Save {
             return;
         if ($post->post_type != self::get_cpt_name())
             return;
+        if (!$post->post_title)
+            return;
         
         $post_slug = get_post_field('post_name', $post_id);
         $block_slug = $post_slug;

@@ -108,7 +108,9 @@ Trait Attributes {
                     if (!empty($attr['defaultBlock'])) {
                         $defaultBlock_safe = '[';
                         foreach ($attr['defaultBlock'] as $block_name => $block_value) {
-                            if (!is_numeric($block_name)) {
+                            if (is_numeric($block_name)) {
+                                $defaultBlock_safe .= "['".$block_value."'],";
+                            } else {
                                 $block_value_str = json_encode($block_value);
                                 $block_value_str = str_replace('[]', '{}', $block_value_str);
                                 $defaultBlock_safe .= "['".$block_name."', ".json_encode($block_value_str)."],";
@@ -121,6 +123,8 @@ Trait Attributes {
                     if (empty($attr['template']) && !empty($attr['default'])) {
                         $attr['template'] = wp_unslash($attr['default']);
                     }
+                    //var_dump($attr['template']); die();
+                    
                     if (!empty($attr['template']) && is_string($attr['template'])) {
                         $tmp = array_filter(explode(PHP_EOL, $attr['template']));
                         $attr['template'] = [];
@@ -150,13 +154,17 @@ Trait Attributes {
                         $template_safe = '[';
                         //foreach ($attr['template'] as $block_template) {
                             foreach ($attr['template'] as $block_name => $block_value) {
-                                $block_value_str = json_encode($block_value);
-                                if (!$block_value_str) {
-                                    $block_value_str = '{}';
+                                if (is_numeric($block_name)) {
+                                    $template_safe .= "['".$block_value."'],";
                                 } else {
-                                    $block_value_str = str_replace('[]', '{}', $block_value_str);
+                                    $block_value_str = json_encode($block_value);
+                                    if (!$block_value_str) {
+                                        $block_value_str = '{}';
+                                    } else {
+                                        $block_value_str = str_replace('[]', '{}', $block_value_str);
+                                    }
+                                    $template_safe .= "['".$block_name."', ".$block_value_str."],";
                                 }
-                                $template_safe .= "['".$block_name."', ".$block_value_str."],";
                             }
                         //}
                         $template_safe .= ']';

@@ -164,6 +164,41 @@ Trait Actions {
         }
     }
 
+    public function ajax_download_block() {
+        if (!current_user_can('edit_posts')) {
+            wp_die(__('You do not have permission to export blocks.', 'wizard-blocks'), '', 403);
+        }
+
+        $nonce = !empty($_REQUEST['nonce']) ? sanitize_text_field(wp_unslash($_REQUEST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'wizard-blocks-nonce')) {
+            wp_die(__('Security nonce not valid!', 'wizard-blocks'), '', 403);
+        }
+
+        if (empty($_REQUEST['block'])) {
+            wp_die(__('Missing block identifier.', 'wizard-blocks'), '', 400);
+        }
+
+        $block = sanitize_text_field(wp_unslash($_REQUEST['block']));
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
+        $filename = self::get_block_zip_filename($block);
+        $this->generate_block_zip($block);
+
+        $zip_path = $wb->get_blocks_dir() . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . $filename;
+
+        if (!file_exists($zip_path)) {
+            wp_die(__('Zip file not found.', 'wizard-blocks'), '', 404);
+        }
+
+        header('Content-Type: application/zip');
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Disposition: attachment; filename="' . basename($zip_path) . '"');
+        header('Content-Length: ' . filesize($zip_path));
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        readfile($zip_path);
+        exit;
+    }
+
     public static function filter_block_json($jsons = []) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         foreach ($jsons as $jkey => $json) {

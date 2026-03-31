@@ -207,19 +207,25 @@ Trait Assets {
         $default = $this->get_asset_default_file($json, $asset_file, $basepath);
         $assets = $this->get_asset_files($json, $asset_file, $basepath);
         //var_dump($assets); var_dump($default); var_dump($json[$asset_file]);
+        $has_templateside = false;
+        ?>
+        <div class="asset-form">
+        <?php
         if (count($assets) > 1 || (count($assets) == 1 && reset($assets) != $default)) {
             ?> 
-            <nav class="nav-tab-wrapper wb-nav-tab-wrapper">
+            <nav class="nav-tab-wrapper wb-nav-tab-wrapper templateside">
                 <?php
                 $assets = $this->assets_merge($assets, $default);
                 foreach ($assets as $key => $asset) {
                     ?>
-                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab<?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo esc_attr(basename($asset)); ?></a>
+                <a href="#wb-<?php echo esc_attr(sanitize_title($asset)); ?>" class="nav-tab wb-nav-tab d-block notice m-0 float-none <?php echo esc_attr($key ? '' : ' nav-tab-active'); ?>"><?php echo esc_attr(basename($asset)); ?></a>
             <?php } ?>
             </nav>
-        <?php } ?>
+        <?php 
+            $has_templateside = true;
+        } ?>
 
-        <div class="wb-files">
+        <div class="wb-files<?php echo esc_attr($has_templateside ? ' has-templateside' : ''); ?>">
             <?php
             $assets = $this->assets_merge($assets, $default);
             //var_dump($assets);
@@ -228,12 +234,14 @@ Trait Assets {
                 $tmp = explode(DIRECTORY_SEPARATOR, $asset);
                 $asset_name = end($tmp);
                 ?>
-                <p class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
+                <div class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
                     <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
-                </p>              
+                </div>              
             <?php }
         ?>
         </div>
+        </div>
+                
         <?php
         // Get WordPress' media upload URL
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));

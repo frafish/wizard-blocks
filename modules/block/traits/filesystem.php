@@ -128,8 +128,8 @@ Trait Filesystem {
     
     public function get_filesystem() {
         global $wp_filesystem;
-
         if (!$wp_filesystem) {
+        //if ( ! function_exists( 'WP_Filesystem' ) ) {
             require_once( ABSPATH . DIRECTORY_SEPARATOR . 'wp-admin' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'file.php' ); // phpcs:ignore WPThemeReview.CoreFunctionality.FileInclude.FileIncludeFound
             $creds = request_filesystem_credentials(site_url());
             \WP_Filesystem($creds);

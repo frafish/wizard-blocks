@@ -1,7 +1,7 @@
 <?php
 
 namespace WizardBlocks\Modules\Variations\Traits;
-
+if ( ! defined( 'ABSPATH' ) ) exit;
 trait Editor {
 
     function metabox_variations_controls() {
@@ -29,29 +29,29 @@ trait Editor {
         //$path = $wb->get_blocks_dir($post->post_name);
         //$path_variations = $path . DIRECTORY_SEPARATOR . self::VARIATIONS_FOLDER . DIRECTORY_SEPARATOR;
         ?>       
-        <h3><?php esc_html_e('Block Variation', 'wizard-block'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/"><span class="dashicons dashicons-info-outline"></span></a></h3>
+        <h3><?php esc_html_e('Block Variation', 'wizard-blocks'); ?> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/"><span class="dashicons dashicons-info-outline"></span></a></h3>
 
-        <span class="dashicons-before dashicons-plus button button-primary attr_add"><?php esc_html_e('Add new Block Variation', 'wizard-block'); ?></span>
+        <span class="dashicons-before dashicons-plus button button-primary attr_add"><?php esc_html_e('Add new Block Variation', 'wizard-blocks'); ?></span>
 
         <div id="variation-editor">
-            <label for="variation-name"><b>Name</b> (type string)</label>
+            <label for="variation-name"><b><?php esc_html_e('Name', 'wizard-blocks'); ?></b> (<?php esc_html_e('type string', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('A unique and machine-readable name.', 'wizard-block'); ?></i></p>
+            <p class="hint"><i><?php esc_html_e('A unique and machine-readable name.', 'wizard-blocks'); ?></i></p>
             <p><input type="text" name="variation[name]" id="variation-name" placeholder="<?php echo esc_attr($post->post_name); ?>"></p>
 
-            <label for="variation-title"><b>Title</b> (optional, type string)</label>
+            <label for="variation-title"><b><?php esc_html_e('Title', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type string', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('A human-readable variation title.', 'wizard-block'); ?></i></p>
+            <p class="hint"><i><?php esc_html_e('A human-readable variation title.', 'wizard-blocks'); ?></i></p>
             <p><input type="text" name="variation[title]" id="variation-title" placeholder="<?php echo esc_attr($block['title']); ?>"></p>
 
-            <label for="variation-description"><b>Description</b> (optional, type string)</label>
+            <label for="variation-description"><b><?php esc_html_e('Description', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type string', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('A human-readable variation description.', 'wizard-block'); ?></i></p>
+            <p class="hint"><i><?php esc_html_e('A human-readable variation description.', 'wizard-blocks'); ?></i></p>
             <p><textarea name="variation[description]" id="variation-description" placeholder="<?php echo !empty($block['description']) ? esc_attr($block['description']) : ''; ?>"></textarea></p>
 
-            <label for="variation-category"><b>Category</b> (optional, type string)</label>
+            <label for="variation-category"><b><?php esc_html_e('Category', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type string', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('A category classification used in search interfaces to arrange block types by category.', 'wizard-block'); ?></i></p>
+            <p class="hint"><i><?php esc_html_e('A category classification used in search interfaces to arrange block types by category.', 'wizard-blocks'); ?></i></p>
             <p><select name="variation[category]" id="variation-category">
             <?php
             $block_editor_context = new \WP_Block_Editor_Context(
@@ -67,41 +67,41 @@ trait Editor {
             ?>
             </select></p>
 
-            <label for="variation-keywords"><b>Keywords</b> (optional, type string[])</label>
+            <label for="variation-keywords"><b><?php esc_html_e('Keywords', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type string[]', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('An array of terms (which can be translated) that help users discover the variation while searching.', 'wizard-block'); ?></i></p>
-            <p><input type="text" name="variation[keywords]" id="variation-keywords" placeholder="red, blue, green"></p>
+            <p class="hint"><i><?php esc_html_e('An array of terms (which can be translated) that help users discover the variation while searching.', 'wizard-blocks'); ?></i></p>
+            <p><input type="text" name="variation[keywords]" id="variation-keywords" placeholder="<?php echo esc_attr__( 'red, blue, green', 'wizard-blocks' ); ?>"></p>
 
 
 
-            <label for="variation-innerBlocks"><b>Inner Blocks</b> (optional, type Array[])</label>
+            <label for="variation-innerBlocks"><b><?php esc_html_e('Inner Blocks', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type Array[]', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/news/2023/08/an-introduction-to-block-variations/#creating-a-variation-with-inner-blocks"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('Initial configuration of nested blocks.', 'wizard-block'); ?></i></p>
-            <p><textarea placeholder="[ [ 'core/heading', { level: 3, placeholder: 'Heading' } ], [ 'core/paragraph', { placeholder: 'Enter content here...' } ]" name="variation[innerBlocks]" id="variation-innerBlocks"></textarea></p>
+            <p class="hint"><i><?php esc_html_e('Initial configuration of nested blocks.', 'wizard-blocks'); ?></i></p>
+            <p><textarea placeholder="<?php echo esc_attr__( "[ [ 'core/heading', { level: 3, placeholder: 'Heading' } ], [ 'core/paragraph', { placeholder: 'Enter content here...' } ]", 'wizard-blocks' ); ?>" name="variation[innerBlocks]" id="variation-innerBlocks"></textarea></p>
 
-            <label for="variation-isDefault"><b>Is Default</b> (optional, type boolean)</label>
+            <label for="variation-isDefault"><b><?php esc_html_e('Is Default', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type boolean', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#using-isdefault"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('Defaults to false. Indicates whether the current variation is the default one.', 'wizard-block'); ?></i></p>
-            <p><input type="checkbox" name="variation[isDefault]" id="variation-isDefault"> <?php esc_html_e('This will be default version of this block', 'wizard-block'); ?></p>
+            <p class="hint"><i><?php esc_html_e('Defaults to false. Indicates whether the current variation is the default one.', 'wizard-blocks'); ?></i></p>
+            <p><input type="checkbox" name="variation[isDefault]" id="variation-isDefault"> <?php esc_html_e('This will be default version of this block', 'wizard-blocks'); ?></p>
 
 
-            <label for="variation-isActive"><b>Is Active</b> (optional, type <s>Function</s>|string[])</label>
+            <label for="variation-isActive"><b><?php esc_html_e('Is Active', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type Function or string[]', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#using-isactive"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('A function or an array of block attributes that is used to determine if the variation is active when the block is selected. The function accepts blockAttributes and variationAttributes.', 'wizard-block'); ?></i></p>
-            <p><textarea placeholder="textColor, backgroundColor" name="variation[isActive]" id="variation-isActive"></textarea></p>
+            <p class="hint"><i><?php esc_html_e('A function or an array of block attributes that is used to determine if the variation is active when the block is selected. The function accepts blockAttributes and variationAttributes.', 'wizard-blocks'); ?></i></p>
+            <p><textarea placeholder="<?php echo esc_attr__( 'textColor, backgroundColor', 'wizard-blocks' ); ?>" name="variation[isActive]" id="variation-isActive"></textarea></p>
 
 
-            <label for="variation-icon"><b>Icon</b> (optional, type string | Object)</label>
+            <label for="variation-icon"><b><?php esc_html_e('Icon', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type string or Object', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#defining-a-block-variation"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('An icon helping to visualize the variation. It can have the same shape as the block type.', 'wizard-block'); ?></i></p>
+            <p class="hint"><i><?php esc_html_e('An icon helping to visualize the variation. It can have the same shape as the block type.', 'wizard-blocks'); ?></i></p>
             <?php $wb->_block_icon_selector('', $block['name'],'variation_icon'); ?>
 
-            <label for="variation-scope"><b>Scope</b> (optional, type WPBlockVariationScope[])</label>
+            <label for="variation-scope"><b><?php esc_html_e('Scope', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type WPBlockVariationScope[]', 'wizard-blocks'); ?>)</label>
             <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-variations/#using-isdefault"><span class="dashicons dashicons-info-outline"></span></a>
-            <p class="hint"><i><?php esc_html_e('Defaults to block and inserter. The list of scopes where the variation is applicable. Available options include:', 'wizard-block'); ?></i></p>
-            <p><input type="checkbox" name="variation[scope][block]" id="variation-scope-block"> <?php esc_html_e('Block: Used by blocks to filter specific block variations. Columns and Query blocks have such variations, which are passed to the experimental BlockVariationPicker component. This component handles displaying the variations and allows users to choose one of them.', 'wizard-block'); ?></p>
-            <p><input type="checkbox" name="variation[scope][inserter]" id="variation-scope-inserter"> <?php esc_html_e('Inserter: Block variation is shown on the inserter.', 'wizard-block'); ?></p>
-            <p><input type="checkbox" name="variation[scope][transform]" id="variation-scope-transform"> <?php esc_html_e('Transform: Block variation is shown in the component for variation transformations.', 'wizard-block'); ?></p>
+            <p class="hint"><i><?php esc_html_e('Defaults to block and inserter. The list of scopes where the variation is applicable. Available options include:', 'wizard-blocks'); ?></i></p>
+            <p><input type="checkbox" name="variation[scope][block]" id="variation-scope-block"> <?php esc_html_e('Block: Used by blocks to filter specific block variations. Columns and Query blocks have such variations, which are passed to the experimental BlockVariationPicker component. This component handles displaying the variations and allows users to choose one of them.', 'wizard-blocks'); ?></p>
+            <p><input type="checkbox" name="variation[scope][inserter]" id="variation-scope-inserter"> <?php esc_html_e('Inserter: Block variation is shown on the inserter.', 'wizard-blocks'); ?></p>
+            <p><input type="checkbox" name="variation[scope][transform]" id="variation-scope-transform"> <?php esc_html_e('Transform: Block variation is shown in the component for variation transformations.', 'wizard-blocks'); ?></p>
 
             <?php 
 
@@ -109,7 +109,7 @@ trait Editor {
                 <table class="widefat striped">
                     <thead>
                         <tr>
-                            <th colspan="2"><label for="variation-example"><b><?php esc_html_e('Example', 'wizard-blocks'); ?></b> (optional, type Object)</label> <p class="hint">Provides structured data for the block preview. Set to undefined to disable the preview. See the Block Registration API for more details.</p></th>
+                            <th colspan="2"><label for="variation-example"><b><?php esc_html_e('Example', 'wizard-blocks'); ?></b> (<?php esc_html_e('optional, type Object', 'wizard-blocks'); ?>)</label> <p class="hint"><?php esc_html_e('Provides structured data for the block preview. Set to undefined to disable the preview. See the Block Registration API for more details.', 'wizard-blocks'); ?></p></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,7 +126,7 @@ trait Editor {
                 <table class="widefat striped" style="margin-top: 15px">
                     <thead>
                         <tr>
-                            <th colspan="2"><label for="variation-attributes"><b><?php esc_html_e('Attributes', 'wizard-blocks'); ?></b> (optional, type Object)</label> <p class="hint"><?php esc_html_e('Values that override block attributes.', 'wizard-block'); ?></p></th>
+                            <th colspan="2"><label for="variation-attributes"><b><?php esc_html_e('Attributes', 'wizard-blocks'); ?></b> (optional, type Object)</label> <p class="hint"><?php esc_html_e('Values that override block attributes.', 'wizard-blocks'); ?></p></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -146,7 +146,7 @@ trait Editor {
             //$variations = glob($path_variations.'*.json');
             //var_dump($variations);
             ?>
-            <h3><?php esc_html_e('Current Block Variations', 'wizard-block'); ?></h3>
+            <h3><?php esc_html_e('Current Block Variations', 'wizard-blocks'); ?></h3>
             <div id="_block_variations" class="repeat_wrapper">
             <?php
             foreach ($block['variations'] as $variation) { 
@@ -155,9 +155,9 @@ trait Editor {
                 ?>
                 <details class="repeat_attr">
                     <summary class="attr_ops d-flex">                 
-                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo $variation_json['name']; ?>] <?php echo $variation_json['title']; ?> <?php !empty($variation_json['default']) ? esc_html_e(' - Default', 'wizard-block') : ''; ?></span>                        
-                            <abbr title="<?php esc_html_e('Remove', 'wizard-block'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
-                            <abbr title="<?php esc_html_e('Edit', 'wizard-block'); ?>" class="button button-danger attr_edit pull-right"><span class="dashicons dashicons-edit"></span></abbr>
+                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo $variation_json['name']; ?>] <?php echo $variation_json['title']; ?> <?php !empty($variation_json['default']) ? esc_html_e(' - Default', 'wizard-blocks') : ''; ?></span>                        
+                            <abbr title="<?php esc_html_e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
+                            <abbr title="<?php esc_html_e('Edit', 'wizard-blocks'); ?>" class="button button-danger attr_edit pull-right"><span class="dashicons dashicons-edit"></span></abbr>
                     </summary>
                     <label for="_block_variations_delete-<?php echo $variation_json['name']; ?>"><input class="d-none variation-delete" type="checkbox" id="_block_variations_delete-<?php echo $variation_json['name']; ?>" name="_block_variations_delete[<?php echo $variation_json['name']; ?>]"> <?php esc_html_e('Delete this variation on save', 'wizard-blocks'); ?></label>
                     <textarea class="_block_variations" id="_block_variations_<?php echo esc_attr($variation_json['name']); ?>" name="_block_variations[<?php echo esc_attr($variation_json['name']); ?>]"><?php echo $variation_file; ?></textarea>
