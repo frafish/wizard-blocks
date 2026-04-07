@@ -1,13 +1,33 @@
 <?php
 
 namespace WizardBlocks\Modules\Block\Traits;
+
 use WizardBlocks\Core\Utils;
 
-if ( ! defined( 'ABSPATH' ) ) exit; 
+if (!defined('ABSPATH'))
+    exit;
 
 trait Registry {
+    
+    public static function get_wb_blocks() {
+        return self::instance()->get_blocks();
+    }
+    
+    public function get_blocks() {
+        $blocks_dirs = ['self' => WIZARD_BLOCKS_PATH.'blocks'];
+        $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
+        $blocks = [];
+        foreach ($blocks_dirs as $dir) {
+            if (is_dir($dir)) {
+                $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
+                //var_dump($blocks);
+            }
+        }
+        $blocks = apply_filters('wizard/blocks', $blocks);
+        return $blocks;
+    }
 
-function get_registered_block($name = '') {
+    function get_registered_block($name = '') {
         if ($name) {
             //return \WP_Block_Type_Registry::get_instance()->get_registered($slug);
             $blocks = $this->get_registered_blocks();
@@ -19,7 +39,7 @@ function get_registered_block($name = '') {
     }
 
     function get_registered_blocks() {
-        
+
         $blocks = [];
 
         $blocks_dir = apply_filters('wizard/blocks/dirs', []);
@@ -46,13 +66,13 @@ function get_registered_block($name = '') {
             $blocks[$name] = $block;
             list($textdomain, $slug) = explode('/', $name, 2);
             if (empty($block['icon'])) {
-                
+
                 if (!empty($icons_block[$name])) {
                     $icon_slug = str_replace('library_', '', $icons_block[$name]);
                     if (!empty($icons_block[$icon_slug])) {
                         $blocks[$name]['icon'] = $icons_block[$icon_slug];
                     }
-                }                
+                }
                 if ($textdomain == 'core' && isset($icons_block[$slug])) {
                     //var_dump($slug);
                     $blocks[$name]['icon'] = $icons_block[$slug];

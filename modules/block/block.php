@@ -590,24 +590,6 @@ class Block extends Module_Base {
         return false;
     }
     
-    public static function get_wb_blocks() {
-        return self::instance()->get_blocks();
-    }
-    
-    public function get_blocks() {
-        $blocks_dirs = ['self' => WIZARD_BLOCKS_PATH.'blocks'];
-        $blocks_dirs = apply_filters('wizard/blocks/dirs', $blocks_dirs);
-        $blocks = [];
-        foreach ($blocks_dirs as $dir) {
-            if (is_dir($dir)) {
-                $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
-                //var_dump($blocks);
-            }
-        }
-        $blocks = apply_filters('wizard/blocks', $blocks);
-        return $blocks;
-    }
-    
     public function get_block_title($block, $block_post = false) {
         if (!empty($block['title'])) return $block['title'];
         if (!empty($block['name'])) {
