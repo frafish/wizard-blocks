@@ -24,6 +24,8 @@ class Plugin {
      * @var Plugin
      */
     public static $instance = null;
+    
+    public static $version;
 
     /**
      * Modules manager.
@@ -71,7 +73,11 @@ class Plugin {
     public static function instance() {
         if (is_null(self::$instance)) {
             self::$instance = new self();
-
+            
+            add_action('init', function() {
+                self::$version = self::get_plugin_version();
+            });
+            
             /**
              * on loaded.
              *
@@ -83,6 +89,17 @@ class Plugin {
         }
 
         return self::$instance;
+    }
+    
+    public static function get_plugin_version() {
+        $plugin_file = plugin_dir_path( __DIR__ ).'wizard-blocks.php';
+        //var_dump($plugin_file); die();
+        $plugin_data = get_plugin_data($plugin_file);
+        //var_dump($plugin_data); die();
+        if (!empty($plugin_data['Version'])) {
+            return $plugin_data['Version'];
+        }
+        return '';
     }
 
     public function autoload($class) {

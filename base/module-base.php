@@ -167,10 +167,12 @@ abstract class Module_Base {
     }
     
     public function enqueue_style($handle, $path, $deps = [], $version = '', $media = 'all') {
+        if (!$version) { $version = \WizardBlocks\Plugin::$version; }
         $this->register_style($handle, $path, $deps, $version, $media);
         wp_enqueue_style($handle);
     }
     public function enqueue_script($handle, $path, $deps = [], $version = '', $footer = true, $attrs = []) {
+        if (!$version) { $version = \WizardBlocks\Plugin::$version; }
         $this->register_script($handle, $path, $deps, $version, $footer, $attrs);
         wp_enqueue_script($handle);
     }

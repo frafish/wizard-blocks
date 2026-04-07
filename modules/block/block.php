@@ -373,7 +373,7 @@ class Block extends Module_Base {
         if (is_admin()) {
             if ($this->is_block_archive()) {
                 add_action('admin_enqueue_scripts', function() {
-                    wp_enqueue_style('wizard-blocks-archive', WIZARD_BLOCKS_URL.'modules/block/assets/css/block-archive.css', [], '1.2.0');
+                    $this->enqueue_style('wizard-blocks-archive', 'assets/css/block-archive.css', [], '1.2.0');
                     wp_print_scripts();
                 });
                 add_action( 'pre_get_posts', [$this,'block_admin_order'] );

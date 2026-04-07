@@ -51,19 +51,20 @@ trait Type {
             //'label' => _x('Blocks', 'wizard-blocks'),
             'labels' => $labels,
             'public' => true,
-            //'publicly_queryable' => false,
+            'publicly_queryable' => false,
             'show_ui' => true,
             'show_in_menu' => true,
-            'query_var' => true,
-            'rewrite' => array('slug' => self::get_cpt_name()),
+            //'query_var' => true,
+            //'rewrite' => array('slug' => self::get_cpt_name()),
             'capability_type' => 'post',
             'has_archive' => false,
+            'exclude_from_search' => true,
             'hierarchical' => false,
-            'menu_position' => null,
+            //'menu_position' => null,
             'supports' => array('title', 'author', 'excerpt', 'revisions'), // 'thumbnail', 'editor', 'page-attributes'
             'menu_icon' => 'dashicons-block-default',
             'show_in_rest' => true,
-                //'rest_base' => self::get_cpt_name().'s',
+            //'rest_base' => self::get_cpt_name().'s',
                 /* 'capability_type'    => self::get_cpt_name(), // imposta la base delle capabilities
                   'map_meta_cap'       => true, // abilita il mapping delle capabilities
                   'capabilities'       => array(
@@ -77,8 +78,11 @@ trait Type {
                   'delete_posts'           => 'delete_'.self::get_cpt_name().'s',
                   ), */
         );
+        
+        $args = apply_filters('wb/post_type', $args);
 
-        register_post_type(self::get_cpt_name(), $args);
+        //self::get_cpt_name()
+        register_post_type('block', $args);
 
         add_filter('manage_posts_columns', function ($posts_columns, $post_type) {
             if ($post_type == self::get_cpt_name()) {

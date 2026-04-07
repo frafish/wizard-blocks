@@ -60,7 +60,7 @@ class Preview extends Module_Base {
 
             $this->fix_api_access($cpt_name);
 
-            add_action("registered_post_type_" . $cpt_name, [$this, 'registered_post_type_block'], 10, 2);
+            //add_action("registered_post_type_" . $cpt_name, [$this, 'registered_post_type_block'], 10, 2);
 
             add_filter('the_content', [$this, 'the_content']);
             //global $wp_query;
