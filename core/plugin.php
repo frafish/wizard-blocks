@@ -2,6 +2,8 @@
 
 namespace WizardBlocks;
 
+if ( ! defined( 'ABSPATH' ) ) exit; 
+
 use WizardBlocks\Core\Utils;
 use WizardBlocks\Core\Managers\Modules;
 

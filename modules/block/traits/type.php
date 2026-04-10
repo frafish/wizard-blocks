@@ -79,7 +79,7 @@ trait Type {
                   ), */
         );
         
-        $args = apply_filters('wb/post_type', $args);
+        $args = apply_filters('wizard-blocks/post_type', $args);
 
         //self::get_cpt_name()
         register_post_type('block', $args);

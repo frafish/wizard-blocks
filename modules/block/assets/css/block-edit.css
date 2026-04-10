@@ -266,7 +266,7 @@
     display: none;
 }
 .repeat_wrapper .attr_remove {
-    color: red;
+    color: #b32d2e !important;
 }
 .repeat_wrapper label {
     display: inline-block;

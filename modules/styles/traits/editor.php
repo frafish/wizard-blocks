@@ -73,11 +73,11 @@ trait Editor {
                 ?>
                 <details class="repeat_attr">
                     <summary class="attr_ops d-flex">                 
-                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo $style_json['name']; ?>] <?php echo $style_json['title']; ?><?php if ( ! empty( $style_json['is_default'] ) ) { echo ' - ' . esc_html__( 'Default', 'wizard-blocks' ); } ?></span>                        
+                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo esc_html($style_json['name']); ?>] <?php echo esc_html($style_json['title']); ?><?php if ( ! empty( $style_json['is_default'] ) ) { echo ' - ' . esc_html__( 'Default', 'wizard-blocks' ); } ?></span>                        
                             <abbr title="<?php esc_html_e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php esc_html_e('Edit', 'wizard-blocks'); ?>" class="button button-danger attr_edit pull-right"><span class="dashicons dashicons-edit"></span></abbr>
                     </summary>
-                    <label for="_block_styles_delete-<?php echo $style_json['name']; ?>"><input class="d-none style-delete" type="checkbox" id="_block_styles_delete-<?php echo $style_json['name']; ?>" name="_block_styles_delete[<?php echo $style_json['name']; ?>]"> <?php esc_html_e('Delete this style on save', 'wizard-blocks'); ?></label>
+                    <label for="_block_styles_delete-<?php echo esc_attr($style_json['name']); ?>"><input class="d-none style-delete" type="checkbox" id="_block_styles_delete-<?php echo esc_attr($style_json['name']); ?>" name="_block_styles_delete[<?php echo esc_attr($style_json['name']); ?>]"> <?php esc_html_e('Delete this style on save', 'wizard-blocks'); ?></label>
                     <textarea class="_block_styles" id="_block_styles_<?php echo esc_attr($style_json['name']); ?>" name="_block_styles[<?php echo esc_attr($style_json['name']); ?>]"><?php echo $style_file; ?></textarea>
               </details>
               <?php
