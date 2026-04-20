@@ -163,7 +163,7 @@ trait Metabox {
         $plugin_name = $this->get_plugin_slug();
         $basepath = '';
         $json = [];
-        if ($post) {
+        if ($post && $post->post_name) {
             $json = $this->get_json_data($post->post_name);
             $basepath = $this->get_blocks_dir($post->post_name) . DIRECTORY_SEPARATOR;
         }
@@ -208,7 +208,7 @@ trait Metabox {
         $plugin_name = $this->get_plugin_slug();
         $basepath = '';
         $json = [];
-        if ($post) {
+        if ($post && $post->post_name) {
             $json = $this->get_json_data($post->post_name);
             $basepath = $this->get_blocks_dir($post->post_name) . DIRECTORY_SEPARATOR;
 

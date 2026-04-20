@@ -186,121 +186,122 @@ class Block extends Module_Base {
         'TextControl' => 'Text',
         'TimePicker' => 'Time',
         'ToggleControl' => 'Toggle',
-            //'InputControl' => 'URL', //experimental
+        //'InputControl' => 'URL', //experimental
 
-            /*
-             * TODO - wp.components
-              AlignmentMatrixControl:
-              AnglePickerControl:
-              Animate:
-              Autocomplete:
-              BaseControl:
-              BlockQuotation:
-              BorderBoxControl:
-              BorderControl:
-              BoxControl:
-              Button:
-              ButtonGroup:
-              Card:
-              CardBody:
-              CardDivider:
-              CardFooter:
-              CardHeader:
-              CardMedia:
-              CheckboxControl:
-              Circle:
-              ClipboardButton:
-              ColorIndicator:
-              ColorPalette:
-              ColorPicker:
-              ComboboxControl:
-              Composite:
-              CustomGradientPicker:
-              CustomSelectControl:
-              Dashicon:
-              DatePicker:
-              DateTimePicker:
-              Disabled:
-              Draggable:
-              DropZone:
-              DropZoneProvider:
-              Dropdown:
-              DropdownMenu:
-              DuotonePicker:
-              DuotoneSwatch:
-              ExternalLink:
-              Fill:
-              Flex:
-              FlexBlock:
-              FlexItem:
-              FocalPointPicker:
-              FocusReturnProvider:
-              FocusableIframe:
-              ​FontSizePicker:
-              ​FormFileUpload:
-              FormToggle:
-              FormTokenField:
-              G:
-              GradientPicker:
-              Guide:
-              GuidePage:
-              ​HorizontalRule:
-              Icon:
-              ​IconButton:
-              ​IsolatedEventContainer:
-              ​KeyboardShortcuts:
-              ​Line:
-              ​MenuGroup:
-              ​MenuItem:
-              ​MenuItemsChoice:
-              ​Modal:
-              ​NavigableMenu:
-              ​Navigator:
-              ​Notice:
-              ​NoticeList:
-              ​Panel:
-              ​PanelBody:
-              ​PanelHeader:
-              ​PanelRow:
-              ​Path:
-              ​Placeholder:
-              ​Polygon:
-              ​Popover:
-              ​ProgressBar:
-              ​QueryControls:
-              ​RadioControl:
-              ​RangeControl:
-              ​Rect:
-              ​ResizableBox:
-              ​ResponsiveWrapper:
-              ​SVG:
-              ​SandBox:
-              ​ScrollLock:
-              ​SearchControl:
-              ​SelectControl:
-              ​Slot:
-              ​SlotFillProvider:
-              Snackbar:
-              ​SnackbarList:
-              ​Spinner:
-              ​TabPanel:
-              ​TabbableContainer:
-              ​TextControl:
-              ​TextHighlight:
-              ​TextareaControl:
-              ​TimePicker:
-              ​Tip:
-              ​ToggleControl:
-              ​Toolbar:
-              ​ToolbarButton:
-              ​ToolbarDropdownMenu:
-              ​ToolbarGroup:
-              ​ToolbarItem:
-              ​Tooltip:
-              ​TreeSelect:
-              ​VisuallyHidden:
-             */
+        /*
+         * TODO - wp.components
+          AlignmentMatrixControl:
+          AnglePickerControl:
+          Animate:
+          Autocomplete:
+          BaseControl:
+          BlockQuotation:
+          BorderBoxControl:
+          BorderControl:
+          BoxControl:
+          Button:
+          ButtonGroup:
+          Card:
+          CardBody:
+          CardDivider:
+          CardFooter:
+          CardHeader:
+          CardMedia:
+          CheckboxControl:
+          Circle:
+          ClipboardButton:
+          ColorIndicator:
+          ColorPalette:
+          ColorPicker:
+          ComboboxControl:
+          Composite:
+          CustomGradientPicker:
+          CustomSelectControl:
+          Dashicon:
+          DatePicker:
+          DateTimePicker:
+          Disabled:
+          Draggable:
+          DropZone:
+          DropZoneProvider:
+          Dropdown:
+          DropdownMenu:
+          DuotonePicker:
+          DuotoneSwatch:
+          ExternalLink:
+          Fill:
+          Flex:
+          FlexBlock:
+          FlexItem:
+          FocalPointPicker:
+          FocusReturnProvider:
+          FocusableIframe:
+          ​FontSizePicker:
+          ​FormFileUpload:
+          FormToggle:
+          FormTokenField:
+          G:
+          GradientPicker:
+          Guide:
+          GuidePage:
+          ​HorizontalRule:
+          Icon:
+          ​IconButton:
+          ​IsolatedEventContainer:
+          ​KeyboardShortcuts:
+          ​Line:
+          ​MenuGroup:
+          ​MenuItem:
+          ​MenuItemsChoice:
+          ​Modal:
+          ​NavigableMenu:
+          ​Navigator:
+          ​Notice:
+          ​NoticeList:
+          ​Panel:
+          ​PanelBody:
+          ​PanelHeader:
+          ​PanelRow:
+          ​Path:
+          ​Placeholder:
+          ​Polygon:
+          ​Popover:
+          ​ProgressBar:
+          ​QueryControls:
+          ​RadioControl:
+          ​RangeControl:
+          ​Rect:
+          ​ResizableBox:
+          ​ResponsiveWrapper:
+          ​SVG:
+          ​SandBox:
+          ​ScrollLock:
+          ​SearchControl:
+          ​SelectControl:
+          ​Slot:
+          ​SlotFillProvider:
+          Snackbar:
+          ​SnackbarList:
+          ​Spinner:
+          ​TabPanel:
+          ​TabbableContainer:
+          ​TextControl:
+          ​TextHighlight:
+          ​TextareaControl:
+          ​TimePicker:
+          ​Tip:
+          ​ToggleControl:
+          ​Toolbar:
+          ​ToolbarButton:
+          ​ToolbarDropdownMenu:
+          ​ToolbarGroup:
+          ​ToolbarItem:
+          ​Tooltip:
+          ​TreeSelect:
+          ​VisuallyHidden:
+         */
     ];
+    
     //https://www.w3schools.com/html/html_form_input_types.asp
     public static $attributes_input_type = [
         'text',
@@ -326,6 +327,7 @@ class Block extends Module_Base {
         'url',
         'week',
     ];
+    
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#value-source
     public static $attributes_source = [
         'attribute' => 'Attribute',
@@ -378,11 +380,24 @@ class Block extends Module_Base {
                 });
                 add_action( 'pre_get_posts', [$this,'block_admin_order'] );
             }
-            /*if ($this->is_block_edit()) {
-                add_action('admin_enqueue_scripts', function() {
+            
+            if ($this->is_block_edit()) {
+                /*add_action('admin_enqueue_scripts', function() {
                     //wp_print_scripts();
+                });*/
+                add_action('admin_notices', function () {
+                    $user_id = get_current_user_id();
+                    $status = get_transient('block_save_name_notice_' . $user_id);
+                    if ($status) {
+                        // Delete the transient immediately so it only shows once
+                        delete_transient('block_save_name_notice_' . $user_id);
+                        // Classes: notice-success, notice-error, notice-warning, notice-info
+                        echo '<div class="notice notice-warning is-dismissible">
+                                <p><strong>'.esc_html__('Sorry!', 'wizard-blocks').'</strong> '.esc_html__('The wanted Block name is not available, probably another block has same Textdomain and Name.', 'wizard-blocks').'</p>
+                              </div>';
+                    }
                 });
-            }*/
+            }
         }
         
         /* REVISION */

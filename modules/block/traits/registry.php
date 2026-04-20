@@ -119,12 +119,12 @@ trait Registry {
             $block_init .= $block;
         }
         $block_count = [];
-        $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE %s AND post_status = "publish"', $wpdb->posts, '%<!-- wp:%'));
+        $posts = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE post_content LIKE %s AND post_status = "publish"', $wpdb->posts, '%'.$block_init.'%'));
         foreach ($posts as $post) {
             $tmp = explode($block_init, $post->post_content);
-            foreach ($tmp as $key => $block) {
+            foreach ($tmp as $key => $ablock) {
                 if ($key) {
-                    list($block_name, $more) = explode(' ', $block, 2);
+                    list($block_name, $more) = explode(' ', $ablock, 2);
                     $block_count[$block_name]['count'] = empty($block_count[$block_name]) ? 1 : ++$block_count[$block_name]['count'];
                     if (empty($block_count[$block_name]['posts']) || !in_array($post->ID, $block_count[$block_name]['posts'])) {
                         $block_count[$block_name]['posts'][] = $post->ID;

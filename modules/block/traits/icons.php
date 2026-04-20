@@ -93,6 +93,14 @@ Trait Icons {
                             $svg = $data['body'];
                             $icon_path = $basepath.$icon_name;
                             //var_dump($icon_path); die();
+                            
+                            // Create a new sanitizer instance
+                            $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                            $sanitizer->minify(true);
+                            $sanitizer->removeRemoteReferences(true);
+                            // Pass it to the sanitizer and get it back clean
+                            $svg = $sanitizer->sanitize($svg);
+
                             $this->get_filesystem()->put_contents($icon_path, $svg);
                             $icon = 'file:./' . $icon_name;
                         }
@@ -109,18 +117,23 @@ Trait Icons {
                 } else {
                     // other...like <svg code
                     //$_block_icon_src = sanitize_textarea_field(wp_unslash($_POST['_block_icon_src']));
-                    $_block_icon_src = wp_unslash($_POST[$input.'_icon_src']);
-                    $icon = $_block_icon_src;
-                    $icon = str_replace(PHP_EOL, "", $icon);
-                    $icon = str_replace('"', "'", $icon);
-                    $icon = str_replace("\'", "'", $icon);
+                    $svg = wp_unslash($_POST[$input.'_icon_src']);
+                    $svg = str_replace(PHP_EOL, "", $svg);
+                    $svg = str_replace('"', "'", $svg);
+                    $svg = str_replace("\'", "'", $svg);
                     //var_dump($icon); die();
-                    if (str_starts_with($icon, '<svg ')) {
+                    if (str_starts_with($svg, '<svg ')) {
                         if (!is_dir($medias_dir)) {
                             wp_mkdir_p($medias_dir);
                         }
+                        // Create a new sanitizer instance
+                        $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                        $sanitizer->minify(true);
+                        $sanitizer->removeRemoteReferences(true);
+                        // Pass it to the sanitizer and get it back clean
+                        $svg = $sanitizer->sanitize($svg);
                         //var_dump($medias_dir . $icon_name); die();
-                        if ($this->get_filesystem()->put_contents($medias_dir . $icon_name, $_block_icon_src)) {
+                        if ($this->get_filesystem()->put_contents($medias_dir . $icon_name, $svg)) {
                             $icon = 'file:./' . $icon_name;
                         }
                     }

@@ -53,6 +53,7 @@ trait Blocks {
             }
         }
         $blocks_usage = $wb->get_blocks_usage();
+        //var_dump($blocks_usage);
         
         $blocks_disabled = get_option(\WizardBlocks\Modules\Admin\Admin::$blocks_disabled_key);
         //var_dump($blocks_disabled);
@@ -157,7 +158,9 @@ trait Blocks {
                                     ?>
                                 </td>
                                 <td class="usage column-usage" data-colname="<?php esc_attr_e('Usage', 'wizard-blocks'); ?>">
-                                    <?php echo esc_html(empty($blocks_usage[$block['name']]['count']) ? '0' : $blocks_usage[$block['name']]['count']); ?>
+                                    <?php $block_name = str_replace('core/', '', $block['name']);
+                                    //var_dump($block_name);
+                                    echo empty($blocks_usage[$block_name]) || empty($blocks_usage[$block_name]['count']) ? esc_html('0') : '<abbr title="'.esc_attr(implode(', ',$blocks_usage[$block_name]['posts'])).'">'.esc_html($blocks_usage[$block_name]['count']).'</abbr>'; ?>
                                 </td>
                                 <td class="folder column-folder" data-colname="<?php esc_attr_e('Folder', 'wizard-blocks'); ?>">
                                     <?php

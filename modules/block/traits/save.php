@@ -36,25 +36,31 @@ trait Save {
             $block_textdomain = sanitize_key(wp_unslash($_POST['_block_textdomain']));
         }
         
-        //var_dump($update); die();
         $json_old = [];
+        //var_dump($update); die();        
         if ($update) {
             $json_old = $this->get_block_json($post_slug);                
             $textdomain_old = $this->get_block_textdomain($json_old);
             
             //changed block slug
             if ($post_slug && $block_slug && $post_slug != $block_slug) {
-                wp_update_post( ['ID' => $post_id, 'post_name' => $block_slug] );
-                $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);
                 $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
-                // copy all content from old dir to new dir
-                if (is_dir($old_dir)) {
-                    //$this->get_filesystem()->move($old_dir, $new_dir);
-                    $this->copy_dir($old_dir, $new_dir);
-                    //rename($old_dir, $new_dir);
-                    $this->dir_delete($old_dir);
+                if (file_exists($new_dir.DIRECTORY_SEPARATOR.'block.json')) {
+                    // attention! slug already taken
+                    $post_slug = $block_slug; // revert to old slug
+                    set_transient('block_save_name_notice_' . get_current_user_id(), 'warning', 30);
+                } else {
+                    wp_update_post( ['ID' => $post_id, 'post_name' => $block_slug] );
+                    // copy all content from old dir to new dir
+                    $old_dir = $this->get_ensure_blocks_dir($post_slug, $textdomain_old);                
+                    if (is_dir($old_dir)) {
+                        //$this->get_filesystem()->move($old_dir, $new_dir);
+                        $this->copy_dir($old_dir, $new_dir);
+                        //rename($old_dir, $new_dir);
+                        $this->dir_delete($old_dir);
+                    }
+                    $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
                 }
-                $block_slug = get_post_field('post_name', $post_id); // prevent duplicates
             } else {
                 // changed textdomain
                 //var_dump($block_textdomain); var_dump($textdomain_old); var_dump($post_slug); //die();
@@ -63,9 +69,31 @@ trait Save {
                     $new_dir = $this->get_ensure_blocks_dir($post_slug, $block_textdomain);
                     // copy all content from old dir to new dir
                     //$this->get_filesystem()->move($old_dir, $new_dir);
-                    $this->copy_dir($old_dir, $new_dir);
-                    //rename($old_dir, $new_dir);
-                    $this->dir_delete($old_dir);
+                    if (file_exists($new_dir.DIRECTORY_SEPARATOR.'block.json')) {
+                        // attention! textdomain/slug already taken
+                        set_transient('block_save_name_notice_' . get_current_user_id(), 'warning', 30);
+                        $post_slug = $block_slug; // revert to old slug
+                        $block_textdomain = $textdomain_old;
+                    } else {
+                        $this->copy_dir($old_dir, $new_dir);
+                        //rename($old_dir, $new_dir);
+                        $this->dir_delete($old_dir);
+                    }
+                }
+            }
+        } else {
+            // only during first save, when we have to generate the block folder
+
+            // check if textdomain/slug is available
+            $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+            if (file_exists($new_dir.DIRECTORY_SEPARATOR.'block.json')) {
+                // attention! textdomain/slug already taken
+                set_transient('block_save_name_notice_' . get_current_user_id(), 'warning', 30);
+                $block_textdomain = $user->user_nicename;
+                $new_dir = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+                if (file_exists($new_dir.DIRECTORY_SEPARATOR.'block.json')) {
+                    // attention! slug already taken
+                    $block_slug = $post_slug; // revert to original slug
                 }
             }
         }

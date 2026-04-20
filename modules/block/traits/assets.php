@@ -204,8 +204,12 @@ Trait Assets {
     }
 
     public function asset_form($json, $asset_file, $basepath, $post) {
-        $default = $this->get_asset_default_file($json, $asset_file, $basepath);
-        $assets = $this->get_asset_files($json, $asset_file, $basepath);
+        $default = false;
+        $assets = [];
+        if ($basepath) {
+            $default = $this->get_asset_default_file($json, $asset_file, $basepath);
+            $assets = $this->get_asset_files($json, $asset_file, $basepath);
+        }
         //var_dump($assets); var_dump($default); var_dump($json[$asset_file]);
         $has_templateside = false;
         ?>
