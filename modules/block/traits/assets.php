@@ -123,6 +123,7 @@ Trait Assets {
         } else {
             $asset_file = $asset;
         }
+        
         if (!empty($json[$asset])) {
             //var_dump($json[$asset]); die();
             $asset_files = $json[$asset];
@@ -156,7 +157,9 @@ Trait Assets {
                         $asset_file = 'file:./'.$ass;
                         //var_dump($asset_file); die();
                     } else {
-                        $asset_file = $asset_files;
+                        if (empty($_POST['_block_' . $asset.'_file'][$asset.'.'.$type])) {
+                            $asset_file = $asset_files;
+                        }
                     }
                 }
             }
@@ -233,13 +236,15 @@ Trait Assets {
             <?php
             $assets = $this->assets_merge($assets, $default);
             //var_dump($assets);
+            $files = [];
             foreach ($assets as $key => $asset) {
                 //var_dump($asset);
                 $tmp = explode(DIRECTORY_SEPARATOR, $asset);
                 $asset_name = end($tmp);
+                $files[$key] = $this->get_asset_file_contents($json, $asset_file, $asset);
                 ?>
                 <div class="wb-file<?php echo esc_attr( $key ? ' wb-hide' : ''); ?> <?php echo esc_attr(sanitize_title($asset_name)); ?>" id="wb-<?php echo esc_attr(sanitize_title($asset)); ?>">
-                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($this->get_asset_file_contents($json, $asset_file, $asset)); ?></textarea>
+                    <textarea class="wp-editor-area wb-asset-<?php echo esc_attr(sanitize_title(basename($asset))); ?> wb-codemirror-<?php echo esc_attr(self::$assets[$asset_file]); ?>" id="<?php echo esc_attr(($asset == $default) ? '_block_' . $asset_file . '_file' : sanitize_title($asset)); ?>" name="_block_<?php echo esc_attr($asset_file); ?>_file[<?php echo esc_attr(basename($asset)); ?>]"><?php echo esc_textarea($files[$key]); ?></textarea>
                 </div>              
             <?php }
         ?>
@@ -250,12 +255,14 @@ Trait Assets {
         // Get WordPress' media upload URL
         $upload_link = esc_url(get_upload_iframe_src('image', $post->ID));
         $block_assets = [];
-        foreach ($assets as $asset) {
-            $block_assets[] = $this->get_asset_local($asset);
+        foreach ($assets as $key => $asset) {
+            if (!empty($files[$key])) {
+                $block_assets[] = $this->get_asset_local($asset);
+            }
         }
+        //var_dump($default);
         $txt = empty($json[$asset_file]) ? '' : Utils::implode($json[$asset_file]);
         $txt = empty($block_assets) ? '' : Utils::implode($block_assets);
-        $block_assets
         ?>
         <p class="d-flex assets">
             <input type="text" id="_block_<?php echo esc_attr($asset_file); ?>" name="_block_<?php echo esc_attr($asset_file); ?>" value="<?php echo esc_attr($txt); ?>" placeholder="file:./<?php echo esc_attr($asset_file); ?>.<?php echo esc_attr(self::$assets[$asset_file]); ?>">

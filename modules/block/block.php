@@ -447,7 +447,7 @@ class Block extends Module_Base {
         // autoload blocks folder
         add_filter('wizard/blocks/dirs', [$this, 'get_blocks_dirs']);
 
-        // filter blocks
+        // filter blocks by Block post status
         add_filter('wizard/blocks', function ($blocks) {
             foreach ($blocks as $key => $block) {
                 $slug = basename($block);
@@ -692,12 +692,14 @@ class Block extends Module_Base {
         // current theme
         $blocks_dirs['theme'] = str_replace('/', DIRECTORY_SEPARATOR, get_template_directory() . DIRECTORY_SEPARATOR . 'blocks');
 
-        // current theme
+        /*
+        // current plugin
         $plugin = str_replace('/', DIRECTORY_SEPARATOR, plugin_dir_path(dirname(__FILE__, 2)) . 'blocks');
         if (!in_array($plugin, $blocks_dirs)) {
             $blocks_dirs['plugin'] = $plugin;
         }
-
+        */
+        
         return $blocks_dirs;
     }
 

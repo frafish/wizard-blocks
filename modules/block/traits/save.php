@@ -280,6 +280,7 @@ trait Save {
                 if (!is_dir($basepath)) {
                     wp_mkdir_p($basepath); 
                 }
+                $media_url = $preview_src;
                 $image_path = \WizardBlocks\Core\Helper::url_to_path($preview_src);
                 $path_parts = pathinfo($image_path);
                 $image_name = 'preview.'.$path_parts['extension'];
@@ -288,6 +289,14 @@ trait Save {
                 //$image_name = basename($image_src);
                 if ($this->get_filesystem()->copy($image_path, $basepath.$image_name, true)) {
                     $preview_src = "file:./".$image_name;
+                    $media_id = attachment_url_to_postid($media_url);
+                    if ($media_id) {
+                        $media = get_post($media_id);
+                        $post_id = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : 0;
+                        if ($media && $post_id && $media->post_parent == $post_id) {
+                            wp_delete_attachment($media_id, true);
+                        }
+                    }
                 }
             }
             if ($preview_src) { //empty($example)) {
@@ -363,7 +372,6 @@ trait Save {
             $code = '';
             $path = $this->get_asset_file($json_old, $asset, $basepath);
             //if ($asset == 'style') { var_dump($path); die(); }
-                       
             if (!empty($post_data['_block_' . $asset.'_file'])) {
                 // check for alias
                 foreach (self::$assets_alias as $ass => $alias) {
@@ -482,13 +490,24 @@ trait Save {
                     $asset_file = 'file:./'.$asset.'.'.$type;
                     $asset_min = 'file:./'.$asset.$min.$type;
                     if (substr($file, 0, 5) != 'file:') {
-                        // if local file copy into block folder
-                        if (filter_var($file, FILTER_VALIDATE_URL)) {
+                        if (filter_var($file, FILTER_VALIDATE_URL) && str_starts_with($file, 'http') && str_starts_with($file, site_url())) {
+                            // if local file copy into block folder
+                            $media_url = $file;
                             $file = \WizardBlocks\Core\Helper::url_to_path($file);
                             if (file_exists($file)) {
                                 $block_file = $basepath.basename($file);
-                                if (copy($file, $block_file)) {
+                                //if (copy($file, $block_file)) {
+                                if ($this->get_filesystem()->copy($file, $block_file, true)) {
                                     $file = 'file:./'.basename($block_file);
+                                    // if loaded from this block, then we can delete it from media library
+                                    $media_id = attachment_url_to_postid($media_url);
+                                    if ($media_id) {
+                                        $media = get_post($media_id);
+                                        $post_id = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : 0;
+                                        if ($media && $post_id && $media->post_parent == $post_id) {
+                                            wp_delete_attachment($media_id, true);
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -5,7 +5,7 @@ add_action('init', function () {
     $blocks = [];
     foreach ($blocks_dirs as $dir) {
         if (is_dir($dir)) {
-            $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
+            //$blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
             $blocks = array_merge($blocks, glob($dir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR));
         }
     }

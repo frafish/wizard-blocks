@@ -20,6 +20,13 @@ jQuery(document).ready(function ($) {
             },
             multiple: true  // Set to true to allow multiple files to be selected
         });
+        frame.on('open', function() {
+            const postId = jQuery('#post_ID').val();
+            if (postId) {
+                wp.media.model.settings.post.id = postId;
+            }
+        });
+        frame.uploader.options.uploader.params.post_id = jQuery('#post_ID').val();
         // When an image is selected in the media frame...
         frame.on('select', () => {
             // Get media attachment details from the frame state

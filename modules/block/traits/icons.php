@@ -79,7 +79,7 @@ Trait Icons {
                 $icon_name = $icon_name.'.svg'; //basename($icon_url);
                 list($block_textdomain, $block_slug) = explode('/', $block_name);
                 $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
-                $medias_dir = $basepath.DIRECTORY_SEPARATOR.$folder;  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
+                $medias_dir = $basepath.($folder ? DIRECTORY_SEPARATOR.$folder : $folder);  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
                 //var_dump($_POST['_block_icon_src']); die();
                 if (str_starts_with($_POST[$input.'_icon_src'], 'http')) {
                     // svg image url
@@ -109,10 +109,29 @@ Trait Icons {
                         if (!is_dir($medias_dir)) {
                             wp_mkdir_p($medias_dir);
                         }
+                        $media_id = attachment_url_to_postid($icon_url);
                         //$icon_name = basename($icon_url);
                         if ($this->get_filesystem()->copy($icon_path, $medias_dir . $icon_name, true)) {
                             $icon = 'file:./' . $icon_name;
+                            if ($media_id) {
+                                $media = get_post($media_id);
+                                $post_id = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : 0;
+                                if ($media && $post_id && $media->post_parent == $post_id) {
+                                    wp_delete_attachment($media_id, true);
+                                }
+                            }
                         }
+                    }
+                } else if (str_starts_with($_POST[$input.'_icon_src'], 'file:')) {
+                    $icon = sanitize_textarea_field($_POST[$input.'_icon_src']);
+                    $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
+                    $medias_dir = $basepath.($folder ? DIRECTORY_SEPARATOR.$folder : $folder);  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
+                    $icon_path = str_replace('file:./', $medias_dir, $icon);
+                    $icon_path = str_replace('/', DIRECTORY_SEPARATOR, $icon_path);
+                    //var_dump($basepath); var_dump($folder); var_dump($_POST[$input.'_icon_src']);var_dump($icon); var_dump($medias_dir);var_dump($icon_path); die();
+                    // verify that still exists 
+                    if (!file_exists($icon_path)) {
+                        $icon = false;
                     }
                 } else {
                     // other...like <svg code

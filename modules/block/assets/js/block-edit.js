@@ -135,6 +135,13 @@ jQuery(document).ready(function ($) {
             },
             multiple: true  // Set to true to allow multiple files to be selected
         });
+        frame.on('open', function() {
+            const postId = jQuery('#post_ID').val();
+            if (postId) {
+                wp.media.model.settings.post.id = postId;
+            }
+        });
+        frame.uploader.options.uploader.params.post_id = jQuery('#post_ID').val();
         // When an image is selected in the media frame...
         frame.on('select', () => {
             // Get media attachment details from the frame state
@@ -165,14 +172,22 @@ jQuery(document).ready(function ($) {
             frame.open();
             return;
         }
+        //console.log(jQuery('#post_ID').val());
         // Create a new media frame
         frame = wp.media({
             title: wp.i18n.__('Select or Upload Media', 'wizard-blocks'),
             button: {
                 text: wp.i18n.__('Use this Icon', 'wizard-blocks')
             },
-            multiple: false  // Set to true to allow multiple files to be selected
+            multiple: false // Explicitly single-select
         });
+        frame.on('open', function() {
+            const postId = jQuery('#post_ID').val();
+            if (postId) {
+                wp.media.model.settings.post.id = postId;
+            }
+        });
+        frame.uploader.options.uploader.params.post_id = jQuery('#post_ID').val();
         // When an image is selected in the media frame...
         frame.on('select', () => {
             // Get media attachment details from the frame state
@@ -215,8 +230,15 @@ jQuery(document).ready(function ($) {
             button: {
                 text: wp.i18n.__('Set this Preview', 'wizard-blocks')
             },
-            multiple: false  // Set to true to allow multiple files to be selected
+            multiple: false // Explicitly single-select
         });
+        frame.on('open', function() {
+            const postId = jQuery('#post_ID').val();
+            if (postId) {
+                wp.media.model.settings.post.id = postId;
+            }
+        });
+        frame.uploader.options.uploader.params.post_id = jQuery('#post_ID').val();
         // When an image is selected in the media frame...
         frame.on('select', () => {
             // Get media attachment details from the frame state
@@ -440,7 +462,7 @@ jQuery(document).ready(function ($) {
                     
                     if (Object.keys(element).length) {
                         row.find('label[for="extra"]').show();
-                        console.log(element);
+                        //console.log(element);
                         row.find('.extra').val(JSON.stringify(element));
                     } else {
                         row.find('label[for="extra"]').hide();

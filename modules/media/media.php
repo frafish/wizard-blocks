@@ -231,10 +231,18 @@ class Media extends Module_Base {
                         //var_dump($media_path); die();
                         $wb->get_filesystem()->put_contents($media_path, $media);
                     } else {
+                        $media_id = attachment_url_to_postid($media_url);
                         $media_path = \WizardBlocks\Core\Helper::url_to_path($media_url);
                         //var_dump($media_path);
                         //var_dump($medias_dir . $basename);
                         $wb->get_filesystem()->copy($media_path, $medias_dir . $basename, true);
+                        if ($media_id) {
+                            $media = get_post($media_id);
+                            $post_id = isset($_POST['post_ID']) ? intval($_POST['post_ID']) : 0;
+                            if ($media && $post_id && $media->post_parent == $post_id) {
+                                wp_delete_attachment($media_id, true);
+                            }
+                        }
                     }
                     //$_block_media[$mid] = $basename;
                 }
