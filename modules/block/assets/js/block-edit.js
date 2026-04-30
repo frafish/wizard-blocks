@@ -530,13 +530,21 @@ jQuery(document).ready(function ($) {
                         defa = parseFloat(defa);
                     }
                     if (attributes[key]['type'] == 'boolean') {
-                        defa == 'true';
+                        if (defa != '' && defa != null) {
+                            if (!defa || defa == "false" || defa == "FALSE" || defa == "0") {
+                                defa = false;
+                            } else {
+                                if (defa) {
+                                    defa = true;
+                                }
+                            }
+                        }
                     }
                     if (['object', 'array'].includes(attributes[key]['type'])) {
                         defa = JSON.parse(defa);
                     }
                     if (attributes[key]['component'] && ['ToggleControl', 'CheckboxControl'].includes(attributes[key]['component'])) {
-                        attributes[key]['checked'] = defa == "false" ? false : true;
+                        attributes[key]['checked'] = defa ? true : false;
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'RadioControl') {
                         attributes[key]['selected'] = row.find('.default').val();
                     } else if (attributes[key]['component'] && attributes[key]['component'] == 'InputControl') {

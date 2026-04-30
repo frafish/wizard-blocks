@@ -84,19 +84,44 @@ trait Type {
         //self::get_cpt_name()
         register_post_type('block', $args);
 
-        add_filter('manage_posts_columns', function ($posts_columns, $post_type) {
-            if ($post_type == self::get_cpt_name()) {
-                return $this->array_insert_after($posts_columns, 'title', ['description' => __('Description', 'wizard-blocks')]);
-            }
-            return $posts_columns;
+        add_filter('manage_'.self::get_cpt_name().'_posts_columns', function ($posts_columns) {
+            $posts_columns = $this->array_insert_after($posts_columns, 'title', ['description' => __('Description', 'wizard-blocks')]);        
+            $posts_columns['modified'] = __('Modified', 'wizard-blocks');
+            return $posts_columns; 
         }, 10, 2);
-        add_action('manage_posts_custom_column', function ($column_name, $post_ID) {
+        add_filter('manage_edit-'.self::get_cpt_name().'_sortable_columns', function ($columns) {
+            $columns['modified'] = 'modified';
+            return $columns;
+        });
+        add_action('manage_'.self::get_cpt_name().'_posts_custom_column', function ($column_name, $post_ID) {
             if ($column_name == 'description') {
                 if ($post_content = get_the_excerpt($post_ID)) {
-                    echo esc_html(substr($post_content, 0, 50));
+                    echo esc_html(substr($post_content, 0, 100));
                 }
             }
+            if ($column_name == 'modified') {
+                $m_time = sprintf(
+                        /* translators: 1: Post date, 2: Post time. */
+                        __( '%1$s at %2$s' ),
+                        /* translators: Post date format. See https://www.php.net/manual/datetime.format.php */
+                        get_the_modified_time( __( 'Y/m/d' ), $post_ID ),
+                        /* translators: Post time format. See https://www.php.net/manual/datetime.format.php */
+                        get_the_modified_time( __( 'g:i a' ), $post_ID )
+                );
+                echo __('Modified', 'wizard-blocks').'<br />'.$m_time;
+            }
         }, 10, 2);
+        /*add_filter( 'post_date_column_time', function($t_time, $post, $date, $mode) {
+            if ($post->post_type == self::get_cpt_name()) {
+                $m_time = sprintf(
+				__( '%1$s at %2$s' ),
+				get_the_modified_time( __( 'Y/m/d' ), $post ),
+				get_the_modified_time( __( 'g:i a' ), $post )
+			);
+                $t_time .= '<hr>'.__('Modified', 'wizard-blocks').'<br />'.$m_time;
+            }
+            return $t_time;
+        }, 10, 4);*/
 
         /*
           $cpt_administrator_role = get_role('administrator');
@@ -105,6 +130,44 @@ trait Type {
           $cpt_administrator_role->add_cap( $cap );
           }
          */
+        
+        /**
+        * Set default sort to Modified and update Admin UI indicators
+        */
+        //add_filter( 'request', [$this,'set_cpt_admin_default_order_with_ui'] );
+        
+        /**
+        * Force the 'Date' column header to use 'modified' logic
+        */
+        /*add_filter( 'manage_edit-block_sortable_columns', function( $columns ) {
+            // This tells the UI: "The 'Date' column now represents the 'modified' key"
+            $columns['date'] = 'modified'; 
+            return $columns;
+        });*/
+
+    }
+
+    
+    function set_cpt_admin_default_order_with_ui( $vars ) {
+        // Get current screen info to ensure we are in the right place
+        $screen = get_current_screen();
+
+        // 1. Check if we are in the admin dashboard
+        // 2. Check if we are on the list table (edit.php)
+        // 3. Target your specific CPT slug
+        if ( is_admin() && 
+             isset($screen->post_type) && 
+             $screen->post_type === 'your_cpt_slug' && 
+             $screen->base === 'edit' 
+        ) {
+            // Only apply if the user hasn't clicked a column header themselves
+            if ( ! isset( $vars['orderby'] ) ) {
+                $vars['orderby'] = 'modified';
+                $vars['order']   = 'DESC';
+            }
+        }
+
+        return $vars;
     }
 
     /**
@@ -365,12 +428,14 @@ trait Type {
 
             // Target only the 'block' post type
             if ($query->get('post_type') === 'block') {
+                if (empty($_GET['orderby'])) {
 
-                // Set the 'orderby' parameter (e.g., 'title', 'date', 'menu_order')
-                $query->set('orderby', 'modified');
+                    // Set the 'orderby' parameter (e.g., 'title', 'date', 'menu_order')
+                    $query->set('orderby', 'modified');
 
-                // Set the 'order' parameter ('ASC' or 'DESC')
-                $query->set('order', 'DESC');
+                    // Set the 'order' parameter ('ASC' or 'DESC')
+                    $query->set('order', 'DESC');
+                }
             }
         }
     }

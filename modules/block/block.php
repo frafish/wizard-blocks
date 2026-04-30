@@ -88,6 +88,7 @@ class Block extends Module_Base {
         'color.heading' => false,
         'color.link' => false,
         'color.text' => true,
+        'contentRole' => false,
         'customClassName' => true,
         'dimensions.aspectRatio' => true,
         'dimensions.minHeight' => false,
@@ -104,6 +105,7 @@ class Block extends Module_Base {
         'layout.allowJustification' => true,
         'layout.allowOrientation' => true,
         'layout.allowCustomContentAndWideSize' => true,
+        'listView' => false,
         'lock' => true,
         'multiple' => true,
         'position.sticky' => false,
@@ -116,7 +118,8 @@ class Block extends Module_Base {
         'typography.fontSize' => false,
         'typography.lineHeight' => false,
         'typography.textAlign' => false,
-        'splitting' => false
+        'splitting' => false,
+        'visibility' => true
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/#type-validation
     public static $attributes_type = [
