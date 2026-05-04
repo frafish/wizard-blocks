@@ -666,7 +666,7 @@ class Block extends Module_Base {
                 'post_name' => $block,
                 'post_excerpt' => empty($args['description']) ? '' : $args['description'],
                 'post_type' => 'block',
-                'post_status' => 'publish'
+                'post_status' => current_user_can('manage_options') ? 'publish' : 'draft'
             ];
             //var_dump($block_post); die();
             $block_post_id = wp_insert_post($block_post);

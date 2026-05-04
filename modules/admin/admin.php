@@ -54,7 +54,7 @@ class Admin extends Module_Base {
             $link_close = '</a>';
 
             // translators: %1$s: Opening strong tag, %2$s: Closing strong tag, %3$s: Opening anchor tag for rating link, %4$s: Closing anchor tag
-            $text = esc_html__('If you like %1$sWizard Blocks%2$s please leave a %3$s★★★★★%4$s rating. Thanks ❤!', 'svg-support');
+            $text = esc_html__('If you like %1$sWizard Blocks%2$s please leave a %3$s★★★★★%4$s rating. Thanks ❤!', 'wizard-blocks');
 
             return wp_kses(
                     sprintf(

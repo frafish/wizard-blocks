@@ -1,6 +1,11 @@
 #major-publishing-actions {
     display: block;
 }
+#edit-slug-box,
+#message a,
+#preview-action {
+    display: none;
+}
 .button.dashicons-before:before {
   margin-top: 8px;
 }
@@ -107,33 +112,27 @@
   height: 100% !important;
   z-index: 100000;
 }
-.CodeMirror .toggle-distraction-free {
-    position: absolute;
+.CodeMirror  > .button.toggle-distraction-free {
     top: 5px;
-    right: 5px;
-    z-index: 10;
-    font-size: 15px;
     cursor: nesw-resize;
-    opacity: 0.5;
-}
-.CodeMirror .toggle-distraction-free:hover {
-    color: #2271b1;
-    opacity: 1;
-    font-size: 20px;
 }
 
 .CodeMirror > .button {
   position: absolute;
-  z-index: 1;
+  z-index: 10;
   padding: 0;
   bottom: 20px;
   right: 10px;
   line-height: 1;
   min-height: 0;
   display: none;
+  opacity: 0.5;
 }
 .CodeMirror:hover > .button {
   display: block;
+}
+.CodeMirror > .button:hover {
+  opacity: 1;
 }
 .CodeMirror .beautify:before {
     margin: 0 !important;

@@ -93,6 +93,19 @@ trait Type {
             $columns['modified'] = 'modified';
             return $columns;
         });
+        
+        add_filter( 'post_row_actions', function($actions, $post) {
+            if ($post->post_type == 'block') {
+                $wb = \WizardBlocks\Modules\Block\Block::instance();
+                $block_json = $wb->get_block_json($post->post_name);
+                if (!empty( $block_json['name'])) {
+                    echo $block_json['name'];
+                }
+            }
+            return $actions;
+        }, 10, 2);
+        
+        
         add_action('manage_'.self::get_cpt_name().'_posts_custom_column', function ($column_name, $post_ID) {
             if ($column_name == 'description') {
                 if ($post_content = get_the_excerpt($post_ID)) {
@@ -102,73 +115,18 @@ trait Type {
             if ($column_name == 'modified') {
                 $m_time = sprintf(
                         /* translators: 1: Post date, 2: Post time. */
-                        __( '%1$s at %2$s' ),
+                        __( '%1$s at %2$s', 'wizard-blocks' ),
                         /* translators: Post date format. See https://www.php.net/manual/datetime.format.php */
-                        get_the_modified_time( __( 'Y/m/d' ), $post_ID ),
+                        get_the_modified_time( __( 'Y/m/d', 'wizard-blocks' ), $post_ID ),
                         /* translators: Post time format. See https://www.php.net/manual/datetime.format.php */
-                        get_the_modified_time( __( 'g:i a' ), $post_ID )
+                        get_the_modified_time( __( 'g:i a', 'wizard-blocks' ), $post_ID )
                 );
                 echo __('Modified', 'wizard-blocks').'<br />'.$m_time;
             }
         }, 10, 2);
-        /*add_filter( 'post_date_column_time', function($t_time, $post, $date, $mode) {
-            if ($post->post_type == self::get_cpt_name()) {
-                $m_time = sprintf(
-				__( '%1$s at %2$s' ),
-				get_the_modified_time( __( 'Y/m/d' ), $post ),
-				get_the_modified_time( __( 'g:i a' ), $post )
-			);
-                $t_time .= '<hr>'.__('Modified', 'wizard-blocks').'<br />'.$m_time;
-            }
-            return $t_time;
-        }, 10, 4);*/
-
-        /*
-          $cpt_administrator_role = get_role('administrator');
-          $capabilities = $this->get_caps();
-          foreach ( $capabilities as $cap ) {
-          $cpt_administrator_role->add_cap( $cap );
-          }
-         */
         
-        /**
-        * Set default sort to Modified and update Admin UI indicators
-        */
-        //add_filter( 'request', [$this,'set_cpt_admin_default_order_with_ui'] );
-        
-        /**
-        * Force the 'Date' column header to use 'modified' logic
-        */
-        /*add_filter( 'manage_edit-block_sortable_columns', function( $columns ) {
-            // This tells the UI: "The 'Date' column now represents the 'modified' key"
-            $columns['date'] = 'modified'; 
-            return $columns;
-        });*/
-
     }
 
-    
-    function set_cpt_admin_default_order_with_ui( $vars ) {
-        // Get current screen info to ensure we are in the right place
-        $screen = get_current_screen();
-
-        // 1. Check if we are in the admin dashboard
-        // 2. Check if we are on the list table (edit.php)
-        // 3. Target your specific CPT slug
-        if ( is_admin() && 
-             isset($screen->post_type) && 
-             $screen->post_type === 'your_cpt_slug' && 
-             $screen->base === 'edit' 
-        ) {
-            // Only apply if the user hasn't clicked a column header themselves
-            if ( ! isset( $vars['orderby'] ) ) {
-                $vars['orderby'] = 'modified';
-                $vars['order']   = 'DESC';
-            }
-        }
-
-        return $vars;
-    }
 
     /**
      * Get capabilities.

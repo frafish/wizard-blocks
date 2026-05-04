@@ -95,9 +95,12 @@ trait Tools {
             } else { 
                 if (isset($_GET['post_type']) && $_GET['post_type'] == 'block') { ?>
                 <div id="ai-action">
-                    <button class="button-ai">
-                       <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
+                    <button class="button-ai d-block" style="width: calc(100% - 8px); margin: 0 4px;">
+                       <a class="button button-large text-center button-ai-content button-rounded dashicons-before dashicons-superhero d-block" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
                     </button>
+                    <hr>
+                    <a class="button button-secondary text-center button-large dashicons-before dashicons-media-archive button-rounded d-block" href="edit.php?post_type=block&page=wtools"><?php esc_html_e('Import ZIP', 'wizard-blocks'); ?></a>
+                    <hr>
                 </div>
             <?php }
             }

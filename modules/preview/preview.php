@@ -23,6 +23,15 @@ class Preview extends Module_Base {
             });
         }
         
+        add_filter('redirect_canonical', function($redirect_url, $requested_url) {
+            if (!empty($_GET['preview'])) {
+                if (!empty($_GET['post_type']) && $_GET['post_type'] == 'block') {
+                    return false;
+                }
+            }
+            return $redirect_url;
+        }, 10, 2);
+        
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         
         //only on update
@@ -60,9 +69,13 @@ class Preview extends Module_Base {
 
             $this->fix_api_access($cpt_name);
 
-            //add_action("registered_post_type_" . $cpt_name, [$this, 'registered_post_type_block'], 10, 2);
-
-            add_filter('the_content', [$this, 'the_content']);
+            if (!empty($_GET['preview'])) {
+                if (!empty($_GET['post_type']) && $_GET['post_type'] == 'block') {
+                    add_filter('the_content', [$this, 'the_content']);
+                }
+            }
+            
+            
             //global $wp_query;
             //var_dump($wp_query);
         }
@@ -80,17 +93,19 @@ class Preview extends Module_Base {
                 $post_id = intval($_GET['post_id']);
                 $post = get_post($post_id);
                 if ($post && get_class($post) == 'WP_Post' && $post->post_type == $cpt_name) {
-                    //var_dump($user_id); var_dump($post->post_author);
-                    if ($post && current_user_can('edit_post', $post->ID)) {
-                        add_filter('user_has_cap', function ($allcaps, $caps, $args, $user) {
-                            //var_dump($caps);
-                            foreach ($caps as $cap) {
-                                if (empty($allcaps[$cap])) {
-                                    $allcaps[$cap] = true;
+                    if ($post->post_status == 'publish') {
+                        //var_dump($user_id); var_dump($post->post_author);
+                        /*if ($post && current_user_can('edit_post', $post->ID)) {
+                            add_filter('user_has_cap', function ($allcaps, $caps, $args, $user) {
+                                //var_dump($caps);
+                                foreach ($caps as $cap) {
+                                    if (empty($allcaps[$cap])) {
+                                        $allcaps[$cap] = true;
+                                    }
                                 }
-                            }
-                            return $allcaps;
-                        }, 10, 4);
+                                return $allcaps;
+                            }, 10, 4);
+                        }*/
                     }
                 }
             }
@@ -113,9 +128,9 @@ class Preview extends Module_Base {
                 $block_content = $wb->render($attributes, $content, $block);
                 $block_class = $wb->get_block_class($block_json);
                 //if (isset($_GET['context']) && $_GET['context'] == 'preview') {
-                if (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe') {
+                //if (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] == 'iframe') {
                     $block_content .= '<style>header,footer,#wpadminbar,.wp-block-group:not(main) > *:not(.'.$block_class.'){display:none !important;}html,body,main{margin:0 !important;padding:0 !important;}</style>';
-                }
+                //}
 
                 $content = $block_content;
             }
@@ -123,24 +138,6 @@ class Preview extends Module_Base {
 
         return $content;
     }
-
-    function registered_post_type_block($post_type, $post_type_object) {
-        /*
-          // too early to get_queried_object ...
-          $post = get_queried_object();
-          if ($post && get_class($post) == 'WP_Post' && $post->post_type == $wb::get_cpt_name()) {
-          if ( $post && current_user_can( 'edit_post', $post->ID ) ) {
-          $post_type_object->public = true;
-          }
-          }
-         */
-        //var_dump(current_user_can( 'edit_blocks'));
-        if (!current_user_can('edit_blocks')) {
-            // prevent guests see the block preview
-            $post_type_object->publicly_queryable = false;
-        }
-    }
-
         
     function add_json_meta_box() {
         add_meta_box(
@@ -160,7 +157,6 @@ class Preview extends Module_Base {
         );
     }
 
-    
     public function block_json_box_callback($post, $metabox) {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $block_json = $post ? $wb->get_json_data($post->post_name) : [];
@@ -185,8 +181,10 @@ class Preview extends Module_Base {
         //$basepath = $wb->get_blocks_dir($block_slug, $block_textdomain);
         //$src = '/wp-json/wp/v2/block-renderer/' . $block_textdomain . '/' . $block_slug . '?context=edit&attributes[color]=red&attributes[asd]=Testo&post_id=2&_locale=user';
         /* <a href="<?php echo $src; ?>" target="_blank"><?php echo $src; ?></a> */
+        $preview_url = add_query_arg('post_type', 'block', add_query_arg('preview', true, home_url('?p='.$post->ID)));
+        //add_query_arg('preview', true, add_query_arg('context','preview',get_permalink($post))));
         ?>
-        <iframe id="block-preview" width="100%" height="600" src="<?php echo esc_url(add_query_arg('context','preview',get_permalink($post))); ?>"></iframe>
+        <iframe id="block-preview" width="100%" height="600" src="<?php echo esc_url($preview_url); ?>"></iframe>
         <?php
     }
 }
