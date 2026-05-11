@@ -204,7 +204,7 @@ Trait Actions {
         foreach ($jsons as $jkey => $json) {
             $json_code = $wb->get_filesystem()->get_contents($json);
             $args = json_decode($json_code, true);
-            if (empty($args) || empty($args['name']) || empty($args['title'])) {
+            if (empty($args) || empty($args['name']) || empty($args['title']) || empty($args['$schema']) || empty($args['apiVersion'])) {
                 // not valid block json
                 //var_dump($json);var_dump($jkey);
                 unset($jsons[$jkey]);
@@ -313,11 +313,15 @@ Trait Actions {
                 $zip->close();
                 $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*.json');
                 $jsons = self::filter_block_json($jsons);
+                //var_dump($jsons); die();
                 if (empty($jsons)) {
+                    //var_dump($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json'); die();
                     if (is_dir($tmpdir . DIRECTORY_SEPARATOR . 'build')) {
                         $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
                     } else {
-                        $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
+                        //$jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*.json');
+                        // when first level is only plugin folder
+                        $jsons = glob($tmpdir . DIRECTORY_SEPARATOR . '*'. DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . '*.json');
                     }
                 }
                 //var_dump($tmpdir); var_dump($jsons); die();
