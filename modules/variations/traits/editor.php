@@ -12,7 +12,7 @@ trait Editor {
                     'block_variations_meta_box',
                     esc_html__('Variations', 'wizard-blocks'),
                     [$this, 'block_variations_meta_box_callback'],
-                    'block'
+                    \WizardBlocks\Modules\Block\Block::get_cpt_name()
             );
         }
     }
@@ -155,12 +155,12 @@ trait Editor {
                 ?>
                 <details class="repeat_attr">
                     <summary class="attr_ops d-flex">                 
-                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo $variation_json['name']; ?>] <?php echo $variation_json['title']; ?> <?php !empty($variation_json['default']) ? esc_html_e(' - Default', 'wizard-blocks') : ''; ?></span>                        
+                            <span class="attr_name dashicons-before dashicons-editor-expand"> [<?php echo esc_html($variation_json['name']); ?>] <?php echo esc_html($variation_json['title']); ?> <?php !empty($variation_json['default']) ? esc_html_e(' - Default', 'wizard-blocks') : ''; ?></span>                        
                             <abbr title="<?php esc_html_e('Remove', 'wizard-blocks'); ?>" class="button button-danger attr_remove pull-right"><span class="dashicons dashicons-trash"></span></abbr>
                             <abbr title="<?php esc_html_e('Edit', 'wizard-blocks'); ?>" class="button button-danger attr_edit pull-right"><span class="dashicons dashicons-edit"></span></abbr>
                     </summary>
-                    <label for="_block_variations_delete-<?php echo $variation_json['name']; ?>"><input class="d-none variation-delete" type="checkbox" id="_block_variations_delete-<?php echo $variation_json['name']; ?>" name="_block_variations_delete[<?php echo $variation_json['name']; ?>]"> <?php esc_html_e('Delete this variation on save', 'wizard-blocks'); ?></label>
-                    <textarea class="_block_variations" id="_block_variations_<?php echo esc_attr($variation_json['name']); ?>" name="_block_variations[<?php echo esc_attr($variation_json['name']); ?>]"><?php echo $variation_file; ?></textarea>
+                    <label for="_block_variations_delete-<?php echo esc_attr($variation_json['name']); ?>"><input class="d-none variation-delete" type="checkbox" id="_block_variations_delete-<?php echo esc_attr($variation_json['name']); ?>" name="_block_variations_delete[<?php echo esc_attr($variation_json['name']); ?>]"> <?php esc_html_e('Delete this variation on save', 'wizard-blocks'); ?></label>
+                    <textarea class="_block_variations" id="_block_variations_<?php echo esc_attr($variation_json['name']); ?>" name="_block_variations[<?php echo esc_attr($variation_json['name']); ?>]"><?php echo esc_textarea($variation_file); ?></textarea>
               </details>
               <?php
             } ?>
@@ -173,31 +173,31 @@ trait Editor {
         ?>
         <tr>
             <td>
-                <abbr title="<?php echo $akey; ?>"><?php echo empty($attr['label']) ? $akey : $attr['label']; ?></abbr>
+                <abbr title="<?php echo esc_attr($akey); ?>"><?php echo esc_html(empty($attr['label']) ? $akey : $attr['label']); ?></abbr>
                 <?php if (!empty($attr['help'])) { ?>
-                <p class="hint"><i><?php echo $attr['help']; ?></i></p>
+                <p class="hint"><i><?php echo esc_html($attr['help']); ?></i></p>
                 <?php } ?>
             </td>
             <?php
             switch ($attr['type']) {
                 case 'boolean': ?>
-                    <td><input type="checkbox" id="variation-<?php echo $field; ?>-<?php echo $akey; ?>" name="variation[<?php echo $field; ?>][<?php echo $akey; ?>]"></td>
+                    <td><input type="checkbox" id="variation-<?php echo esc_attr($field); ?>-<?php echo esc_attr($akey); ?>" name="variation[<?php echo esc_attr($field); ?>][<?php echo esc_attr($akey); ?>]"></td>
                     <?php
                     break;
                 case 'number':
                 case 'integer': ?>
-                    <td><input type="number" id="variation-<?php echo $field; ?>-<?php echo $akey; ?>" name="variation[<?php echo $field; ?>][<?php echo $akey; ?>]" placeholder="<?php echo esc_attr($akey); ?>" value=""></td>
+                    <td><input type="number" id="variation-<?php echo esc_attr($field); ?>-<?php echo esc_attr($akey); ?>" name="variation[<?php echo esc_attr($field); ?>][<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr($akey); ?>" value=""></td>
                     <?php
                     break;
                 case 'array':
                 case 'object':
                     //$attr['default'] = wp_json_encode($attr['default'], JSON_PRETTY_PRINT); ?>
-                    <td><textarea id="variation-<?php echo $field; ?>-<?php echo $akey; ?>" name="variation[<?php echo $field; ?>][<?php echo $akey; ?>]" placeholder="<?php echo esc_attr($akey); ?>"></textarea></td>
+                    <td><textarea id="variation-<?php echo esc_attr($field); ?>-<?php echo esc_attr($akey); ?>" name="variation[<?php echo esc_attr($field); ?>][<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr($akey); ?>"></textarea></td>
                     <?php
                     break;
                 case 'string':
                 default: ?>
-                    <td><input type="text" id="variation-<?php echo $field; ?>-<?php echo $akey; ?>" name="variation[<?php echo $field; ?>][<?php echo $akey; ?>]" placeholder="<?php echo esc_attr($akey); ?>" value=""></td>
+                    <td><input type="text" id="variation-<?php echo esc_attr($field); ?>-<?php echo esc_attr($akey); ?>" name="variation[<?php echo esc_attr($field); ?>][<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr($akey); ?>" value=""></td>
             <?php } ?>
         </tr>
         <?php

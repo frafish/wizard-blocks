@@ -51,7 +51,7 @@ class Block extends Module_Base {
         "supports",
         "providesContext",
         "example",
-        "variatios",
+        "variations",
         "styles"
     ];
     //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-api-versions/
@@ -404,10 +404,15 @@ class Block extends Module_Base {
         }
         
         /* REVISION */
-        if (isset($_POST['_block_version'])) { // prevent execution in bulk edit
-            add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
-            add_action('_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
-        }
+        add_action('admin_init', function() {
+            if (!empty($_POST['_block_version'])) { // prevent execution in bulk edit
+                $nonce = !empty($_POST['meta_fields_meta_box_nonce']) ? sanitize_text_field(\wp_unslash($_POST['meta_fields_meta_box_nonce'])) : '';
+                if (\wp_verify_nonce($nonce, 'meta_fields_save_meta_box_data')) {
+                    add_filter('wp_save_post_revision_post_has_changed', [$this, 'has_block_changed'], 10, 3);
+                    add_action('_wp_put_post_revision', [$this, 'save_block_revision'], 10, 2);
+                }
+            }
+        });
         add_filter('wizard_blocks/before_save', [$this, 'generate_block_zip_for_revision'], 10, 3);
         add_filter('wp_get_revision_ui_diff', [$this, 'get_revision_ui_diff'], 10, 3);
         add_action('wp_restore_post_revision', [$this, 'restore_block_revision'], 10, 2 );
@@ -434,7 +439,7 @@ class Block extends Module_Base {
         // clean folder after block delete
         add_action('after_delete_post', function ($postid, $post) {
             // For a specific post type block
-            if ('block' === $post->post_type) {
+            if (\WizardBlocks\Modules\Block\Block::get_cpt_name() === $post->post_type) {
                 if ($post->post_name) {
                     //delete block folder
                     $block_slug = str_replace('__trashed', '', $post->post_name);
@@ -527,12 +532,12 @@ class Block extends Module_Base {
         ob_start();
         if (is_object($block->render_callback)) {
             $render = $block->render_callback;
-            echo $render($attributes, $content, $block);
+            echo $render($attributes, $content, $block); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         if (is_string($block->render_callback)) {
             if (is_callable($block->render_callback)) {
                 //var_dump($block->render_callback);
-                echo call_user_func($block->render_callback, $attributes, $content, $block);
+                echo call_user_func($block->render_callback, $attributes, $content, $block); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             }
         }
         //$reflection = new \ReflectionFunction($closure);
@@ -627,7 +632,7 @@ class Block extends Module_Base {
             $tmp = explode('/', $block, 2);
             return end($tmp);
         }
-        return 'block';
+        return \WizardBlocks\Modules\Block\Block::get_cpt_name();
     }
     
     public function get_block_class($block) {
@@ -665,7 +670,7 @@ class Block extends Module_Base {
                 'post_title' => empty($args['title']) ? $block : $args['title'],
                 'post_name' => $block,
                 'post_excerpt' => empty($args['description']) ? '' : $args['description'],
-                'post_type' => 'block',
+                'post_type' => \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'post_status' => current_user_can('manage_options') ? 'publish' : 'draft'
             ];
             //var_dump($block_post); die();

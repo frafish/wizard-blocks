@@ -19,7 +19,7 @@ trait Tools {
         
         add_action('post_submitbox_start', function ($post) {
             if ($post && $post->post_name) {
-                if ($post->post_type == 'block') {
+                if ($post->post_type == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
                     $wb = \WizardBlocks\Modules\Block\Block::instance();
                     $json = $wb->get_json_data($post->post_name);
                     //var_dump($json);
@@ -37,7 +37,7 @@ trait Tools {
                         $block_identifier = esc_attr($wb->get_block_textdomain($json) . '/' . $post->post_name);
                     ?>
                     <div id="export-action" style="margin-top:8px;">
-                        <button id="wb-ajax-export" type="button" class="button button-secondary button-large dashicons-before dashicons-database-export d-block" data-block="<?php echo $block_identifier; ?>" data-nonce="<?php echo esc_attr( $ajax_nonce ); ?>" style="width:100%;">
+                        <button id="wb-ajax-export" type="button" class="button button-secondary button-large dashicons-before dashicons-database-export d-block" data-block="<?php echo esc_attr($block_identifier); ?>" data-nonce="<?php echo esc_attr( $ajax_nonce ); ?>" style="width:100%;">
                             <?php esc_html_e('Export as ZIP', 'wizard-blocks'); ?>
                         </button>
                     </div>
@@ -93,7 +93,7 @@ trait Tools {
                     <?php
                 }
             } else { 
-                if (isset($_GET['post_type']) && $_GET['post_type'] == 'block') { ?>
+                if (isset($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) { ?>
                 <div id="ai-action">
                     <button class="button-ai d-block" style="width: calc(100% - 8px); margin: 0 4px;">
                        <a class="button button-large text-center button-ai-content button-rounded dashicons-before dashicons-superhero d-block" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>

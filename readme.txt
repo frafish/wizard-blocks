@@ -2,7 +2,7 @@
 Contributors: frapesce
 Tags: editor, generate, create, crud, easy
 Requires at least: 6.8
-Tested up to: 6.9
+Tested up to: 7.0
 Stable tag: 2.0
 Requires PHP: 8.0
 License: GPLv3
@@ -124,11 +124,15 @@ so you can use them in any Elementor Template.
 
 = Is compatible with Divi, Visual Composer, Oxygen, Breakdance, Beaver, Brizy, SeedProd, etc? =
 
-Yes, it's compatible with ANY Wordpress Builder which supports Shortcodes, Nusing Blocks as Shortcodes widget.
+Yes, it's compatible with ANY Wordpress Builder which supports Shortcodes, using Blocks as Shortcodes widget.
 
 = Could I insert a block in a specific Hook? =
 
 Yes, it's possible, but you have to insert it programmatically (via functions.php) as Block Shortcode.
+
+= Does it support native MultiSite/Network mode? =
+
+Yes, it works fine, managing Blocks separately for each site instance.
 
 == Screenshots ==
 
@@ -149,8 +153,10 @@ Yes, it's possible, but you have to insert it programmatically (via functions.ph
 
 == Changelog ==
 
-= 2.0 - 2026-01-18 =
+= 2.0 - 2026-05-20 =
 * Add Block Variations management 
+* Add Block Examples management
+* Add Block Styles management  
 * Moved Elementor and Shortcode to PRO 
 
 = 1.3 - 2025-10-03 =

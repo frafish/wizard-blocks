@@ -184,11 +184,11 @@ Trait Attributes {
                     
                     const innerBlocksPropsCustom = { 
                     <?php
-                        if ($defaultBlock_safe) { ?>defaultBlock: <?php echo $defaultBlock_safe; ?>, directInsert: true,<?php }
-                        if ($template_safe) { ?>templateLock: false, template: <?php echo $template_safe; ?>,<?php }
-                        if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; ?>,<?php }
+                        if ($defaultBlock_safe) { ?>defaultBlock: <?php echo $defaultBlock_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>, directInsert: true,<?php }
+                        if ($template_safe) { ?>templateLock: false, template: <?php echo $template_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>,<?php }
+                        if ($allowedBlocks_safe) { ?>allowedBlocks: <?php echo $allowedBlocks_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>,<?php }
                         if ($orientation_safe) { ?>orientation: '<?php echo esc_js($orientation_safe); ?>',<?php }
-                        if ($renderAppender_safe) { ?>renderAppender: <?php echo $renderAppender_safe; ?>,<?php }
+                        if ($renderAppender_safe) { ?>renderAppender: <?php echo $renderAppender_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>,<?php }
                         ?>
                     };
                     
@@ -325,7 +325,7 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
             ?>
             if ( props.attributes.preview ) {
                 let $preview_url = '<?php echo esc_url($image_url); ?>';
-                let scriptTag = document.getElementById('<?php echo $script_id; ?>');
+                let scriptTag = document.getElementById('<?php echo esc_js($script_id); ?>');
                 if (scriptTag) {
                     let fullUrl = scriptTag.src;
                     let folderPath = fullUrl.substring(0, fullUrl.lastIndexOf('/'));
@@ -460,8 +460,7 @@ wp.blocks.registerBlockType("<?php echo esc_attr($key); ?>", {
 <?php
 $conditions = $this->get_attributes_condition($args);
 if (!empty($conditions)) {
-    echo '/* wb:attributes:condition '.$conditions.' */';
-    $conditions = json_decode($conditions, true);
+        echo '/* wb:attributes:condition '.esc_js($conditions).' */';
 }
 
 if ($wrapper) { ?></script><?php }

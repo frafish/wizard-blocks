@@ -11,13 +11,18 @@ trait Save {
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
 
+        $nonce = isset($_POST['meta_fields_meta_box_nonce']) ? sanitize_text_field(wp_unslash($_POST['meta_fields_meta_box_nonce'])) : '';
+        if (empty($nonce) || !wp_verify_nonce($nonce, 'meta_fields_save_meta_box_data')) {
+            return $block_json;
+        }
+
         $block_textdomain = $wb->get_block_textdomain($block_json); //sanitize_key(wp_unslash($_POST['_block_textdomain']));
         // add/edit variation
         $var_json = false;
         if (!empty($_POST['variation']['name'])) {
             $var_name = sanitize_title(wp_unslash($_POST['variation']['name']));
-            $var_title = sanitize_text_field(wp_unslash($_POST['variation']['title']));
-            $var_description = sanitize_textarea_field(wp_unslash($_POST['variation']['description']));
+            $var_title = isset($_POST['variation']['title']) ? sanitize_text_field(wp_unslash($_POST['variation']['title'])) : '';
+            $var_description = isset($_POST['variation']['description']) ? sanitize_textarea_field(wp_unslash($_POST['variation']['description'])) : '';
 
             $var_category = '';
             if (!empty($_POST['variation']['category'])) {
@@ -31,7 +36,7 @@ trait Save {
 
             $var_innerblocks = [];
             if (!empty($_POST['variation']['innerBlocks'])) {
-                $var_innerblocks = wp_unslash($_POST['variation']['innerBlocks']);
+                $var_innerblocks = sanitize_textarea_field(wp_unslash($_POST['variation']['innerBlocks']));
                 $var_innerblocks = json_decode($var_innerblocks, true);
                 /* TODO: validate json */
             }
@@ -43,11 +48,12 @@ trait Save {
 
             $var_active = [];
             if (!empty($_POST['variation']['isActive'])) {
-                if (str_contains($_POST['variation']['isActive'], '=')) {
+                $is_active_raw = wp_unslash($_POST['variation']['isActive']);
+                if (str_contains($is_active_raw, '=')) {
                     //TODO: ( blockAttributes, variationAttributes ) => blockAttributes.providerNameSlug === variationAttributes.providerNameSlug,
-                    $var_active = $_POST['variation']['isActive'];
+                    $var_active = sanitize_text_field($is_active_raw);
                 } else {
-                    $var_active = array_filter(array_map('trim', explode(',', sanitize_text_field(wp_unslash($_POST['variation']['isActive'])))));
+                    $var_active = array_filter(array_map('trim', explode(',', sanitize_text_field($is_active_raw))));
                 }
             }
 
@@ -65,38 +71,38 @@ trait Save {
             }
 
             if (!empty($_POST['variation']['example'])) {
-                $var_example = $_POST['variation']['example'];
+                $var_example = wp_unslash($_POST['variation']['example']);
                 foreach ($var_example as $akey => $aval) {
                     switch ($block_json['attributes'][$akey]['type']) {
                         case 'integer':
                         case 'numeric':
-                            $var_example[$akey] = floatval($aval);
+                            $var_example[$akey] = floatval(sanitize_text_field($aval));
                             break;
                         case 'boolean':
-                            $var_example[$akey] = $aval === 'true' || $aval === 'on';
+                            $var_example[$akey] = sanitize_text_field($aval) === 'true' || sanitize_text_field($aval) === 'on';
                             break;
                         case 'object':
                         case 'array':
-                            $var_example[$akey] = json_decode($aval, true);
+                            $var_example[$akey] = json_decode(wp_unslash($aval), true);
                             break;
                     }
                 }
             }
 
             if (!empty($_POST['variation']['attributes'])) {
-                $var_attributes = $_POST['variation']['attributes'];
+                $var_attributes = wp_unslash($_POST['variation']['attributes']);
                 foreach ($var_attributes as $akey => $aval) {
                     switch ($block_json['attributes'][$akey]['type']) {
                         case 'integer':
                         case 'numeric':
-                            $var_attributes[$akey] = floatval($aval);
+                            $var_attributes[$akey] = floatval(sanitize_text_field($aval));
                             break;
                         case 'boolean':
-                            $var_attributes[$akey] = $aval === 'true' || $aval === 'on';
+                            $var_attributes[$akey] = sanitize_text_field($aval) === 'true' || sanitize_text_field($aval) === 'on';
                             break;
                         case 'object':
                         case 'array':
-                            $var_attributes[$akey] = json_decode($aval, true);
+                            $var_attributes[$akey] = json_decode(wp_unslash($aval), true);
                             break;
                     }
                 }

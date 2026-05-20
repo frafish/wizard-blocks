@@ -9,6 +9,11 @@ trait Save {
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
 
+        $nonce = isset($_POST['meta_fields_meta_box_nonce']) ? sanitize_text_field(wp_unslash($_POST['meta_fields_meta_box_nonce'])) : '';
+        if (empty($nonce) || !wp_verify_nonce($nonce, 'meta_fields_save_meta_box_data')) {
+            return $block_json;
+        }
+
         // add/edit style
         $style_json = false;
         if (!empty($_POST['style']['name']) || !empty($_POST['style']['title'])) {
@@ -20,9 +25,9 @@ trait Save {
                 $var_default = true;
             }
 
-            $var_inlineStyle = sanitize_textarea_field(wp_unslash($_POST['style']['inlineStyle']));
-            $var_styleHandle = sanitize_text_field(wp_unslash($_POST['style']['styleHandle']));
-            $var_styleData = json_decode(sanitize_textarea_field(wp_unslash($_POST['style']['styleData'])), true);
+            $var_inlineStyle = isset($_POST['style']['inlineStyle']) ? sanitize_textarea_field(wp_unslash($_POST['style']['inlineStyle'])) : false;
+            $var_styleHandle = isset($_POST['style']['styleHandle']) ? sanitize_text_field(wp_unslash($_POST['style']['styleHandle'])) : false;
+            $var_styleData = isset($_POST['style']['styleData']) ? json_decode(sanitize_textarea_field(wp_unslash($_POST['style']['styleData'])), true) : [];
 
             $style_json = [
                 'name' => $var_name,
@@ -39,12 +44,12 @@ trait Save {
 
         $block_json['styles'] = [];
         if (!empty($_POST['_block_styles'])) {
-            foreach ($_POST['_block_styles'] as $style) {
-                $style = sanitize_textarea_field(wp_unslash($style));
+            foreach (wp_unslash($_POST['_block_styles']) as $style) {
+                $style = sanitize_textarea_field($style);
                 if ($style = json_decode($style, true)) {
-                    if (empty($_POST['_block_styles_delete-' . $style['name']])) {
+                    $style_name = sanitize_key($style['name'] ?? '');
+                    if ($style_name && empty($_POST['_block_styles_delete-' . $style_name])) {
                         if (empty($style_json['name']) || $style['name'] != $style_json['name']) {
-                            //var_dump($style);
                             $block_json['styles'][] = $style;
                         }
                     }

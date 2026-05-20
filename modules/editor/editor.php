@@ -53,7 +53,7 @@ class Editor extends Module_Base {
     }
     
     public function allowed_block_types($allowed_block_types, $block_editor_context) {
-        if (!isset($_GET['post_type']) || $_GET['post_type'] != 'block') {
+        if (!isset($_GET['post_type']) || $_GET['post_type'] != \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
             $blocks_disabled = get_option(\WizardBlocks\Modules\Admin\Admin::$blocks_disabled_key);
             //var_dump($blocks_disabled); die();
             if (!empty($blocks_disabled)) {

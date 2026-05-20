@@ -69,21 +69,24 @@ Trait Icons {
         }
     }
 
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing
     function save_block_icon($block_name, $icon_name = 'icon', $folder = '', $input = '_block') {
         //https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/#icon-optional
         $icon = '';
-        if (!empty($_POST[$input.'_icon'])) {
-            $icon = sanitize_key(wp_unslash($_POST[$input.'_icon']));
+        $icon_input = isset($_POST[$input.'_icon']) ? sanitize_key(wp_unslash($_POST[$input.'_icon'])) : '';
+        if (!empty($icon_input)) {
+            $icon = $icon_input;
         } else {
-            if (!empty($_POST[$input.'_icon_src'])) {
+            $icon_src = isset($_POST[$input.'_icon_src']) ? sanitize_text_field(wp_unslash($_POST[$input.'_icon_src'])) : '';
+            if (!empty($icon_src)) {
                 $icon_name = $icon_name.'.svg'; //basename($icon_url);
                 list($block_textdomain, $block_slug) = explode('/', $block_name);
                 $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
                 $medias_dir = $basepath.($folder ? DIRECTORY_SEPARATOR.$folder : $folder);  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
                 //var_dump($_POST['_block_icon_src']); die();
-                if (str_starts_with($_POST[$input.'_icon_src'], 'http')) {
+                if (str_starts_with($icon_src, 'http')) {
                     // svg image url
-                    $icon_url = sanitize_url($_POST[$input.'_icon_src']);
+                    $icon_url = sanitize_url($icon_src);
                     if (!str_starts_with($icon_url, site_url())) {
                         if (str_ends_with(strtolower($icon_url), '.svg')) {
                             //var_dump($icon_url); var_dump(site_url()); die();
@@ -101,6 +104,15 @@ Trait Icons {
                             // Pass it to the sanitizer and get it back clean
                             $svg = $sanitizer->sanitize($svg);
 
+                            $svg = trim($svg);
+                            
+                            // remove xml tag
+                            if (str_starts_with('<?xml ', $svg)) {
+                                $tmp = explode(">", $svg, 2);
+                                //<?xml version="1.0" encoding="UTF-8" standalone="no" >
+                                $svg = end($tmp);
+                            }
+                            
                             $this->get_filesystem()->put_contents($icon_path, $svg);
                             $icon = 'file:./' . $icon_name;
                         }
@@ -122,21 +134,21 @@ Trait Icons {
                             }
                         }
                     }
-                } else if (str_starts_with($_POST[$input.'_icon_src'], 'file:')) {
-                    $icon = sanitize_textarea_field($_POST[$input.'_icon_src']);
+                } else if (str_starts_with($icon_src, 'file:')) {
+                    $icon = sanitize_textarea_field($icon_src);
                     $basepath = $this->get_ensure_blocks_dir($block_slug, $block_textdomain);
                     $medias_dir = $basepath.($folder ? DIRECTORY_SEPARATOR.$folder : $folder);  // . DIRECTORY_SEPARATOR . \WizardBlocks\Modules\Media\Media::FOLDER . DIRECTORY_SEPARATOR;
                     $icon_path = str_replace('file:./', $medias_dir, $icon);
                     $icon_path = str_replace('/', DIRECTORY_SEPARATOR, $icon_path);
                     //var_dump($basepath); var_dump($folder); var_dump($_POST[$input.'_icon_src']);var_dump($icon); var_dump($medias_dir);var_dump($icon_path); die();
                     // verify that still exists 
+                    //var_dump($icon_path); die();
                     if (!file_exists($icon_path)) {
                         $icon = false;
                     }
                 } else {
                     // other...like <svg code
-                    //$_block_icon_src = sanitize_textarea_field(wp_unslash($_POST['_block_icon_src']));
-                    $svg = wp_unslash($_POST[$input.'_icon_src']);
+                    $svg = $icon_src;
                     $svg = str_replace(PHP_EOL, "", $svg);
                     $svg = str_replace('"', "'", $svg);
                     $svg = str_replace("\'", "'", $svg);

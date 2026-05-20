@@ -11,7 +11,7 @@ trait Save {
     public function meta_fields_save_meta_box_data($post_id, $post, $update) {
         if (!isset($_POST['meta_fields_meta_box_nonce']))
             return;
-        if (!wp_verify_nonce(sanitize_key(wp_unslash($_POST['meta_fields_meta_box_nonce'])), 'meta_fields_save_meta_box_data'))
+        if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['meta_fields_meta_box_nonce'])), 'meta_fields_save_meta_box_data'))
             return;
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
             return;
@@ -271,7 +271,7 @@ trait Save {
         
         $example = [];
         //$preview = get_post_meta($post_id, '_thumbnail_id', true);
-        $preview = empty($_POST['_block_preview']) ? false : $_POST['_block_preview'];
+        $preview = empty($_POST['_block_preview']) ? false : sanitize_text_field(wp_unslash($_POST['_block_preview']));
         if ($preview) {
             //$image_src = wp_get_attachment_image_url($preview, 'full');
             //$preview_src = wp_get_attachment_image_url($preview, 'medium');
@@ -314,8 +314,8 @@ trait Save {
                     $example['attributes'] = [];
                 }
                 foreach ($attributes as $akey => $attribute) {
-                    if (!empty($_POST['_block_example'][$akey])) {
-                        $value = sanitize_text_field($_POST['_block_example'][$akey]);
+                    if (isset($_POST['_block_example'][$akey]) && $_POST['_block_example'][$akey] !== '') {
+                        $value = sanitize_text_field(wp_unslash($_POST['_block_example'][$akey]));
                         switch($attribute['type']) {
                             case 'boolean':
                                 $example['attributes'][$akey] = true;

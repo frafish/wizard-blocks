@@ -15,7 +15,7 @@ trait Metabox {
                 'render_meta_box',
                 esc_html__('Content', 'wizard-blocks'),
                 [$this, 'meta_fields_build_render_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 //'side',
                 //'default'
         );
@@ -24,26 +24,26 @@ trait Metabox {
                 'css_meta_box',
                 esc_html__('CSS Assets', 'wizard-blocks'),
                 [$this, 'meta_fields_build_css_callback'],
-                'block'
+                \WizardBlocks\Modules\Block\Block::get_cpt_name()
         );
         add_meta_box(
                 'js_meta_box',
                 esc_html__('JS Assets', 'wizard-blocks'),
                 [$this, 'meta_fields_build_js_callback'],
-                'block'
+                \WizardBlocks\Modules\Block\Block::get_cpt_name()
         );
         add_meta_box(
                 'attributes_meta_box',
                 esc_html__('Attributes', 'wizard-blocks'),
                 [$this, 'meta_fields_build_attributes_callback'],
-                'block'
+                \WizardBlocks\Modules\Block\Block::get_cpt_name()
         );
 
         add_meta_box(
                 'example_meta_box',
                 esc_html__('Example', 'wizard-blocks'),
                 [$this, 'meta_fields_build_example_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'side',
                 'default'
         );
@@ -52,7 +52,7 @@ trait Metabox {
                 'meta_fields_side_meta_box',
                 esc_html__('Info', 'wizard-blocks'),
                 [$this, 'meta_fields_build_meta_box_side_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'side',
                 'default'
         );
@@ -61,7 +61,7 @@ trait Metabox {
                 'context_side_meta_box',
                 esc_html__('Context', 'wizard-blocks'),
                 [$this, 'meta_fields_build_context_side_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'side',
                 'default'
         );
@@ -70,7 +70,7 @@ trait Metabox {
                 'supports_side_meta_box',
                 esc_html__('Supports', 'wizard-blocks'),
                 [$this, 'meta_fields_build_supports_side_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'side',
                 'default'
         );
@@ -79,10 +79,10 @@ trait Metabox {
                 'extra_meta_box',
                 esc_html__('Extra', 'wizard-blocks'),
                 [$this, 'meta_fields_build_extra_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
         );
 
-        remove_meta_box('pageparentdiv', 'block', 'side');
+        remove_meta_box('pageparentdiv', \WizardBlocks\Modules\Block\Block::get_cpt_name(), 'side');
 
         if ($this->is_block_edit()) {
             $this->enqueue_style('block-edit', 'assets/css/block-edit.css');
@@ -140,13 +140,13 @@ trait Metabox {
                 <li><b>$block</b> (<a href="https://developer.wordpress.org/reference/classes/wp_block/" target="_blank">WP_Block</a>): <?php esc_attr_e('The instance of the WP_Block class that represents the block being rendered.', 'wizard-blocks'); ?></li>
             </ul>
             <?php
-            $example = "&lt;div &lt;?php echo <a href='https://developer.wordpress.org/reference/functions/get_block_wrapper_attributes/' target='_blank'>get_block_wrapper_attributes</a>(); ?&gt&gt;<br> &lt;?php<br> echo <b>\$attributes</b>['acme']; <br> echo <b>\$content</b>; <br> echo <b>\$block</b>->blockName;<br>?&gt;<br>&lt;/div&gt;";
+            $example = "&lt;div &lt;?php echo <a href='https://developer.wordpress.org/reference/functions/get_block_wrapper_attributes/' target='_blank'>get_block_wrapper_attributes</a>(); ?&gt;&gt;<br> &lt;?php<br> echo <b>\$attributes</b>['acme']; <br> echo <b>\$content</b>; <br> echo <b>\$block</b>->blockName;<br>?&gt;<br>&lt;/div&gt;";
             //echo '<p ' . get_block_wrapper_attributes() . '><?php (empty($attributes['acme'])) ? '' : $content) . '</p>' 
             ?>
             <details>
                 <summary class="cursor-pointer"><u><?php esc_attr_e('Render PHP code example', 'wizard-blocks'); ?>:</u></summary>
                 <div>
-                    <q style="padding: 10px; display: block; background-color: #dedede;"><i><?php echo $example; ?></i></q>
+                    <q style="padding: 10px; display: block; background-color: #dedede;"><i><?php echo wp_kses($example, [ 'a' => [ 'href' => [], 'target' => [] ], 'b' => [], 'i' => [], 'br' => [], 'code' => [] ]); ?></i></q>
                     <span class="dashicons dashicons-welcome-learn-more"></span> <a href="https://github.com/WordPress/block-development-examples" target="_blank"><?php esc_attr_e('Find out more examples', 'wizard-blocks'); ?> &gt;&gt;</a>
                 </div>
             </details>    
@@ -490,16 +490,16 @@ trait Metabox {
         <h3><label for="_block_blockHooks"><?php esc_attr_e('Hooks', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#block-hooks"><span class="dashicons dashicons-info-outline"></span></a></h3>
         <p class="block-blockHooks"><textarea id="_block_blockHooks" name="_block_blockHooks" placeholder='{ "my-plugin/banner": "after" }'><?php
         if (!empty($json['blockHooks'])) {
-            echo wp_unslash(wp_json_encode($json['blockHooks'], JSON_PRETTY_PRINT));
+            echo esc_textarea(wp_json_encode($json['blockHooks'], JSON_PRETTY_PRINT));
         }
         ?></textarea></p>
 
         <h3><label for="_block_providesContext"><?php esc_attr_e('providesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#provides-context"><span class="dashicons dashicons-info-outline"></span></a></h3>
         <p class="block-providesContext"><textarea id="_block_providesContext" name="_block_providesContext" placeholder='{ "my-plugin/recordId": "recordId" }'><?php
         if (!empty($json['providesContext'])) {
-            echo wp_unslash(wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT));
+            echo esc_textarea(wp_json_encode($json['providesContext'], JSON_PRETTY_PRINT));
         }
-        ?></textarea></p>	
+        ?></textarea></p>
 
         <h3><label for="_block_usesContext"><?php esc_attr_e('usesContext', 'wizard-blocks'); ?></label> <a target="_blank" href="https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/#context"><span class="dashicons dashicons-info-outline"></span></a></h3>
         <p class="block-usesContext"><input type="text" id="_block_usesContext" name="_block_usesContext" placeholder="postId, postType" value="<?php
@@ -649,7 +649,7 @@ trait Metabox {
         $extra = empty($extra) ? $extra_transient : wp_json_encode($extra, JSON_PRETTY_PRINT);
         ?>
         <h3><label id="extra" for="_block_extra"><b><?php esc_attr_e('Extra', 'wizard-blocks'); ?></b></label></h3>
-        <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;"><?php echo esc_textarea($extra); ?></textarea>
+        <textarea rows="10" id="_block_extra" name="_block_extra" style="width: 100%;" placeholder='{ "something": "Else", "notIn": "$schema" }'><?php echo esc_textarea($extra); ?></textarea>
         <?php
     }
 
@@ -684,7 +684,7 @@ trait Metabox {
         </p>
         <p class="hide-if-no-js howto" id="set-block-example-thumbnail-desc"><?php esc_attr_e('Click the image to edit or update', 'wizard-blocks'); ?></p>
         <p class="hide-if-no-js"><a href="#" id="remove-block-example-thumbnail" class="text-danger"><?php esc_attr_e('Remove cover image', 'wizard-blocks'); ?></a></p>
-        <input placeholder="file:./preview.png" type="text" id="_block_preview" name="_block_preview" value="<?php echo $example_preview; ?>">
+        <input placeholder="file:./preview.png" type="text" id="_block_preview" name="_block_preview" value="<?php echo esc_attr($example_preview); ?>">
 
 
         <?php if ($post && !empty($block['attributes']) && (count($block['attributes']) > 1 || !isset($block['attributes']['preview']))) { ?>
@@ -724,26 +724,26 @@ trait Metabox {
         ?>
         <tr>
             <td>
-                <abbr title="<?php echo $akey; ?>">
+                <abbr title="<?php echo esc_attr($akey); ?>">
                     <label for="<?php echo esc_attr($id); ?>">
-        <?php echo empty($attr['label']) ? $akey : $attr['label']; ?>
+        <?php echo esc_html(empty($attr['label']) ? $akey : $attr['label']); ?>
                     </label>
                 </abbr>
                 <?php if (!empty($attr['help'])) { ?>
-                    <p class="hint"><i><?php echo $attr['help']; ?></i></p>
+                    <p class="hint"><i><?php echo esc_html($attr['help']); ?></i></p>
             <?php } ?>
             </td>
             <?php
             switch ($attr['type']) {
                 case 'boolean':
                     ?>
-                    <td><input type="checkbox" id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]"<?php echo esc_attr(!empty($attr['default']) ? ' checked' : ''); ?>></td>
+                    <td><input type="checkbox" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($field); ?>[<?php echo esc_attr($akey); ?>]"<?php echo esc_attr(!empty($attr['default']) ? ' checked' : ''); ?>></td>
                     <?php
                     break;
                 case 'number':
                 case 'integer':
                     ?>
-                    <td><input type="number" id="<?php echo $id ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>" value="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : ''); ?>"></td>
+                    <td><input type="number" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($field); ?>[<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>" value="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : ''); ?>"></td>
                     <?php
                     break;
                 case 'array':
@@ -756,10 +756,10 @@ trait Metabox {
                 //if ($akey == 'preview') break;
                 default:
                     ?>
-                    <td><textarea id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>"><?php echo empty($attr['default']) ? '' : $attr['default']; ?></textarea></td>
+                    <td><textarea id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($field); ?>[<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>"><?php echo esc_textarea(empty($attr['default']) ? '' : $attr['default']); ?></textarea></td>
 
             <?php /* default: ?>
-              <td><input type="text" id="<?php echo $id; ?>" name="<?php echo $field; ?>[<?php echo $akey; ?>]" placeholder="<?php echo esc_attr(isset($field['default']) ? $field['default'] : $akey); ?>" value=""></td>
+              <td><input type="text" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($field); ?>[<?php echo esc_attr($akey); ?>]" placeholder="<?php echo esc_attr(isset($attr['default']) ? $attr['default'] : $akey); ?>" value=""></td>
               <?php */
         } ?>
         </tr>

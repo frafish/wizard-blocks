@@ -12,7 +12,7 @@ trait Editor {
                     'block_styles_meta_box',
                     esc_html__('Styles', 'wizard-blocks'),
                     [$this, 'block_styles_meta_box_callback'],
-                    'block'
+                    \WizardBlocks\Modules\Block\Block::get_cpt_name()
             );
         }
     }
@@ -78,7 +78,7 @@ trait Editor {
                             <abbr title="<?php esc_html_e('Edit', 'wizard-blocks'); ?>" class="button button-danger attr_edit pull-right"><span class="dashicons dashicons-edit"></span></abbr>
                     </summary>
                     <label for="_block_styles_delete-<?php echo esc_attr($style_json['name']); ?>"><input class="d-none style-delete" type="checkbox" id="_block_styles_delete-<?php echo esc_attr($style_json['name']); ?>" name="_block_styles_delete[<?php echo esc_attr($style_json['name']); ?>]"> <?php esc_html_e('Delete this style on save', 'wizard-blocks'); ?></label>
-                    <textarea class="_block_styles" id="_block_styles_<?php echo esc_attr($style_json['name']); ?>" name="_block_styles[<?php echo esc_attr($style_json['name']); ?>]"><?php echo $style_file; ?></textarea>
+                    <textarea class="_block_styles" id="_block_styles_<?php echo esc_attr($style_json['name']); ?>" name="_block_styles[<?php echo esc_attr($style_json['name']); ?>]"><?php echo esc_textarea($style_file); ?></textarea>
               </details>
               <?php
             } ?>

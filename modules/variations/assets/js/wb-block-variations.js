@@ -53,7 +53,11 @@ jQuery(document).ready(function ($) {
             if (variation.innerBlocks) jQuery('#variation-innerBlocks').val(JSON.stringify(variation.innerBlocks));
             if (variation.isActive) jQuery('#variation-isActive').val(variation.isActive.join(', '));
             if (variation.icon) { 
-                if (variation.icon.substr(0,5) == '<svg ') {
+                //console.log(variation.icon);
+                /*if (variation.icon.substr(0,5) == '<svg ') {
+                    jQuery('#variation_icon').val('').trigger('change');
+                    jQuery('#variation_icon_src').val(variation.icon);
+                } else*/ if (variation.icon.substr(0,5) == 'file:') {
                     jQuery('#variation_icon').val('').trigger('change');
                     jQuery('#variation_icon_src').val(variation.icon);
                 } else {

@@ -62,7 +62,7 @@ trait Patterns {
                             <tr>
                                 <td class="title column-title has-row-actions column-primary">
                                     <strong><a class="row-title" href="<?php echo esc_url(get_edit_post_link($post->ID)); ?>"><?php echo esc_html($post->post_title); ?></a></strong>
-                                    <p class="description"><code><?php echo $slug; ?></code></p>
+                                    <p class="description"><code><?php echo esc_html($slug); ?></code></p>
                                 </td>
                                 <td><?php echo esc_attr($post->ID); ?></td>
                                 <td><small><?php echo esc_html($post->post_excerpt ?: ''); ?></small></td>
@@ -130,7 +130,7 @@ trait Patterns {
                             <tr>
                                 <td class="title column-title column-primary">
                                     <strong><?php echo esc_html($p['title']); ?></strong>
-                                    <p class="description"><code><?php echo $slug; ?></code></p>
+                                    <p class="description"><code><?php echo esc_html($slug); ?></code></p>
                                 </td>
                                 <td><small><?php echo esc_html($p['description'] ?? '--'); ?></small></td>
                                 <td><?php echo!empty($p['categories']) ? esc_html(implode(', ', $p['categories'])) : '--'; ?></td>

@@ -58,7 +58,7 @@ class Media extends Module_Base {
                 'block_media_box',
                 esc_html__('Media', 'wizard-blocks'),
                 [$this, 'block_media_box_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
                 'side',
                 'default'
         );
@@ -185,6 +185,11 @@ class Media extends Module_Base {
             return;
         if ($post->post_type != \WizardBlocks\Modules\Block\Block::get_cpt_name())
             return;
+
+        $nonce = isset($_POST['meta_fields_meta_box_nonce']) ? sanitize_text_field(wp_unslash($_POST['meta_fields_meta_box_nonce'])) : '';
+        if (empty($nonce) || !wp_verify_nonce($nonce, 'meta_fields_save_meta_box_data')) {
+            return;
+        }
 
         $wb = \WizardBlocks\Modules\Block\Block::instance();
         $json = $post ? $wb->get_json_data($post->post_name) : [];

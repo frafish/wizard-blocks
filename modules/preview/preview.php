@@ -25,7 +25,7 @@ class Preview extends Module_Base {
         
         add_filter('redirect_canonical', function($redirect_url, $requested_url) {
             if (!empty($_GET['preview'])) {
-                if (!empty($_GET['post_type']) && $_GET['post_type'] == 'block') {
+                if (!empty($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
                     return false;
                 }
             }
@@ -70,7 +70,7 @@ class Preview extends Module_Base {
             $this->fix_api_access($cpt_name);
 
             if (!empty($_GET['preview'])) {
-                if (!empty($_GET['post_type']) && $_GET['post_type'] == 'block') {
+                if (!empty($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
                     add_filter('the_content', [$this, 'the_content']);
                 }
             }
@@ -144,7 +144,7 @@ class Preview extends Module_Base {
                 'block_json_box',
                 esc_html__('Json', 'wizard-blocks'),
                 [$this, 'block_json_box_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
         );
     }
     
@@ -153,7 +153,7 @@ class Preview extends Module_Base {
                 'block_preview_box',
                 esc_html__('Preview', 'wizard-blocks'),
                 [$this, 'block_preview_box_callback'],
-                'block',
+                \WizardBlocks\Modules\Block\Block::get_cpt_name(),
         );
     }
 
@@ -181,7 +181,7 @@ class Preview extends Module_Base {
         //$basepath = $wb->get_blocks_dir($block_slug, $block_textdomain);
         //$src = '/wp-json/wp/v2/block-renderer/' . $block_textdomain . '/' . $block_slug . '?context=edit&attributes[color]=red&attributes[asd]=Testo&post_id=2&_locale=user';
         /* <a href="<?php echo $src; ?>" target="_blank"><?php echo $src; ?></a> */
-        $preview_url = add_query_arg('post_type', 'block', add_query_arg('preview', true, home_url('?p='.$post->ID)));
+        $preview_url = add_query_arg('post_type', \WizardBlocks\Modules\Block\Block::get_cpt_name(), add_query_arg('preview', true, home_url('?p='.$post->ID)));
         //add_query_arg('preview', true, add_query_arg('context','preview',get_permalink($post))));
         ?>
         <iframe id="block-preview" width="100%" height="600" src="<?php echo esc_url($preview_url); ?>"></iframe>

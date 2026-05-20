@@ -82,7 +82,7 @@ trait Type {
         $args = apply_filters('wizard-blocks/post_type', $args);
 
         //self::get_cpt_name()
-        register_post_type('block', $args);
+        register_post_type(self::get_cpt_name(), $args);
 
         add_filter('manage_'.self::get_cpt_name().'_posts_columns', function ($posts_columns) {
             $posts_columns = $this->array_insert_after($posts_columns, 'title', ['description' => __('Description', 'wizard-blocks')]);        
@@ -95,11 +95,11 @@ trait Type {
         });
         
         add_filter( 'post_row_actions', function($actions, $post) {
-            if ($post->post_type == 'block') {
+            if ($post->post_type == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
                 $wb = \WizardBlocks\Modules\Block\Block::instance();
                 $block_json = $wb->get_block_json($post->post_name);
                 if (!empty( $block_json['name'])) {
-                    echo $block_json['name'];
+                    echo esc_html($block_json['name']);
                 }
             }
             return $actions;
@@ -121,7 +121,7 @@ trait Type {
                         /* translators: Post time format. See https://www.php.net/manual/datetime.format.php */
                         get_the_modified_time( __( 'g:i a', 'wizard-blocks' ), $post_ID )
                 );
-                echo __('Modified', 'wizard-blocks').'<br />'.$m_time;
+                echo esc_html__('Modified', 'wizard-blocks') . '<br />' . esc_html($m_time);
             }
         }, 10, 2);
         
@@ -385,7 +385,7 @@ trait Type {
         if (is_admin() && $query->is_main_query()) {
 
             // Target only the 'block' post type
-            if ($query->get('post_type') === 'block') {
+            if ($query->get('post_type') === \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
                 if (empty($_GET['orderby'])) {
 
                     // Set the 'orderby' parameter (e.g., 'title', 'date', 'menu_order')

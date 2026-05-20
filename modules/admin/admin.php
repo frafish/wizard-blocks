@@ -47,7 +47,7 @@ class Admin extends Module_Base {
      */
     function admin_footer_text($default) {
 
-        if (isset($_GET['post_type']) && $_GET['post_type'] == 'block') {
+        if (isset($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) {
             $strong_open = '<strong>';
             $strong_close = '</strong>';
             $link_open = '<a href="https://wordpress.org/support/view/plugin-reviews/wizard-blocks?filter=5#postform" target="_blank" class="svgs-rating-link">';
