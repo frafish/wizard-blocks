@@ -28,7 +28,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-define('WIZARD_BLOCKS_URL', plugins_url(DIRECTORY_SEPARATOR, __FILE__));
+define('WIZARD_BLOCKS_URL', plugins_url('/', __FILE__));
 define('WIZARD_BLOCKS_PATH', str_replace('/', DIRECTORY_SEPARATOR, plugin_dir_path(__FILE__)));
 
 /**

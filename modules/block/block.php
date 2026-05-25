@@ -752,7 +752,7 @@ class Block extends Module_Base {
         $code = str_replace("\'", $quote ? $quote : "'", $code);
         $code = str_replace("\/", "/", $code);
         $code = str_replace("=&gt;", "=>", $code);
-        $code = str_replace("=&gt;", "=>", $code);
+        //$code = str_replace("=&gt;", "=>", $code);
         return $code;
     }
 

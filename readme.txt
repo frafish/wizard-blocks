@@ -8,20 +8,19 @@ Requires PHP: 8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Easy create, edit and manage Gutenberg blocks
+Easily create, edit, and manage Gutenberg blocks without writing React
 
 == Description ==
 
-A full CRUD for your personal Custom Blocks
-It's NOT Theme related and it works out of the box with any Gutenberg ready theme.
-No bloat included!
+The ultimate **No-React Visual Builder** for Native Gutenberg Blocks.
+Create, edit, and manage custom blocks directly from your WordPress dashboard, generating 100% native `block.json` and React code under the hood. 
+**Zero vendor lock-in**: export your blocks and use them standalone!
 
 **Follow us on [GITHUB](https://github.com/frafish/wizard-blocks)!**
 
 = Effortlessly Build & Manage Gutenberg Blocks =
 
-This Gutenberg Block Manager simplifies creating, editing, and managing your site blocks. 
-Design custom blocks render content, add optional **block attributes**, and organize for a clutter-free workflow.
+Wizard Blocks acts as a powerful transpiler: you configure attributes visually, and it automatically writes the complex React (`wp.element`, `wp.components`) and JS code required by Gutenberg. You get the performance of native blocks without writing a single line of Javascript.
 
 = Features =
 
@@ -36,38 +35,32 @@ Design custom blocks render content, add optional **block attributes**, and orga
 - Import any **Assets CSS and JS libs** from Media Library, optimized enqueue of them only if block is used
 - Block Media, to include your **relative images** in your block Content
 - **Disable** unused/unwanted Blocks
-- Block **Versioning** (with Revision)
+- Block **Versioning** (with Revision support)
+- Block **Styles Variation**
 - Use your custom Block **Textdomain**
 - Control **Attributes conditional logic** display rules
 - Manage **Block Example values** or **Image Preview**
-- Full **Telex** compatibility and support, simplied import of generated zip
+- Full **Telex** compatibility and support, simplified import of generated zip
 
 Perfect for:
-
 - Content creators
 - Web designers
 - Web agencies
 
-**Why choose it**
-- *No React knowledge needed:* Create and edit content without learning complex code. It's for everyone, not just developers.
-- *Built-in WordPress features, no bloat:* It uses WordPress's native tools for better performance, stability, and security.
-- *Classic WordPress editing:* Get the familiar "classic" block editor feel, making content creation intuitive and easy.
-- *No extra data is stored in your database:* Keeps your site fast, preventing slowdowns and keeping your website speedy and efficient.
-- *Don't reinvent the wheel:* Reuse your custom blocks across your sites!
-- *Complete manage of CSS, JS and PHP Template from interface:* no FTP or direct file access needed.
+**Why choose Wizard Blocks over the competitors?**
+
+- **🔥 Zero Vendor Lock-in (Standalone Blocks):** Unlike other block builders, Wizard Blocks generates standard Gutenberg file structures (`block.json`, PHP, CSS, JS). You can export your blocks, drop them into any theme, and deactivate our plugin. They will keep working forever!
+- **🚀 Native Performance, No Bloat:** We don't use heavy wrappers or shortcodes to render blocks in the frontend. You get 100% native Gutenberg blocks, keeping your database clean and your website blazing fast.
+- **⚛️ No React/JS Knowledge Needed:** Build complex block settings using our Visual Attribute Manager. The plugin automatically transpiles your choices into optimized React/JavaScript code (`editor.js`) on the fly.
+- **🛠 Built-in IDE & Versioning:** Write your PHP renders and CSS directly in the dashboard using the integrated Codemirror editor. Keep your code safe with the native WordPress Revision system applied to your blocks.
+- **📦 Developer Friendly:** Import/Export via ZIP, automatically generate `functions.php` snippets, and sync your blocks across multiple projects seamlessly.
+- **💻 Complete management of CSS, JS and PHP Templates** directly from the interface: no FTP or direct file access needed.
 
 = Compatibility =
 
-Fully compatible with WP Gutenberg Block standard!
-Once your blocks are generated you can **use them standalone in your theme or plugin**,
-there is no need to use and maintain this plugin active. 
-
-
-= Coming SOON: =
-- Block Styles Variation
-https://developer.wordpress.org/themes/features/block-style-variations/
-- Panels and Dividers
-- more...
+Fully compatible with the WP Gutenberg Block standard!
+Once your blocks are generated, you can **use them standalone in your theme or plugin**.
+There is no need to keep this plugin active to render your blocks in the frontend. 
 
 == PRO *Advanced Features:* == 
 
@@ -91,7 +84,7 @@ https://developer.wordpress.org/themes/features/block-style-variations/
 - Loop **Swiper Carousel**
 - Frontend Filters
 - HTML Scraping
-- our database is growing so... Contact us and REQUEST YOUR!
+- our database is growing so... Contact us and REQUEST YOURS!
 
 
 == Installation ==
