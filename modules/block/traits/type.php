@@ -397,4 +397,14 @@ trait Type {
             }
         }
     }
+    
+    function _site_name_submenu($wp_admin_bar) {
+        $args = array(
+            'id'    => 'wb-blocks', 
+            'title' => __('Blocks', 'wizard-blocks'),
+            'href'  => admin_url('edit.php?post_type='.self::get_cpt_name()),
+            'parent' => 'site-name',
+        );
+        $wp_admin_bar->add_node($args);
+    }
 }

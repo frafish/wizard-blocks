@@ -481,6 +481,9 @@ class Block extends Module_Base {
         add_filter('manage_block_posts_columns', [$this, 'add_block_columns']);
         add_action('manage_block_posts_custom_column', [$this, 'populate_block_columns'], 10, 2);
         
+        if (!is_admin()) {
+            add_action('admin_bar_menu', [$this, '_site_name_submenu'], 500);
+        }
     }
     
     /**
