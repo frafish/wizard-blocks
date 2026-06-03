@@ -280,45 +280,89 @@ trait Type {
      * @param WP_Post $compare_to   The revision post to compare to.
      */
     public function get_revision_ui_diff($return, $compare_from, $compare_to) {
-        //var_dump($compare_from); var_dump($zip_from); var_dump($zip_to); die(); 
-        $parent = get_post($compare_from->post_parent);
-        $json_last = $this->get_block_json($parent->post_name);
-
         $json_from = $this->get_block_revision_json($compare_from);
         $json_to = $this->get_block_revision_json($compare_to);
         
-        //var_dump($compare_from);
-        $zip = $this->get_revision_zip($compare_to);
-        //va
-        //var_dump($zip);
+        $json_from = is_array($json_from) ? $json_from : [];
+        $json_to = is_array($json_to) ? $json_to : [];
+        
+        $zip_from = $this->get_revision_zip($compare_from);
+        $zip_to = $this->get_revision_zip($compare_to);
+        
+        $download_url_from = '';
+        if ($zip_from) {
+            $wp_upload_dir = wp_upload_dir();
+            $download_url_from = str_replace($wp_upload_dir['basedir'], $wp_upload_dir['baseurl'], $zip_from);
+            $download_url_from = str_replace('\\', '/', $download_url_from);
+        } elseif (!empty($json_from['name'])) {
+            $nonce = wp_create_nonce('wizard-blocks-nonce');
+            $download_url_from = admin_url('admin-ajax.php?action=wizard_blocks_download_block&block=' . urlencode($json_from['name']) . '&nonce=' . $nonce);
+        }
+        
+        $download_url_to = '';
+        if ($zip_to) {
+            $wp_upload_dir = wp_upload_dir();
+            $download_url_to = str_replace($wp_upload_dir['basedir'], $wp_upload_dir['baseurl'], $zip_to);
+            $download_url_to = str_replace('\\', '/', $download_url_to);
+        } elseif (!empty($json_to['name'])) {
+            $nonce = wp_create_nonce('wizard-blocks-nonce');
+            $download_url_to = admin_url('admin-ajax.php?action=wizard_blocks_download_block&block=' . urlencode($json_to['name']) . '&nonce=' . $nonce);
+        }
+        
+        if ($download_url_from || $download_url_to) {
+            $diff_html = '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr>';
+            $diff_html .= '<td style="padding: 1em; text-align: center;">' . ($download_url_from ? '<a href="' . esc_url($download_url_from) . '" class="button button-primary" download>' . esc_html__('Download ZIP', 'wizard-blocks') . '</a>' : '') . '</td>';
+            $diff_html .= '<td></td>';
+            $diff_html .= '<td style="padding: 1em; text-align: center;">' . ($download_url_to ? '<a href="' . esc_url($download_url_to) . '" class="button button-primary" download>' . esc_html__('Download ZIP', 'wizard-blocks') . '</a>' : '') . '</td>';
+            $diff_html .= '</tr></tbody></table>';
 
-        /*
-          $return[] = [
-          'id' => 'zip',
-          'name' => 'Zip',
-          'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr><td>'.$zip_from.'</td><td></td><td>'.$zip_to.'</td></tr></tbody></table>',
-          ];
-         */
-
-        $fields = ['version', 'render', 'attributes'];
-        foreach ($json_last as $key => $field) {
-            if (is_string($field)) {
-                $empty = '<td class="diff-deletedline"><span aria-hidden="true" class="dashicons dashicons-minus"></span><span class="screen-reader-text">Eliminato: </span></td>';
-                //if (!empty($json[$key])) {
-                $prev = '<td>' . (empty($json_from[$key]) ? $empty : $json_from[$key]) . '</td>';
-                $next = '<td>' . (empty($json_to[$key]) ? $empty : $json_to[$key]) . '</td>';
-                //}
-                $return[] = [
-                    'id' => $key,
-                    'name' => $key,
-                    'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr>' . $prev . '<td></td>' . $next . '</tr></tbody></table>',
-                ];
+            $return[] = [
+                'id' => 'zip_download',
+                'name' => __('Revision ZIP', 'wizard-blocks'),
+                'diff' => $diff_html,
+            ];
+        }
+        
+        $json_from = is_array($json_from) ? $json_from : [];
+        $json_to = is_array($json_to) ? $json_to : [];
+        
+        $keys = array_unique(array_merge(array_keys($json_from), array_keys($json_to)));
+        
+        foreach ($keys as $key) {
+            $val_from = isset($json_from[$key]) ? $json_from[$key] : '';
+            $val_to = isset($json_to[$key]) ? $json_to[$key] : '';
+            
+            if (is_array($val_from)) {
+                $val_from = wp_json_encode($val_from, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            }
+            if (is_array($val_to)) {
+                $val_to = wp_json_encode($val_to, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            }
+            
+            $val_from = (string) $val_from;
+            $val_to = (string) $val_to;
+            
+            if ($val_from !== $val_to) {
+                if (function_exists('wp_text_diff')) {
+                    $diff = wp_text_diff($val_from, $val_to);
+                    if ($diff) {
+                        $return[] = [
+                            'id' => $key,
+                            'name' => ucfirst(str_replace('_', ' ', $key)),
+                            'diff' => $diff,
+                        ];
+                    }
+                } else {
+                    // Fallback just in case wp_text_diff isn't available
+                    $return[] = [
+                        'id' => $key,
+                        'name' => ucfirst(str_replace('_', ' ', $key)),
+                        'diff' => '<table class="diff"><colgroup><col class="content diffsplit left"><col class="content diffsplit middle"><col class="content diffsplit right"></colgroup><tbody><tr><td><pre>' . esc_html($val_from) . '</pre></td><td></td><td><pre>' . esc_html($val_to) . '</pre></td></tr></tbody></table>',
+                    ];
+                }
             }
         }
-        //TODO
-        // add Render
-        // add Attributes
-        //var_dump($return); die();
+
         return $return;
     }
 

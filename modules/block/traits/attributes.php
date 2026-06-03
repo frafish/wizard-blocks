@@ -561,7 +561,7 @@ if ($wrapper) { ?></script><?php }
            echo '('.$condition.') ? (';
        }
       ?>
-    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{ className: "block-editor-wrapper block-editor-wrapper__<?php echo esc_attr($id); ?> components-<?php echo strtolower($component); ?><?php if (!empty($attr['className'])) { echo ' '.esc_attr($attr['className']); } ?>", <?php if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
+    wp.element.createElement(<?php if ($in_toolbar) { ?>wp.components.Toolbar<?php } else {?>"div"<?php } ?>,{ className: "block-editor-wrapper block-editor-wrapper__<?php echo esc_attr($id); ?> components-<?php echo esc_attr(strtolower($component)); ?><?php if (!empty($attr['className'])) { echo ' '.esc_attr($attr['className']); } ?>", <?php if (!$in_toolbar) { ?>style: {marginTop: "10px"}<?php } ?>},
         <?php 
         // TITLE LABEL
         if (!$in_toolbar && !in_array($component, ['InnerBlocks', 'AnglePickerControl', 'CheckboxControl', 'ComboboxControl', 'ExternalLink', 'HorizontalRule', 'RadioControl', 'TextControl', 'TextareaControl', 'SelectControl', 'ToggleControl', 'FocalPointPicker']) && $label) { ?>
