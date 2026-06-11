@@ -2,14 +2,16 @@
 /**
  *
  * @wordpress-plugin
- * Plugin Name:       Wizard Blocks Manager for Gutenberg
- * Description:       Easy create, edit and manage Gutenberg Blocks
- * Version:           2.0
- * Author:            frapesce
- * Text Domain:       wizard-blocks
- * Domain Path:       /languages
- * License:           GPL-3.0
- * License URI:       http://www.gnu.org/licenses/gpl-3.0.txt
+ * Plugin Name: Wizard Blocks Manager for Gutenberg
+ * Description: Easy create, edit and manage Gutenberg Blocks
+ * Version: 2.0
+ * Author: frapesce
+ * Author URI: https://www.wizardblocks.io
+ * Plugin URI: https://www.wizardblocks.io
+ * Text Domain: wizard-blocks
+ * Domain Path: /languages
+ * License: GPL-3.0
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.txt
  *
  * Wizard Blocks is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

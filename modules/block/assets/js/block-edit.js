@@ -792,13 +792,15 @@ jQuery(document).ready(function ($) {
             }, 100);
         });
         
-        _block_editorScript.codemirror.on('change', function (instance, changeObj) {
-            //console.log('codemirror change');
-            instance.save();
-            //console.log(instance);
-            //console.log(changeObj);
-            toggle_attributes_condition();
-        });
+        if (_block_editorScript && _block_editorScript.codemirror) {
+            _block_editorScript.codemirror.on('change', function (instance, changeObj) {
+                //console.log('codemirror change');
+                instance.save();
+                //console.log(instance);
+                //console.log(changeObj);
+                toggle_attributes_condition();
+            });
+        }
         toggle_attributes_condition();
 
         update_block_attributes_editor();

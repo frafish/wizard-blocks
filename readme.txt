@@ -42,6 +42,8 @@ Wizard Blocks acts as a powerful transpiler: you configure attributes visually, 
 - Manage **Block Example values** or **Image Preview**
 - Full **Telex** compatibility and support, simplified import of generated zip
 
+[More information on Wizard Blocks](https://wizardblocks.io/wizard/)
+
 Perfect for:
 - Content creators
 - Web designers
@@ -71,7 +73,11 @@ There is no need to keep this plugin active to render your blocks in the fronten
 - Use all Custom Gutenberg Blocks as **native Elementor Widgets**
 - Insert Gutenberg Blocks and Patterns as **Shortcode** in any Editor
 - Add **Custom CSS** setting to any Block, to easily improve styles with automatic **selector**, optimized in frontend
+- **Display Conditions** applied to any Block based on Rules (User Role, Date, Device Type, Custom Meta, etc)
 
+[Discover PRO](https://wizardblocks.io/pro/)
+
+More is yet to come...
 - Limit blocks on wanted Post Type Edit page
 - Static rendered blocks (HTML, not PHP) with Handlebars, more security and super speed (cached)
 - **API Controls** (like Roles, Custom Fields, Posts, Users, Taxonomy, Terms)
@@ -104,24 +110,17 @@ There is no need to keep this plugin active to render your blocks in the fronten
 
 == Frequently Asked Questions ==
 
-= Is compatible with Classic Editor? =
-
-Yes, but this should be a Block Manager for the new Gutenberg Blocks editor.
-So you can use Blocks into Classic WYSIWYG Editor using them as Shortcodes.
-
 = Is compatible with Elementor? =
 
-Yes, if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page 
-this plugin make a porting of each Gutenberg Block as Elementor Widget, 
-so you can use them in any Elementor Template.
+Yes, with PRO if you enable "Gutenberg Blocks Widgets" Feature in Elementor Settings page this plugin make a porting of each Gutenberg Block as Elementor Widget, so you can use them in any Elementor Template.
 
 = Is compatible with Divi, Visual Composer, Oxygen, Breakdance, Beaver, Brizy, SeedProd, etc? =
 
-Yes, it's compatible with ANY Wordpress Builder which supports Shortcodes, using Blocks as Shortcodes widget.
+Yes, with PRO is compatible with ANY Wordpress Builder which supports Shortcodes, using Blocks as Shortcodes widget.
 
 = Could I insert a block in a specific Hook? =
 
-Yes, it's possible, but you have to insert it programmatically (via functions.php) as Block Shortcode.
+Yes, with PRO is possible, but you have to insert it programmatically (via functions.php) as Block Shortcode.
 
 = Does it support native MultiSite/Network mode? =
 
@@ -134,15 +133,16 @@ Yes, it works fine, managing Blocks separately for each site instance.
 3. **Secure Dynamic Content:** Build dynamic block content using plain PHP, eliminating the risk of site disruption (as writing Shortcodes in functions.php).
 4. **Automated Editor JavaScript:** The built-in wizard generates all necessary, minified, and optimized editor JavaScript (no npm required).
 5. **Flexible Scripting and Styling:** Write custom scripts and styles, and optionally upload external CSS and JS libraries.
-6. **Leverage Existing Assets:** Utilize registered assets, including libraries provided by WooCommerce or Elementor.
-7. **Intuitive Attribute Management:** Easily generate and manage block attributes, readily available for rendering.
-8. **Full Block JSON Schema Support:** Visually manage all standard block JSON fields, adhering to the official block structure.
-9. **Block Revisions:** Maintain multiple block revisions to safeguard custom code and facilitate version control.
-10. **Usage Statistics:** Track and analyze usage statistics for all blocks—custom, core, and plugin-provided.
-11. **Dedicated Shortcodes:** Generate shortcodes with a single click to render block instances anywhere on your site, including attribute value support.
-12. **Streamlined Import/Export:** Easily import and export blocks, share single block ZIP files across sites, and optionally deactivate the plugin once blocks are registered in your theme.
-13. **Elementor Compatibility:** Enable Elementor compatibility via Elementor settings to use all blocks within the native Elementor interface.
-14. **Selective Elementor Widget Integration:** Choose and enable specific imported Blocks as Elementor widgets through the native Elementor Manager.
+6. **Intuitive Attribute Management:** Easily generate and manage block attributes, readily available for rendering.
+7. **Full Block JSON Schema Support:** Visually manage all standard block JSON fields, adhering to the official block structure.
+8. **Block Revisions:** Maintain multiple block revisions to safeguard custom code and facilitate version control.
+9. **Usage Statistics:** Track and analyze usage statistics for all blocks—custom, core, and plugin-provided.
+10. **Streamlined Import/Export:** Easily import and export blocks, share single block ZIP files across sites, and optionally deactivate the plugin once blocks are registered in your theme.
+11. **Block Media Management:** Select images from Media Library to move them inside your Block
+12. **Block Styles:** Add Custom styles and colors for a quick block styling.
+13. **Block Variations:** Add Variations for your Block to reuse them easily in different layouts.
+14. **Block Supports:** Toggle native Block Supports like: align, anchor, color, etc
+15. **Import with Full Telex Compatibility:** Import your Telex projects with ease, preserving all configurations and assets.
 
 == Changelog ==
 
