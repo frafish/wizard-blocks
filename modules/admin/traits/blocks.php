@@ -34,6 +34,7 @@ trait Blocks {
         $blocks_count = [];
         foreach ($blocks as $name => $block) {
             $textdomain = $wb->get_block_textdomain($block);
+            $blocks[$name]['textdomain'] = $textdomain;
             $blocks_count[$textdomain] = empty($blocks_count[$textdomain]) ? 1 : ++$blocks_count[$textdomain];
             $block_slug = $wb->get_block_slug($name);
             if ($block_post = $wb->get_block_post($block_slug)) {
