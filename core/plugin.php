@@ -155,8 +155,8 @@ class Plugin {
     }
 
     public function has_vendors($TextDomain = '') {
-        $composer = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'composer.json';
-        return file_exists($composer);
+        $autoload = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+        return file_exists($autoload);
     }
     
     public static function get_blocks() {
