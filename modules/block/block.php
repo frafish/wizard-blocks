@@ -459,7 +459,13 @@ class Block extends Module_Base {
         add_filter('wizard/blocks', function ($blocks) {
             foreach ($blocks as $key => $block) {
                 $slug = basename($block);
-                $block_post = $this->get_block_post($slug);
+                $block_post = $this->get_block_post($slug, true);
+                if (!$block_post && file_exists($block . DIRECTORY_SEPARATOR . 'block.json')) {
+                    $metadata = wp_json_file_decode($block . DIRECTORY_SEPARATOR . 'block.json', ['associative' => true]);
+                    if (!empty($metadata['name'])) {
+                        $block_post = $this->get_block_post($metadata['name'], true);
+                    }
+                }
                 if ($block_post) {
                     //var_dump($block_post->post_name); var_dump($block_post->post_status);
                     if ($block_post->post_status != 'publish') {
@@ -598,7 +604,7 @@ class Block extends Module_Base {
         return $attr;
     }
     
-    public function get_block_post($slug) {
+    public function get_block_post($slug, $include_trash = false) {
         $tmp = explode('/', $slug, 2);
         $slug = end($tmp); // maybe is passed name
         //var_dump($slug);
@@ -613,6 +619,56 @@ class Block extends Module_Base {
         if (!empty($posts)) {
             return reset($posts);
         }
+
+        if ($include_trash) {
+            // Check for trashed post
+            // 1. In WordPress, trashed posts store original slug in meta '_wp_desired_post_slug'
+            $posts = get_posts(
+                [
+                    'post_type' => self::get_cpt_name(),
+                    'posts_per_page' => 1,
+                    'post_status' => 'trash',
+                    'meta_query' => [
+                        [
+                            'key' => '_wp_desired_post_slug',
+                            'value' => $slug,
+                        ],
+                    ],
+                ]
+            );
+            if (!empty($posts)) {
+                return reset($posts);
+            }
+
+            // 2. Check by post_name with '__trashed' suffix
+            $posts = get_posts(
+                [
+                    'name' => $slug . '__trashed',
+                    'post_type' => self::get_cpt_name(),
+                    'posts_per_page' => 1,
+                    'post_status' => 'trash',
+                ]
+            );
+            if (!empty($posts)) {
+                return reset($posts);
+            }
+
+            // 3. Fallback: check post_name with trashed suffix via DB query (e.g. slug__trashed-2 or slug without suffix)
+            global $wpdb;
+            $post_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = 'trash' AND (post_name = %s OR post_name LIKE %s) ORDER BY ID DESC LIMIT 1",
+                self::get_cpt_name(),
+                $slug,
+                $wpdb->esc_like($slug . '__trashed') . '%'
+            ));
+            if ($post_id) {
+                $post = get_post($post_id);
+                if ($post) {
+                    return $post;
+                }
+            }
+        }
+
         return false;
     }
     

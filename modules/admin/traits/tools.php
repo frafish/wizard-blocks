@@ -94,11 +94,7 @@ trait Tools {
                 }
             } else { 
                 if (isset($_GET['post_type']) && $_GET['post_type'] == \WizardBlocks\Modules\Block\Block::get_cpt_name()) { ?>
-                <div id="ai-action">
-                    <button class="button-ai d-block" style="width: calc(100% - 8px); margin: 0 4px;">
-                       <a class="button button-large text-center button-ai-content button-rounded dashicons-before dashicons-superhero d-block" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
-                    </button>
-                    <hr>
+                <div id="import-action">
                     <a class="button button-secondary text-center button-large dashicons-before dashicons-media-archive button-rounded d-block" href="edit.php?post_type=block&page=wtools"><?php esc_html_e('Import ZIP', 'wizard-blocks'); ?></a>
                     <hr>
                 </div>
@@ -110,7 +106,6 @@ trait Tools {
 
     public function wizard_tools() {
         $wb = \WizardBlocks\Modules\Block\Block::instance();
-        $this->enqueue_style('block-ai', '../block/assets/css/ai.css');
         $this->execute_actions();
         ?>
 
@@ -120,10 +115,7 @@ trait Tools {
             <div class="card-row" style="display: flex;">
                 <div class="card upload-block" style="width: 100%;">
                     <h2><?php esc_html_e('IMPORT', 'wizard-blocks'); ?></h2>
-                    <p><?php esc_html_e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php esc_html_e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a>
-                    <br><?php esc_html_e('or', 'wizard-blocks'); ?> &nbsp; <button class="button-ai">
-                       <a class="button button-ai-content button-rounded" href="https://telex.automattic.ai" target="_blank"><?php esc_html_e('Create with TelexAI', 'wizard-blocks'); ?></a>
-                    </button></p>
+                    <p><?php esc_html_e('Add your Custom Blocks importing the block zip.', 'wizard-blocks'); ?><br><?php esc_html_e('Try to download and import some official Block examples:', 'wizard-blocks'); ?> <a target="_blank" href="https://github.com/WordPress/block-development-examples?tab=readme-ov-file#block-development-examples"><span class="dashicons dashicons-download"></span></a></p>
                     <form class="wp-upload-form" action="<?php echo esc_url($this->get_action_url("action=import")); ?>" method="POST" enctype="multipart/form-data">
                         <input type="file" name="zip">
                         <button class="btn button" type="submit"><?php esc_html_e('Import', 'wizard-blocks'); ?></button>

@@ -30,18 +30,94 @@ class Editor extends Module_Base {
                 wp_enqueue_style('wp-jquery-ui-dialog');
                 
                 $this->enqueue_style('block-editor', 'assets/css/block-editor.css');
-                $this->enqueue_script('block-editor', 'assets/js/block-editor.js', ['jquery']);
+                $this->enqueue_script('block-editor', 'assets/js/block-editor.js', ['jquery', 'wp-data']);
+
+                $this->localize_editor_data();
             }
         });
+
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
         
         //add_action('init', [$this, 'unregister_blocks_disabled'], 99);
         add_filter( 'allowed_block_types_all', [$this, 'allowed_block_types'], 10, 2 );
 
     }
+
+    public function enqueue_block_editor_assets() {
+        $this->enqueue_style('block-editor', 'assets/css/block-editor.css');
+        $this->enqueue_script('block-editor', 'assets/js/block-editor.js', ['jquery', 'wp-data']);
+        $this->localize_editor_data();
+    }
+
+    public function localize_editor_data() {
+        static $localized = false;
+        if ($localized) {
+            return;
+        }
+        $localized = true;
+
+        $edit_urls = $this->get_wizard_blocks_edit_urls();
+        wp_localize_script('block-editor', 'WizardBlocksEditorData', [
+            'editUrls' => $edit_urls,
+            'i18n' => [
+                'editBlock' => __('Edit Block in WizardBlocks', 'wizard-blocks'),
+            ],
+        ]);
+    }
+
+    public function get_wizard_blocks_edit_urls() {
+        $wb = \WizardBlocks\Modules\Block\Block::instance();
+        $urls = [];
+
+        // 1. Scan blocks from dirs
+        $blocks = $wb->get_blocks();
+        foreach ($blocks as $folder) {
+            $slug = basename($folder);
+            $post = $wb->get_block_post($slug);
+            if (!$post && file_exists($folder . DIRECTORY_SEPARATOR . 'block.json')) {
+                $meta = wp_json_file_decode($folder . DIRECTORY_SEPARATOR . 'block.json', ['associative' => true]);
+                if (!empty($meta['name'])) {
+                    $post = $wb->get_block_post($meta['name']);
+                }
+            }
+            if ($post && $post->post_status === 'publish') {
+                $edit_url = admin_url('post.php?post=' . $post->ID . '&action=edit');
+                $block_json = $folder . DIRECTORY_SEPARATOR . 'block.json';
+                if (file_exists($block_json)) {
+                    $meta = wp_json_file_decode($block_json, ['associative' => true]);
+                    if (!empty($meta['name'])) {
+                        $urls[$meta['name']] = $edit_url;
+                    }
+                }
+                $urls[$slug] = $edit_url;
+                $urls[$post->post_name] = $edit_url;
+            }
+        }
+
+        // 2. Also ensure any published block CPT is mapped
+        $posts = get_posts([
+            'post_type' => \WizardBlocks\Modules\Block\Block::get_cpt_name(),
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+        ]);
+        foreach ($posts as $post) {
+            $edit_url = admin_url('post.php?post=' . $post->ID . '&action=edit');
+            $json = $wb->get_block_json($post->post_name);
+            if (!empty($json['name'])) {
+                $urls[$json['name']] = $edit_url;
+            }
+            $urls[$post->post_name] = $edit_url;
+        }
+
+        return $urls;
+    }
     
     function is_gutenberg_editor() {
         if (is_admin()) {
             if (isset($_GET['action']) && $_GET['action'] == 'edit') {
+                return true;
+            }
+            if (isset($_SERVER['SCRIPT_NAME']) && (str_contains($_SERVER['SCRIPT_NAME'], 'post.php') || str_contains($_SERVER['SCRIPT_NAME'], 'post-new.php') || str_contains($_SERVER['SCRIPT_NAME'], 'site-editor.php'))) {
                 return true;
             }
         }

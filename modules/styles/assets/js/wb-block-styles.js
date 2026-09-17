@@ -45,8 +45,12 @@ jQuery(document).ready(function ($) {
             console.log(style);
             
             jQuery('#style-name').val(style.name);
-            if (style.title) jQuery('#style-title').val(style.title);
-            if (style.isDefault) jQuery('#style-isDefault').prop('checked', true);
+            if (style.title) {
+                jQuery('#style-title').val(style.title);
+            } else if (style.label) {
+                jQuery('#style-title').val(style.label);
+            }
+            if (style.isDefault || style.is_default) jQuery('#style-isDefault').prop('checked', true);
             
             if (style.inlineStyle) jQuery('#style-inlineStyle').val(style.inlineStyle);
             if (style.styleHandle) jQuery('#style-styleHandle').val(style.styleHandle);

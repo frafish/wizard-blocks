@@ -1,6 +1,126 @@
 jQuery(document).ready(function ($) {
 
+    /**
+     * Add edit link button next to block title in BlockCard only if managed by WizardBlocks
+     */
+    function updateWbEditBlockButton() {
+        if (typeof wp === 'undefined' || !wp.data || !wp.data.select('core/block-editor')) {
+            return;
+        }
+
+        var blockEditor = wp.data.select('core/block-editor');
+        var selectedBlock = blockEditor.getSelectedBlock();
+
+        var editUrls = (window.WizardBlocksEditorData && window.WizardBlocksEditorData.editUrls) ? window.WizardBlocksEditorData.editUrls : {};
+        var cardTitles = document.querySelectorAll('.block-editor-block-card__title');
+
+        if (!cardTitles.length) {
+            return;
+        }
+
+        // Check if selected block is managed by WizardBlocks
+        var editUrl = null;
+        if (selectedBlock && selectedBlock.name) {
+            var blockName = selectedBlock.name;
+            editUrl = editUrls[blockName] || (blockName.indexOf('/') !== -1 ? editUrls[blockName.split('/')[1]] : null);
+        }
+
+        // If no WB block is selected, remove any existing button
+        if (!editUrl) {
+            document.querySelectorAll('.wb-edit-block-btn').forEach(function (el) {
+                el.remove();
+            });
+            return;
+        }
+
+        var tooltip = (window.WizardBlocksEditorData && window.WizardBlocksEditorData.i18n && window.WizardBlocksEditorData.i18n.editBlock)
+            ? window.WizardBlocksEditorData.i18n.editBlock
+            : 'Edit Block in WizardBlocks';
+
+        cardTitles.forEach(function (cardTitle) {
+            var btn = cardTitle.querySelector('.wb-edit-block-btn');
+            if (!btn) {
+                btn = document.createElement('a');
+                btn.className = 'wb-edit-block-btn components-button is-compact has-icon';
+                btn.href = editUrl;
+                btn.target = '_blank';
+                btn.rel = 'noopener noreferrer';
+                btn.title = tooltip;
+                btn.setAttribute('aria-label', tooltip);
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">' +
+                    '<path d="m19 7-3-3m-9 9-2 5 5-2 11-11a2.828 2.828 0 0 0-4-4L7 13Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                    '</svg>';
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+
+                var cardName = cardTitle.querySelector('.block-editor-block-card__name');
+                if (cardName && cardName.nextSibling) {
+                    cardTitle.insertBefore(btn, cardName.nextSibling);
+                } else {
+                    cardTitle.appendChild(btn);
+                }
+            } else if (btn.getAttribute('href') !== editUrl) {
+                btn.setAttribute('href', editUrl);
+            }
+        });
+    }
+
+    // Immediate and polled updater when selection changes
+    var selectionPollTimer = null;
+    function triggerSelectionUpdate() {
+        // Run immediately
+        updateWbEditBlockButton();
+
+        // Also poll rapidly for 600ms while Gutenberg mounts the sidebar
+        if (selectionPollTimer) {
+            clearInterval(selectionPollTimer);
+        }
+        var attempts = 0;
+        selectionPollTimer = setInterval(function () {
+            attempts++;
+            updateWbEditBlockButton();
+            var cardTitle = document.querySelector('.block-editor-block-card__title');
+            if ((cardTitle && cardTitle.querySelector('.wb-edit-block-btn')) || attempts >= 12) {
+                clearInterval(selectionPollTimer);
+                selectionPollTimer = null;
+            }
+        }, 50);
+    }
+
+    // Subscribe to Gutenberg block selection changes
+    if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
+        var prevSelectedClientId = null;
+        wp.data.subscribe(function () {
+            if (!wp.data.select('core/block-editor')) return;
+            var currentClientId = wp.data.select('core/block-editor').getSelectedBlockClientId();
+            if (currentClientId !== prevSelectedClientId) {
+                prevSelectedClientId = currentClientId;
+                triggerSelectionUpdate();
+            }
+        });
+    }
+
+    // Observe DOM mutations to immediately catch when sidebar or card title is added
+    if (typeof MutationObserver !== 'undefined') {
+        var observer = new MutationObserver(function () {
+            var cardTitle = document.querySelector('.block-editor-block-card__title');
+            if (cardTitle && !cardTitle.querySelector('.wb-edit-block-btn')) {
+                updateWbEditBlockButton();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Also listen to tab and settings button clicks
+    $(document).on('click', '.components-tab-button, .edit-post-header__settings, button[aria-label="Settings"]', function () {
+        triggerSelectionUpdate();
+    });
+
     setInterval(function(){
+        // Update edit button periodically as fallback
+        updateWbEditBlockButton();
+
         //console.log('resize');
         jQuery( ".interface-complementary-area__fill:not(.ui-resizable)" ).resizable({
             handles: 'w' 

@@ -86,7 +86,6 @@ trait Metabox {
 
         if ($this->is_block_edit()) {
             $this->enqueue_style('block-edit', 'assets/css/block-edit.css');
-            $this->enqueue_style('block-ai', 'assets/css/ai.css');
             $this->enqueue_script('block-edit', 'assets/js/block-edit.js');
             $php = wp_enqueue_code_editor(array('type' => 'text/html'));
             $css = wp_enqueue_code_editor(array('type' => 'text/css'));

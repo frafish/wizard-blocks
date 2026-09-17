@@ -25,3 +25,43 @@
 .block-editor-list-view-actions .components-button svg {
   stroke: currentColor;
 }
+
+/* WizardBlocks Edit Block button in Block Card */
+.block-editor-block-card__title {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wb-edit-block-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0 !important;
+  margin: 0 0 0 4px !important;
+  border-radius: 4px;
+  color: #1e1e1e !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.1s ease, background-color 0.1s ease;
+}
+
+.wb-edit-block-btn:hover,
+.wb-edit-block-btn:focus {
+  color: var(--wp-admin-theme-color, #007cba) !important;
+  background-color: #f0f0f0 !important;
+}
+
+.wb-edit-block-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+}

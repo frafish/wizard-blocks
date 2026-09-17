@@ -40,7 +40,7 @@ Wizard Blocks acts as a powerful transpiler: you configure attributes visually, 
 - Use your custom Block **Textdomain**
 - Control **Attributes conditional logic** display rules
 - Manage **Block Example values** or **Image Preview**
-- Full **Telex** compatibility and support, simplified import of generated zip
+- Simplified import of generated block ZIP files
 
 [More information on Wizard Blocks](https://wizardblocks.io/wizard/)
 
@@ -142,7 +142,7 @@ Yes, it works fine, managing Blocks separately for each site instance.
 12. **Block Styles:** Add Custom styles and colors for a quick block styling.
 13. **Block Variations:** Add Variations for your Block to reuse them easily in different layouts.
 14. **Block Supports:** Toggle native Block Supports like: align, anchor, color, etc
-15. **Import with Full Telex Compatibility:** Import your Telex projects with ease, preserving all configurations and assets.
+15. **Streamlined ZIP Import:** Import your block projects with ease, preserving all configurations and assets.
 
 == Changelog ==
 
@@ -156,7 +156,7 @@ Yes, it works fine, managing Blocks separately for each site instance.
 * Added Media Block
 * Stability fixes
 * Added compatibility with 3rd part blocks
-* Full compatibility with Telex
+* Improved ZIP block import compatibility
 * Added Hooks and Filters
 
 = 1.2 - 25-06-2025 =
