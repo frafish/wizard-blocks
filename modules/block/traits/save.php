@@ -448,23 +448,60 @@ trait Save {
                 }
                 // generate minified JS version
                 if (in_array($asset, ['editorScript', 'viewScript', 'viewScriptModule', 'script'])) {
-                    $minifier = new \MatthiasMullie\Minify\JS($code);
-                    // save minified file to disk
-                    $minifier->minify($path_min);
-                    $json[$asset] = [ "file:./" . $file_name . (SCRIPT_DEBUG ? '.' : $min) . $type ];
-                    $path = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . (SCRIPT_DEBUG ? '' : '.min') .'.asset.php';
-                    $code = "<?php return array('dependencies'=>[], 'version'=>'".gmdate('U')."');";
-                    if (!file_exists($path)) {
-                        //file_put_contents($path, $code);
-                        $this->get_filesystem()->put_contents($path, $code);
+                    if (!class_exists('\MatthiasMullie\Minify\JS')) {
+                        $vendor_autoload = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+                        if (file_exists($vendor_autoload)) {
+                            require_once $vendor_autoload;
+                        }
+                    }
+
+                    $asset_suffix = (SCRIPT_DEBUG ? '.' : $min);
+                    $asset_php_suffix = (SCRIPT_DEBUG ? '' : '.min');
+
+                    if (class_exists('\MatthiasMullie\Minify\JS')) {
+                        try {
+                            $minifier = new \MatthiasMullie\Minify\JS($code);
+                            // save minified file to disk
+                            $minifier->minify($path_min);
+                            $json[$asset] = [ "file:./" . $file_name . $asset_suffix . $type ];
+                        } catch (\Throwable $e) {
+                            $json[$asset] = [ "file:./" . $file ];
+                            $asset_php_suffix = '';
+                        }
+                    } else {
+                        // Minifier not available, keep normal asset
+                        $json[$asset] = [ "file:./" . $file ];
+                        $asset_php_suffix = '';
+                    }
+
+                    $asset_php_path = $this->get_ensure_blocks_dir($block_slug, $block_textdomain) . $file_name . $asset_php_suffix . '.asset.php';
+                    $asset_php_code = "<?php return array('dependencies'=>[], 'version'=>'".gmdate('U')."');";
+                    if (!file_exists($asset_php_path)) {
+                        $this->get_filesystem()->put_contents($asset_php_path, $asset_php_code);
                     }
                 }
                 // generate CSS minified version
                 if (in_array($asset, ['editorStyle', 'viewStyle', 'style'])) {
-                    $minifier = new \MatthiasMullie\Minify\CSS($code);
-                    // save minified file to disk
-                    $minifier->minify($path_min);
-                    $json[$asset] = [ "file:./" . $file_name . (SCRIPT_DEBUG ? '.' : $min) . $type ];
+                    if (!class_exists('\MatthiasMullie\Minify\CSS')) {
+                        $vendor_autoload = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+                        if (file_exists($vendor_autoload)) {
+                            require_once $vendor_autoload;
+                        }
+                    }
+
+                    if (class_exists('\MatthiasMullie\Minify\CSS')) {
+                        try {
+                            $minifier = new \MatthiasMullie\Minify\CSS($code);
+                            // save minified file to disk
+                            $minifier->minify($path_min);
+                            $json[$asset] = [ "file:./" . $file_name . (SCRIPT_DEBUG ? '.' : $min) . $type ];
+                        } catch (\Throwable $e) {
+                            $json[$asset] = [ "file:./" . $file ];
+                        }
+                    } else {
+                        // Minifier not available, keep normal asset
+                        $json[$asset] = [ "file:./" . $file ];
+                    }
                 }
             } else {
                 // delete old assets files?! 

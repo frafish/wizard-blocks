@@ -147,7 +147,7 @@ class Plugin {
 
     public function maybe_vendor_autoload($TextDomain = '') {
         if ($this->has_vendors($TextDomain)) {
-            $file = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+            $file = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
             if (file_exists($file)) {
                 require_once $file;
             }
@@ -155,7 +155,7 @@ class Plugin {
     }
 
     public function has_vendors($TextDomain = '') {
-        $autoload = WIZARD_BLOCKS_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+        $autoload = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
         return file_exists($autoload);
     }
     

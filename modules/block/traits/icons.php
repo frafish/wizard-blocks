@@ -97,12 +97,20 @@ Trait Icons {
                             $icon_path = $basepath.$icon_name;
                             //var_dump($icon_path); die();
                             
-                            // Create a new sanitizer instance
-                            $sanitizer = new \enshrined\svgSanitize\Sanitizer();
-                            $sanitizer->minify(true);
-                            $sanitizer->removeRemoteReferences(true);
-                            // Pass it to the sanitizer and get it back clean
-                            $svg = $sanitizer->sanitize($svg);
+                            // Create a new sanitizer instance if available
+                            if (!class_exists('\enshrined\svgSanitize\Sanitizer')) {
+                                $vendor_autoload = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+                                if (file_exists($vendor_autoload)) {
+                                    require_once $vendor_autoload;
+                                }
+                            }
+                            if (class_exists('\enshrined\svgSanitize\Sanitizer')) {
+                                $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                                $sanitizer->minify(true);
+                                $sanitizer->removeRemoteReferences(true);
+                                // Pass it to the sanitizer and get it back clean
+                                $svg = $sanitizer->sanitize($svg);
+                            }
 
                             $svg = trim($svg);
                             
@@ -157,12 +165,20 @@ Trait Icons {
                         if (!is_dir($medias_dir)) {
                             wp_mkdir_p($medias_dir);
                         }
-                        // Create a new sanitizer instance
-                        $sanitizer = new \enshrined\svgSanitize\Sanitizer();
-                        $sanitizer->minify(true);
-                        $sanitizer->removeRemoteReferences(true);
-                        // Pass it to the sanitizer and get it back clean
-                        $svg = $sanitizer->sanitize($svg);
+                        // Create a new sanitizer instance if available
+                        if (!class_exists('\enshrined\svgSanitize\Sanitizer')) {
+                            $vendor_autoload = rtrim(WIZARD_BLOCKS_PATH, '/\\') . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+                            if (file_exists($vendor_autoload)) {
+                                require_once $vendor_autoload;
+                            }
+                        }
+                        if (class_exists('\enshrined\svgSanitize\Sanitizer')) {
+                            $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                            $sanitizer->minify(true);
+                            $sanitizer->removeRemoteReferences(true);
+                            // Pass it to the sanitizer and get it back clean
+                            $svg = $sanitizer->sanitize($svg);
+                        }
                         //var_dump($medias_dir . $icon_name); die();
                         if ($this->get_filesystem()->put_contents($medias_dir . $icon_name, $svg)) {
                             $icon = 'file:./' . $icon_name;
